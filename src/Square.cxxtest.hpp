@@ -24,4 +24,15 @@ public:
         TS_ASSERT(!(Square(3,7) == Square(3,8)));
         TS_ASSERT(!(Square(4, 8) == Square(3,8)));
     }
+    void testNotEquals() {
+        TS_ASSERT(!(Square(3,8) != Square(3,8)));
+        TS_ASSERT(Square(3,7) != Square(3,8));
+        TS_ASSERT(Square(4, 8) != Square(3,8));
+    }
+    void testLessThan() {
+        TS_ASSERT(!(Square(3,8) < Square(3,8)));
+        TS_ASSERT(Square(2,8) < Square(3,8));
+        TS_ASSERT(Square(3,7) < Square(3,8));
+        TS_ASSERT(!(Square(4,8) < Square(3, 1)));
+    }
 };
