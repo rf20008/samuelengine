@@ -1,3 +1,5 @@
+#ifndef CS3520_MINI_PROJECT_SQUARE
+#define CS3520_MINI_PROJECT_SQUARE
 const int BOARD_SIZE = 8;
 struct Square {
     int row, col;
@@ -23,3 +25,4 @@ public:
     }
     
 };
+#endif
