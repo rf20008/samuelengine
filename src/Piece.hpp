@@ -20,5 +20,6 @@ class Piece {
         void setSquare(Square newSquare) {
             curSquare=newSquare;
         }
-}
+};
+
 #endif
