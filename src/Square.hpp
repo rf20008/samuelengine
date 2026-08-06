@@ -11,5 +11,15 @@ public:
     bool operator==(const Square& other) {
         return row==other.row && col==other.col;
     }
+    bool operator<(const Square& other) {
+        if (row != other.row) {
+            return row<other.row;
+        } else {
+            return col<other.col;
+        }
+    }
+    bool operator!=(const Square& other) {
+        return !(this->operator==(other));
+    }
     
 };
