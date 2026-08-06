@@ -6,7 +6,10 @@ public:
     Square(int r, int c) : row(r), col(c) {} 
     bool isValid() {return (r>=1 && c>=1 && r<=BOARD_SIZE && c<=BOARD_SIZE)}
     Square operator+(const Square& other) {
-        return Square(r + other.r, c+other.c);
+        return Square(row + other.row, col+other.col);
+    }
+    bool operator==(const Square& other) {
+        return row==other.row && col==other.col;
     }
     
 };
