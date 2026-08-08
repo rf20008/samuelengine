@@ -4,5 +4,6 @@
 struct Move {
     Square startingSquare;
     Square endingSquare;
+    bool operator<(const Move& other); // to be done by Joshua
 };
 #endif

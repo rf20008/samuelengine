@@ -9,6 +9,8 @@
 */
 
 int main(int argc, char **argv){
+    // this is the TUI. To be assigned on Monday
+    // Should support playing against another human on the same computer or playing against SamuelEngine
   /* SDL
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0){
     std::cerr << "SDL_Init error: " << SDL_GetError() << std::endl;

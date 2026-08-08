@@ -3,6 +3,8 @@
 #include "Move.hpp"
 #include "AbstractPlayer.hpp"
 #include "Board.hpp"
+
+// to be done by Samuel
 class SamuelEngine : public AbstractPlayer {
 public:
     SamuelEngine();
