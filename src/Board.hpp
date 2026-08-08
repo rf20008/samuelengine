@@ -40,7 +40,7 @@ class ChessBoard {
         ChessBoard(); // create a chess board with starting position
         ChessBoard(const std::string& fen); // create chess board from given FEN
         ChessBoard(
-            const std::vector<std::vector<std::shared_ptr<Piece>>> pieces, 
+            const std::vector<std::vector<std::shared_ptr<Piece>>>& pieces, 
             const bool& whiteToMove, 
             const PlayerState& whitePlayerState,
             const PlayerState& blackPlayerState,
