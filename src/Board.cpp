@@ -80,23 +80,6 @@ ChessBoard::ChessBoard(
     );
 }
 
-// Rule of Five
-
-ChessBoard::~ChessBoard() {
-    cerr<<"ERROR: ChessBoard::~ChessBoard() is not yet implemented"<<endl; // cannot throw because destructors are noexcept
-}
-
-ChessBoard::ChessBoard(const ChessBoard& other) {
-    (void) other;
-    throw NotImplementedError("ChessBoard::ChessBoard(const ChessBoard& other) is not yet implemented");   
-}
-
-ChessBoard& ChessBoard::operator=(const ChessBoard& other) {
-    (void) other;
-    throw NotImplementedError("ChessBoard& ChessBoard::operator=(const ChessBoard& other) is not yet implemented");
-}
-
-// move constructors are explicitly deleted!
 PiecePtr getPiece(Square sq) {
     (void) sq;
     throw NotImplementedError("PiecePtr getPiece(Square sq) is not yet implemented");

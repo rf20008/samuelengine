@@ -50,11 +50,11 @@ class ChessBoard {
         );
 
         // rule of 5
-        ~ChessBoard();
-        ChessBoard(const ChessBoard& other);
-        ChessBoard(ChessBoard&& other) = delete;
-        ChessBoard& operator=(const ChessBoard& other);
-        ChessBoard& operator=(ChessBoard&& other) = delete;
+        ~ChessBoard() = default;
+        ChessBoard(const ChessBoard& other) = default;
+        ChessBoard(ChessBoard&& other) = default;
+        ChessBoard& operator=(const ChessBoard& other) = default;
+        ChessBoard& operator=(ChessBoard&& other) = default;
 
         // getters 
         PiecePtr getPiece(Square sq);
