@@ -13,6 +13,7 @@
 #include "Move.hpp"
 #include "Square.hpp"
 #include "PlayerState.hpp"
+#include "GameStatus.hpp"
 
 // Errors
 #include "Errors.hpp"
@@ -64,13 +65,15 @@ class ChessBoard {
         PlayerState getWhitePlayerState() {return whitePlayerState;}
         PlayerState getBlackPlayerState() {return blackPlayerState;}
 
+        
         // chess engine methods
         bool isMoveLegal(Move m); // return whether a move is legal
         void processMove(Move m);
         bool isInCheck();
         bool isInCheckmate();
         bool isInStalemate();
-        
+        GameStatus getStatus();
+
         // for engine use
         std::string fen();
         std::set<Move> allLegalMoves(const Square sq);

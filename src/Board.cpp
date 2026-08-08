@@ -125,7 +125,11 @@ bool ChessBoard::isInStalemate() {
     throw NotImplementedError("bool ChessBoard::isInStalemate() is not yet implemented");
 }
 
-
+GameStatus ChessBoard::getStatus() {
+    // return the status of the game (whether white won, black won, it's a draw, or game is still going on)
+    // keep in mind the 50 move rule, draws
+    throw NotImplementedError("GameStatus ChessBoard::getStatus() is not yet implemented");
+}
 
 // for engine use
 std::string ChessBoard::fen() {
