@@ -29,8 +29,8 @@ class ChessBoard {
     protected:
         std::vector<std::vector<std::shared_ptr<Piece>>> pieces;
         bool whiteToMove;
-        PlayerState whitePlayer;
-        PlayerState blackPlayer;
+        PlayerState whitePlayerState;
+        PlayerState blackPlayerState;
         int halfmove_clock;
         int fullmove_clock;
         Square enPassant_targetSquare;
@@ -42,8 +42,8 @@ class ChessBoard {
         ChessBoard(
             const std::vector<std::vector<std::shared_ptr<Piece>>> pieces, 
             const bool& whiteToMove, 
-            const PlayerState& whitePlayer,
-            const PlayerState& blackPlayer,
+            const PlayerState& whitePlayerState,
+            const PlayerState& blackPlayerState,
             const int& halfmove_clock,
             const int& fullmove_clock,
             const Square& enPassant_targetSquare
@@ -56,13 +56,13 @@ class ChessBoard {
         ChessBoard& operator=(const ChessBoard& other);
         ChessBoard& operator=(ChessBoard&& other) = delete;
 
-        // getters and setters
-        std::shared_ptr<Piece> getPiece(Square sq);
-        int get_halfmove_clock();
-        int get_fullmove_clock();
-        bool get_whiteToMove();
-        PlayerState getWhitePlayerState();
-        PlayerState getBlackPlayerState();
+        // getters 
+        PiecePtr getPiece(Square sq);
+        int get_halfmove_clock() {return halfmove_clock;}
+        int get_fullmove_clock() {return fullmove_clock;}
+        bool get_whiteToMove() {return whiteToMove;}
+        PlayerState getWhitePlayerState() {return whitePlayerState;}
+        PlayerState getBlackPlayerState() {return blackPlayerState;}
 
         // chess engine methods
         bool isMoveLegal(Move m); // return whether a move is legal
