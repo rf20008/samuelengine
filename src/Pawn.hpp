@@ -3,14 +3,15 @@
 
 #include <set>
 
+#include "Piece.hpp"
 
-class Piece {
-    protected:
-        bool belongsToWhite;
+
+class Pawn : public Piece {
     public:
         Piece(bool ownedbyWhite) : belongsToWhite(ownedbyWhite) {}
-        bool belongsToWhite() const final {return belongsToWhite;}
-        virtual char symbol() const = 0;
+        virtual char symbol() const {
+            return (belongsToWhite?'P':'p')
+        }
 };
 
 #endif
