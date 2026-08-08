@@ -4,7 +4,7 @@
 #include "Move.hpp"
 class AbstractPlayer {
 public:
-    AbstractPlayer() {}
+    AbstractPlayer();
     virtual Move getMove(const ChessBoard&) = 0;
 };
 #endif
