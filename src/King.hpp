@@ -1,16 +1,16 @@
-#ifndef CS3520_MINIPROJECT_PAWN
-#define CS3520_MINIPROJECT_PAWN
+#ifndef CS3520_MINIPROJECT_KING
+#define CS3520_MINIPROJECT_KING
 
 #include <set>
 
 #include "Piece.hpp"
 
 
-class Pawn : public Piece {
+class King : public Piece {
     public:
         Piece(bool ownedbyWhite) : belongsToWhite(ownedbyWhite) {}
         virtual char symbol() const {
-            return (belongsToWhite?'P':'p');
+            return (belongsToWhite?'K':'k');
         }
 };
 
