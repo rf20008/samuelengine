@@ -69,7 +69,7 @@ class ChessBoard {
         // chess engine methods
         bool isMoveLegal(Move m); // return whether a move is legal
         void processMove(Move m);
-        bool isInCheck();
+        bool isInCheck(bool player);
         bool isInCheckmate();
         bool isInStalemate();
         GameStatus getStatus();

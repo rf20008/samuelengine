@@ -1,8 +1,9 @@
 #ifndef CS3520_MINIPROJECT_ERRORS
 #define CS3520_MINIPROJECT_ERRORS
+#include <exception>
 #include <stdexcept>
 #include <string>
-#include <exception>
+
 
 
 class NotImplementedError: public std::logic_error {

@@ -6,5 +6,5 @@ enum class GameStatus {
     DRAW,
     STILL_GOING_WHITE_TURN,
     STILL_GOING_BLACK_TURN,
-}
+};
 #endif
