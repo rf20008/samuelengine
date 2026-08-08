@@ -8,7 +8,7 @@
 
 class King : public Piece {
     public:
-        Piece(bool ownedbyWhite) : belongsToWhite(ownedbyWhite) {}
+        King(bool ownedbyWhite) : Piece(ownedbyWhite) {}
         virtual char symbol() const {
             return (belongsToWhite?'K':'k');
         }

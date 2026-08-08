@@ -8,7 +8,7 @@
 
 class Pawn : public Piece {
     public:
-        Piece(bool ownedbyWhite) : belongsToWhite(ownedbyWhite) {}
+        Pawn(bool ownedbyWhite) : Piece(ownedbyWhite) {}
         virtual char symbol() const {
             return (belongsToWhite?'P':'p');
         }

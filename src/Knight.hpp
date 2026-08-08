@@ -8,7 +8,7 @@
 
 class Knight : public Piece {
     public:
-        Piece(bool ownedbyWhite) : belongsToWhite(ownedbyWhite) {}
+        Knight(bool ownedbyWhite) : Piece(ownedbyWhite) {}
         virtual char symbol() const {
             return (belongsToWhite?'N':'n'); // k is already used for king, 
             // //so we adopt Forsyth-Edwards Notaton's convention of using N to denote knight

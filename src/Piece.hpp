@@ -9,7 +9,7 @@ class Piece {
         bool belongsToWhite;
     public:
         Piece(bool ownedbyWhite) : belongsToWhite(ownedbyWhite) {}
-        bool belongsToWhite() const final {return belongsToWhite;}
+        bool getBelongsToWhite() const {return belongsToWhite;}
         virtual char symbol() const = 0;
 };
 
