@@ -43,7 +43,7 @@ std::shared_ptr<Piece> getPiece(char c){
 }
 
 ChessBoard::ChessBoard() {
-    throw NotImplementedError("ChessBoard::ChessBoard is not yet implemented");
+    throw NotImplementedError("ChessBoard::ChessBoard() is not yet implemented");
 }
 
 ChessBoard::ChessBoard(const std::string& fen) {
@@ -112,7 +112,14 @@ std::string ChessBoard::fen() {
     throw NotImplementedError("std::string ChessBoard::fen() is not yet implemented");
 }
 
+std::set<Move> ChessBoard::allLegalMoves(const Square sq) {
+    throw NotImplementedError("std::set<Move> ChessBoard::allLegalMoves() is not yet implemented");
+}
 std::set<Move> ChessBoard::allLegalMoves() {
+    // return all legal moves from all pieces that the player owns
+    // this function is necessary for the engine
+    // it can call allLegalMoves for every piece it owns and splice them together into one set, then return that set
+    
     throw NotImplementedError("std::set<Move> ChessBoard::allLegalMoves() is not yet implemented");
 }
 

@@ -70,9 +70,10 @@ class ChessBoard {
         bool isInCheck();
         bool isInCheckmate();
         bool isInStalemate();
-
+        
         // for engine use
         std::string fen();
+        std::set<Move> allLegalMoves(const Square sq);
         std::set<Move> allLegalMoves();
 
         std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os);
