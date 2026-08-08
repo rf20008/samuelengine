@@ -69,7 +69,7 @@ ChessBoard::ChessBoard(
     (void) enPassant_targetSquare;
     throw NotImplementedError(
         "ChessBoard::ChessBoard(" 
-        "const std::vector<std::vector<std::shared_ptr<Piece>>> pieces, " 
+        "const std::vector<std::vector<std::shared_ptr<Piece>>>& pieces, " 
         "const bool& whiteToMove, " 
         "const PlayerState& whitePlayer, " 
         "const PlayerState& blackPlayer, " 
