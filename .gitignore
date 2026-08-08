@@ -34,5 +34,8 @@
 *.out
 *.app
 
+# Unit testing
+cxxtest/python/python3/cxxtest/__pycache__/
+
 # Coverage stuff
 **.gcno
