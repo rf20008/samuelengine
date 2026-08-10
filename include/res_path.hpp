@@ -6,11 +6,10 @@
 
 #include <iostream>
 #include <string>
-#include <SDL.h>
 
-/*
- * Get the resource path for resources located in res/subDir
- */
+// commenting out this include statement (and the getResourcePath code that depends on it) because SDL isn't checked in
+/* #include <SDL.h>
+
 std::string getResourcePath(const std::string &subDir = ""){
   //We need to choose the path separator properly based on which
   //platform we're running on, since Windows uses a different
@@ -43,5 +42,6 @@ std::string getResourcePath(const std::string &subDir = ""){
   //append it to the base path. This would be something like Lessons/res/Lesson0
   return subDir.empty() ? baseRes : baseRes + subDir + PATH_SEP;
 }
+*/
 
 #endif
