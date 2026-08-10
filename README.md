@@ -23,6 +23,28 @@ Folders left out:
  * `bin`: where created executables go
  * `doc`: where generated documentation (Doxygen) goes
 
+## Classes implemented
+
+With the exception of `include/Errors.hpp` and `include/res_path.hpp`, every `.hpp` file declares an eponymous class (for example `include/AbstractPlayer.hpp` declares the `AbstractPlayer` class). The `include/Errors.hpp` file defines *two* error classes - `NotImplementedError` and `UnknownPiece` - that we use downstream for error conditions. 
+
+This repo defines the following classes:
+ * `AbstractPlayer`
+ * `ChessBoard`
+ * `GameStatus`
+ * `Move`
+ * `Piece`
+   * `Bishop`
+   * `King`
+   * `Knight`
+   * `Pawn`
+   * `Queen`
+   * `Rook`
+ * `Player`
+   * `HumanPlayer`
+   * `SamuelEngine`
+ * `PlayerState`
+ * `Square`
+
 ## Making
 
 The Makefile is set up to build all `.cpp` files in the `src` folder and create executables in `bin/main`. To just build the release executable, run `make exe`. 
