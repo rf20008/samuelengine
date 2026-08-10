@@ -1,6 +1,7 @@
 #include "Board.hpp"
 #include "Errors.hpp"
 
+#include <cctype>
 #include <map>
 #include <iostream>
 using namespace std;
@@ -83,11 +84,13 @@ ChessBoard::ChessBoard(
     );
 }
 
-PiecePtr getPiece(Square sq) {
-    // to be done by Andrew
-    // remember to bounds check!
-    (void) sq;
-    throw NotImplementedError("PiecePtr getPiece(Square sq) is not yet implemented");
+PiecePtr ChessBoard::getPiece(Square sq) {
+    // bounds check: an out-of-board square simply has no piece on it
+    if (!sq.isValid()) {
+        return nullptr;
+    }
+    // Square rows/cols are 1-indexed (see Square::isValid), pieces is 0-indexed
+    return pieces[sq.row - 1][sq.col - 1];
 }
 
 bool ChessBoard::isMoveLegal(Move m){
@@ -106,23 +109,118 @@ void ChessBoard::processMove(Move m) {
     throw NotImplementedError("void ChessBoard::processMove(Move m) is not yet implemented");
 }
 
+namespace {
+    // Is there a piece belonging to `attackerIsWhite` on the far end of the
+    // ray starting at `from` and stepping by `dir` (one step at a time) that
+    // could capture along that ray -- i.e. a rook/queen on a rank/file ray,
+    // or a bishop/queen on a diagonal ray? The ray stops at the first
+    // occupied square either way (that piece blocks anything behind it).
+    bool isSlidingAttacker(ChessBoard& board, Square from, Square dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) {
+        Square cur = from + dir;
+        while (cur.isValid()) {
+            PiecePtr p = board.getPiece(cur);
+            if (p) {
+                if (p->getBelongsToWhite() == attackerIsWhite) {
+                    char sym = static_cast<char>(std::toupper(p->symbol()));
+                    if (sym == pieceLetterA || sym == pieceLetterB) {
+                        return true;
+                    }
+                }
+                return false; // occupied, so the ray is blocked past here regardless
+            }
+            cur = cur + dir;
+        }
+        return false;
+    }
+
+    // Is `target` attacked by any piece belonging to `attackerIsWhite`?
+    // This is a raw-attack check (used to detect check): it only asks
+    // "could this piece capture on `target` right now", not whether doing
+    // so would be a legal move for the attacker.
+    bool squareAttackedBy(ChessBoard& board, Square target, bool attackerIsWhite) {
+        static const Square knightOffsets[] = {
+            {1, 2}, {2, 1}, {-1, 2}, {-2, 1}, {1, -2}, {2, -1}, {-1, -2}, {-2, -1}
+        };
+        for (const Square& off : knightOffsets) {
+            Square sq = target + off;
+            if (!sq.isValid()) continue;
+            PiecePtr p = board.getPiece(sq);
+            if (p && p->getBelongsToWhite() == attackerIsWhite && std::toupper(p->symbol()) == 'N') {
+                return true;
+            }
+        }
+
+        for (int dr = -1; dr <= 1; ++dr) {
+            for (int dc = -1; dc <= 1; ++dc) {
+                if (dr == 0 && dc == 0) continue;
+                Square sq = target + Square(dr, dc);
+                if (!sq.isValid()) continue;
+                PiecePtr p = board.getPiece(sq);
+                if (p && p->getBelongsToWhite() == attackerIsWhite && std::toupper(p->symbol()) == 'K') {
+                    return true;
+                }
+            }
+        }
+
+        // A pawn attacks diagonally, one row "ahead" of where it sits (from
+        // its own side's perspective): white pawns advance toward higher
+        // rows, so an attacking white pawn sits one row *below* the target.
+        int behind = attackerIsWhite ? -1 : 1;
+        for (int dc : {-1, 1}) {
+            Square sq = target + Square(behind, dc);
+            if (!sq.isValid()) continue;
+            PiecePtr p = board.getPiece(sq);
+            if (p && p->getBelongsToWhite() == attackerIsWhite && std::toupper(p->symbol()) == 'P') {
+                return true;
+            }
+        }
+
+        static const Square rookDirs[] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+        for (const Square& dir : rookDirs) {
+            if (isSlidingAttacker(board, target, dir, attackerIsWhite, 'R', 'Q')) {
+                return true;
+            }
+        }
+
+        static const Square bishopDirs[] = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+        for (const Square& dir : bishopDirs) {
+            if (isSlidingAttacker(board, target, dir, attackerIsWhite, 'B', 'Q')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    Square findKing(ChessBoard& board, bool belongsToWhite) {
+        for (int r = 1; r <= BOARD_SIZE; ++r) {
+            for (int c = 1; c <= BOARD_SIZE; ++c) {
+                Square sq(r, c);
+                PiecePtr p = board.getPiece(sq);
+                if (p && p->getBelongsToWhite() == belongsToWhite && std::toupper(p->symbol()) == 'K') {
+                    return sq;
+                }
+            }
+        }
+        throw std::logic_error("findKing: no king found for the requested player");
+    }
+}
+
 bool ChessBoard::isInCheck(bool player) {
     // can the player whose turn it is, capture the king who is owned by Player?
-    // to be done by Andrew
-    throw NotImplementedError("bool ChessBoard::isInCheck() is not yet implemented");
+    Square kingSquare = findKing(*this, player);
+    return squareAttackedBy(*this, kingSquare, !player);
 }
 
 bool ChessBoard::isInCheckmate() {
-    // to be done by Andrew
-    // this cna be implemented by: are you in check right now
+    // this can be implemented by: are you in check right now
     // and for every legal move you make, would you still be in check? if so it's checkmate, otherwise no
-    throw NotImplementedError("bool ChessBoard::isInCheckmate() is not yet implemented");
+    return isInCheck(whiteToMove) && allLegalMoves().empty();
 }
 
 bool ChessBoard::isInStalemate() {
-    // to be done by Andrew
     // is implemented by: if not in check now, but every legal move you make is in check
-    throw NotImplementedError("bool ChessBoard::isInStalemate() is not yet implemented");
+    return !isInCheck(whiteToMove) && allLegalMoves().empty();
 }
 
 GameStatus ChessBoard::getStatus() {
