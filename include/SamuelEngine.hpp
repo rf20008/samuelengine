@@ -16,8 +16,10 @@ protected:
     double relative_value(const PiecePtr ptr);
     std::optional<double> returnStatusIfGameOver(const ChessBoard& board);
     double PieceValue(const PiecePtr ptr, const Square sq);
-    double relative_value(const ChessBoard& board, const bool isWhite)
+    double relative_value(const ChessBoard& board, const bool isWhite);
     double evaluate_chess_pos_without_depth(const ChessBoard& board);
+    double evaluate_chess_pos_with_depth(const ChessBoard& board, int depth, double alpha, double beta, bool maximizingPlayer);
+    double evaluate_chess_pos_with_tl(const ChessBoard& board, double time_limit = 3.0);
 public:
     SamuelEngine();
     virtual Move getMove(const ChessBoard&);

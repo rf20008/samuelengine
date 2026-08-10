@@ -8,7 +8,7 @@
 using namespace std;
 const double INFINITY = std::numeric_limits<double>::infinity();
 const double NEG_INF = -INFINITY;
-const std::vector<std::vector<double>> PAWN_PIECEVAL = {
+const std::vector<std::vector<double>> pawn_pieceval = {
     {7.0, 8.0, 9.0, 10.0, 10.0, 9.0, 8.0, 7.0},  // 8th rank
     {3.0, 4.0, 5.0, 6.0, 6.0, 5.0, 4.0, 3.0},       // 7th rank
     {2.0, 2.5, 3.0, 3.5, 3.5, 3.0, 2.5, 2.0},       // 6th rank
@@ -73,11 +73,11 @@ std::vector<std::vector<double>> SamuelEngine::getPosVal(const PiecePtr ptr) {
     switch (toupper(ptr->symbol())) {
         case 'K': return king_pieceval;
         case 'Q': return queen_pieceval;
-        case 'R': return ROOK_PIECEVAL;
+        case 'R': return rook_pieceval;
         case 'B': return bishop_pieceval;
         case 'N': return knight_pieceval;
-        case 'P': return rook_pieceval;
-        default: throw UnknownPiece("Unknown piece: " + std::string{c});
+        case 'P': return pawn_pieceval;
+        default: throw UnknownPiece("Unknown piece: " + std::string{ptr->symbol(), 1});
     }
 }
 double SamuelEngine::relative_value(const PiecePtr ptr) {
@@ -88,7 +88,7 @@ double SamuelEngine::relative_value(const PiecePtr ptr) {
         case 'B': return 3;
         case 'N': return 3;
         case 'P': return 1;
-        default: throw UnknownPiece("Unknown piece: " + std::string{c});;
+        default: throw UnknownPiece("Unknown piece: " + std::string{ptr->symbol(), 1});
     }
 }
 
@@ -117,7 +117,7 @@ double SamuelEngine::relative_value(const ChessBoard& board, const bool isWhite)
     for (int rank = 0; rank<BOARD_SIZE; ++rank) {
         for (int file = 0; file<BOARD_SIZE; ++file) {
             Square sq{rank, file};
-            PiecePtr piece = board.getPiece(board);
+            PiecePtr piece = board.getPiece(sq);
             if (!piece) continue;
             if (piece->getBelongsToWhite() != isWhite) continue;
             tot_val += PieceValue(piece, sq);
@@ -132,6 +132,24 @@ double SamuelEngine::evaluate_chess_pos_without_depth(const ChessBoard& board) {
     return relative_value(board, true) - relative_value(board, false);
 }
 
+double SamuelEngine::evaluate_chess_pos_with_depth(
+    const ChessBoard& board, 
+    int depth, 
+    double alpha, 
+    double beta, 
+    bool maximizingPlayer
+) {
+    throw NotImplementedError("double SamuelEngine::evaluate_chess_pos_with_depth("
+        "const ChessBoard& board, "
+        "int depth, "
+        "double alpha, "
+        "double beta, "
+        "bool maximizingPlayer"
+    ") is not yet implemented");
+}
+double SamuelEngine::evaluate_chess_pos_with_tl(const ChessBoard& board, double time_limit) {
+    throw NotImplementedError("double SamuelEngine::evaluate_chess_pos_with_tl(const ChessBoard& board, double time_limit = 3.0) is not yet implemented");
+}
 SamuelEngine::SamuelEngine() {
     numBoardsVisited = 0;
     throw NotImplementedError("SamuelEngine::SamuelEngine() is not implemented yet");
