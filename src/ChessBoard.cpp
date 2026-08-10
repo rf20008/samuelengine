@@ -306,7 +306,23 @@ bool ChessBoard::isInStalemate() const {
     return !isInCheck(whiteToMove) && allLegalMoves().empty();
 }
 bool ChessBoard::hasInsufficientMaterial() const {
-    throw NotImplementedError("bool ChessBoard::hasInsufficientMaterial() is not implemented yet");
+    // is there anything other than a king, bishop, or knight?
+    int numBishops = 0;
+    int numKnights = 0;
+    for (size_t row = 0; row<BOARD_SIZE; ++row) {
+        for (size_t col = 0; col<BOARD_SIZE; ++col) {
+            const PiecePtr piece = pieces[row][col];
+            if (!piece) continue;
+            char pieceTypeT = toupper(piece->symbol());
+            switch (pieceTypeT) {
+                case 'K': continue;
+                case 'B': ++numBishops;
+                case 'N': ++numKnights;
+                default: return false;
+            }
+        }
+    }
+    return (numBishops <= 1) && (numKnights <= 1);
 }
 GameStatus ChessBoard::getStatus() const {
     // return the status of the game (whether white won, black won, it's a draw, or game is still going on)
