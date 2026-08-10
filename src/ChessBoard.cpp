@@ -3,8 +3,11 @@
 
 #include <cctype>
 #include <map>
+#include <sstream>
 #include <iostream>
 using namespace std;
+
+
 const PiecePtr WhiteBishop = std::make_shared<Bishop>(true);
 const PiecePtr BlackBishop = std::make_shared<Bishop>(false);
 
@@ -43,10 +46,98 @@ std::shared_ptr<Piece> getPiece(char c){
     return it->second;
 }
 
+namespace ParsePieces {
+    std::vector<std::vector<PiecePtr>> parsePiecePart(const std::string& PiecePart) {
+        std::stringstream RankReader(PiecePart);
+        std::vector<string> Ranks(BOARD_SIZE);
+        for (size_t ranknum = 0; ranknum<BOARD_SIZE; ++ranknum) {
+            RankReader>>Ranks[ranknum];
+        }
+        std::vector<std::vector<PiecePtr>> board;
+        for (size_t ranknum = 0; ranknum<Ranks.size(); ranknum++) {
+            string Rank = Ranks.at(ranknum);
+            board.push_back(std::vector<PiecePtr>());
+            for (char pieceChar : Rank) {
+                // if it's a digit
+                if (pieceChar >= '0' && pieceChar <= '9') { // piecechar is a digit
+                    int digitNum = pieceChar-'0';
+                    for (int i = 0; i<digitNum; ++i) { // add that many free spaces
+                        board.at(ranknum).push_back(std::shared_ptr<Piece>()); // a null piece
+                    }
+                    continue;
+                } 
+                // this is a piece! add it
+
+                board.at(ranknum).push_back(getPiece(pieceChar));
+            }
+            // check that it is of size BOARD_SIZE
+            if (board.at(ranknum).size() != BOARD_SIZE) {
+                throw InvalidFEN("Error: Board rank " + std::to_string(ranknum) + " is not of size 8, but of size " + std::to_string(board.at(ranknum).size()) + ".");
+            }
+        }
+        if (board.size() != BOARD_SIZE) {
+            throw InvalidFEN("Board does not have 8 ranks");
+        }
+        return board;
+    }
+    bool parsePlayerPart (std::string PlayerPart) {
+        if (PlayerPart.size() != 1) {
+            throw InvalidFEN("Error: Player argument must be 1 character");
+        }
+        char PlayerChar = PlayerPart[0];
+        if (PlayerChar != 'w' && PlayerChar != 'b') throw InvalidFEN("Error: Player Argument must be either \"w\" or \"b\".");
+        return (PlayerChar == 'w');
+    }
+    std::pair<PlayerState, PlayerState> parseCastlingPart(std::string CastlingPart) {
+        PlayerState whiteState{false, false};
+        PlayerState blackState{false, false};
+        for (char c : CastlingPart) {
+            switch (c) {
+                case 'K': whiteState.canKingsideCastle = true;
+                case 'Q': whiteState.canQueensideCastle = true;
+                case 'k': blackState.canKingsideCastle = true;
+                case 'q': blackState.canQueensideCastle = true;
+                default: throw InvalidFEN("Unknown castling character " + std::string(c, 1));
+            }
+        }
+        return {whiteState, blackState};
+    }
+    Square parseEnPassantPart(std::string EnPassantPart) {
+        Square sq(EnPassantPart);
+        if (!sq.isValid()) throw InvalidFEN("Square is out of bounds");
+        return sq;
+    }
+}
 ChessBoard::ChessBoard() : ChessBoard::ChessBoard("RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr w KQkq - 0 1"){}
 
 ChessBoard::ChessBoard(const std::string& fen) {
     (void) fen;
+    std::istringstream fenSS(fen);
+    std::string PiecePart;
+    std::string PlayerPart;
+    std::string CastlingPart;
+    std::string EnPassantPart;
+    int Halfmove_Part;
+    int Fullmove_part;
+    fenSS>>PiecePart>>PlayerPart>>CastlingPart>>EnPassantPart>>Halfmove_Part>>Fullmove_part;
+    if (fenSS.fail()) {
+        throw std::invalid_argument("Not enough arguments to construct fen (need 7)");
+    }
+    this->pieces = ParsePieces::parsePiecePart(PiecePart);
+    this->whiteToMove = ParsePieces::parsePlayerPart(PlayerPart);
+    auto [whiteState, blackState] = ParsePieces::parseCastlingPart(CastlingPart);
+    this->whitePlayerState = whiteState;
+    this->blackPlayerState = blackState;
+
+    this->enPassant_targetSquare = ParsePieces::parseEnPassantPart(EnPassantPart);
+    this->halfmove_clock = Halfmove_Part;
+    if (halfmove_clock < 0) {
+        throw std::invalid_argument("halfmove clock too low");
+    }
+    this->fullmove_clock= fullmove_clock;
+    if (fullmove_clock < 1) {
+        throw std::invalid_argument("fullmove clock too low");
+    }
     // to be done by Samuel
     throw NotImplementedError("ChessBoard::ChessBoard(std::string& fen) is not yet implemented");
 }

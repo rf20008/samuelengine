@@ -16,4 +16,9 @@ class UnknownPiece : public std::logic_error {
 public:
     UnknownPiece(const std::string& message) : std::logic_error(message) {}
 };
+
+class InvalidFEN : public std::runtime_error {
+    public:
+        InvalidFEN(const std::string& message) : std::runtime_error(message) {}
+};
 #endif
