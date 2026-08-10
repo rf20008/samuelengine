@@ -11,9 +11,13 @@ using ll = long long;
 
 // to be done by Samuel
 class SamuelEngine : public AbstractPlayer {
+private:
+    bool debug;
 protected:
     ll numBoardsVisited;
+    double default_tl;
     std::chrono::steady_clock::time_point deadline;
+
     std::vector<std::vector<double>> getPosVal(const PiecePtr ptr) const;
     double relative_value(const PiecePtr ptr) const;
     std::optional<double> returnStatusIfGameOver(const ChessBoard& board) const;
@@ -24,7 +28,7 @@ protected:
     std::pair<double, Move> evaluate_chess_pos_with_tl(const ChessBoard& board, double time_limit = 3.0);
     inline bool shouldStop() const;
 public:
-    SamuelEngine();
+    SamuelEngine(double tl, bool debug=false);
     virtual Move getMove(const ChessBoard&);
 };
 #endif

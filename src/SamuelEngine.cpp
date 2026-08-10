@@ -208,12 +208,18 @@ std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_tl(const ChessBoar
 inline bool SamuelEngine::shouldStop() const {
     return std::chrono::steady_clock::now() >= deadline;
 }
-SamuelEngine::SamuelEngine() {
-    numBoardsVisited = 0;
-    throw NotImplementedError("SamuelEngine::SamuelEngine() is not implemented yet");
+SamuelEngine::SamuelEngine(double tl, bool debug=false) : default_tl(tl), numBoardsVisited(0), deadline(std::chrono::steady_clock::now()) {
+    this->debug = debug;
 }
 Move SamuelEngine::getMove(const ChessBoard&) {
     numBoardsVisited=0;
-
-    throw NotImplementedError("virtual Move SamuelEngine::getMove(const ChessBoard&) is not implemented yet")
+    if (debug) {
+        cerr<<"Beginning search";
+    }
+    auto [val, move] = evaluate_chess_pos_with_tl(board, default_tl);
+    if (debug) {
+        cerr<<"Finished search\n. Searched "<<numBoardsVisited<<" positions to find a value of "<< value;
+        
+    }
+    return move;
 }
