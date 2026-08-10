@@ -12,6 +12,7 @@ class Queen : public Piece {
         virtual char symbol() const {
             return (belongsToWhite?'Q':'q');
         }
+	virtual ~Queen() {}
 };
 
 #endif

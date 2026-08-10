@@ -12,6 +12,7 @@ class Pawn : public Piece {
         virtual char symbol() const {
             return (belongsToWhite?'P':'p');
         }
+	virtual ~Pawn() {}
 };
 
 #endif

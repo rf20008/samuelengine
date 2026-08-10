@@ -12,6 +12,7 @@ class Rook : public Piece {
         virtual char symbol() const {
             return (belongsToWhite?'R':'r');
         }
+	virtual ~Rook() {}
 };
 
 #endif

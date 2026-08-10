@@ -13,6 +13,7 @@ class Knight : public Piece {
             return (belongsToWhite?'N':'n'); // k is already used for king, 
             // //so we adopt Forsyth-Edwards Notaton's convention of using N to denote knight
         }
+	virtual ~Knight() {}
 };
 
 #endif
