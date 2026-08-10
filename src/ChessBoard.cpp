@@ -329,6 +329,16 @@ std::set<Move> ChessBoard::allLegalMoves() const {
     // return all legal moves from all pieces that the player owns
     // this function is necessary for the engine
     // it can call allLegalMoves for every piece it owns and splice them together into one set, then return that set
+    std::set<Move> legalMoves;
+    for (size_t row = 0; row < BOARD_SIZE; ++row) {
+        for (size_t col = 0; col<BOARD_SIZE; ++col) {
+            std::set<Move> movesFromSquare = allLegalMoves(Square(row+1, col+1));
+            for (Move move : movesFromSquare) {
+                legalMoves.insert(move);
+            }
+        }
+    }
+    return legalMoves;
 
     throw NotImplementedError("std::set<Move> ChessBoard::allLegalMoves() is not yet implemented");
 }
