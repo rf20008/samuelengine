@@ -82,9 +82,6 @@ class ChessBoard {
         std::set<Move> allLegalMoves(const Square sq) const;
         std::set<Move> allLegalMoves() const;
 
-        std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os) const;
-
-
-
+        friend std::ostream& operator<<(std::ostream& os, const ChessBoard& board);
 };
 #endif

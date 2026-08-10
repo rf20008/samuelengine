@@ -42,8 +42,6 @@ ChessBoard::ChessBoard(const std::string& fen) {
     if (fullmove_clock < 1) {
         throw std::invalid_argument("fullmove clock too low");
     }
-    // to be done by Samuel
-    throw NotImplementedError("ChessBoard::ChessBoard(std::string& fen) is not yet implemented");
 }
 
 ChessBoard::ChessBoard(
@@ -276,8 +274,8 @@ std::set<Move> ChessBoard::allLegalMoves() const {
     return legalMoves;
 }
 
-std::basic_ostream<char>& ChessBoard::operator<<(std::basic_ostream<char>& os) const {
-	for (const std::vector<std::shared_ptr<Piece>>& pieces_row: pieces){
+std::ostream& operator<<(std::ostream& os, const ChessBoard& board) {
+	for (const std::vector<std::shared_ptr<Piece>>& pieces_row: board.pieces){
 		for (const std::shared_ptr<Piece>& piece_ptr: pieces_row){
 			if (piece_ptr == nullptr){
 				os << ' ';
