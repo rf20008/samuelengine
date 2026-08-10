@@ -75,6 +75,23 @@ namespace ParsePieces {
         return sq;
     }
     std::string getPiecePart(const std::vector<std::vector<PiecePtr>>& pieces) {
+        std::string PiecePart = "";
+        for (auto it = pieces.rbegin(); it != pieces.rend(); ++pieces) { // because FEN stores from rank 8 to rank 1
+            // if it's a piece, increment it
+            int numWOPiece = 0;
+            const std::vector<PiecePtr> pieces = *it;
+            for (const PiecePtr piece : pieces) {
+                if (!piece) {
+                    ++numWOPiece; continue;
+                } else {
+                    PiecePart.push_back(piece->symbol());
+                    if (numWOPiece != 0) PiecePart.push_back('0' + numWOPiece);
+                    numWOPiece=0;
+                }
+            }
+            if (numWOPiece != 0) PiecePart.push_back('0' + numWOPiece);
+            if ((it+1) != pieces.rend()) PiecePart.push_back('/');
+        }
         throw NotImplementedError("std::string getPiecePart(const std::vector<std::vector<PiecePtr>>& pieces) is not implemented yet");
     }
     std::string getCastlingPart(const PlayerState& whiteState, const PlayerState& blackState) {
