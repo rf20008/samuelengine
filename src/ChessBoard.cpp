@@ -334,7 +334,16 @@ std::set<Move> ChessBoard::allLegalMoves() const {
 }
 
 std::basic_ostream<char>& ChessBoard::operator<<(std::basic_ostream<char>& os) const {
-    // to be done by Joshua
-    (void) os;
-    throw NotImplementedError("std::basic_ostream<char>& ChessBoard::operator<<(std::basic_ostream<char>& os) is not yet implemented");
+	for (const std::vector<std::shared_ptr<Piece>>& pieces_row: pieces){
+		for (const std::shared_ptr<Piece>& piece_ptr: pieces_row){
+			if (piece_ptr == nullptr){
+				os << ' ';
+			}
+			else{
+				os << piece_ptr->symbol();
+			}
+		}
+		os << endl;
+	}
+	return os;
 }
