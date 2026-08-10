@@ -2,6 +2,8 @@
 #define CS3520_MINIPROJECT_PIECE
 
 #include <set>
+#include <memory>
+
 
 
 class Piece {
@@ -13,5 +15,5 @@ class Piece {
         virtual char symbol() const = 0;
         bool operator==(const Piece& other) const {return this->symbol() == other.symbol();}
 };
-
+using PiecePtr = std::shared_ptr<Piece>;
 #endif

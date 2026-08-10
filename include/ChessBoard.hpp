@@ -25,8 +25,7 @@
 #include <string>
 #include <optional>
 
-typedef std::shared_ptr<Piece> PiecePtr;
-std::shared_ptr<Piece> getPiece(char c); 
+ 
 
 class ChessBoard {
     protected:

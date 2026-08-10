@@ -1,5 +1,6 @@
 #include "ChessBoard.hpp"
 #include "Errors.hpp"
+#include "FEN.hpp"
 
 #include <cctype>
 #include <map>
@@ -9,111 +10,8 @@
 using namespace std;
 
 
-const PiecePtr WhiteBishop = std::make_shared<Bishop>(true);
-const PiecePtr BlackBishop = std::make_shared<Bishop>(false);
 
-const PiecePtr WhiteKnight = std::make_shared<Knight>(true);
-const PiecePtr BlackKnight = std::make_shared<Knight>(false);
 
-const PiecePtr WhiteRook = std::make_shared<Rook>(true);
-const PiecePtr BlackRook = std::make_shared<Rook>(false);
-
-const PiecePtr WhiteKing = std::make_shared<King>(true);
-const PiecePtr BlackKing = std::make_shared<King>(false);
-
-const PiecePtr WhitePawn = std::make_shared<Pawn>(true);
-const PiecePtr BlackPawn = std::make_shared<Pawn>(false);
-
-const PiecePtr WhiteQueen = std::make_shared<Queen>(true);
-const PiecePtr BlackQueen = std::make_shared<Queen>(false);
-
-const std::map<char, PiecePtr> pieceMap{
-    {'B', WhiteBishop},
-    {'b', BlackBishop},
-    {'N', WhiteKnight},
-    {'n', BlackKnight},
-    {'R', WhiteRook},
-    {'r', BlackRook},
-    {'K', WhiteKing},
-    {'k', BlackKing},
-    {'P', WhitePawn},
-    {'p', BlackPawn},
-    {'Q', WhiteQueen},
-    {'q', BlackQueen}
-};
-std::shared_ptr<Piece> getPiece(char c){
-    std::map<char, PiecePtr>::const_iterator it = pieceMap.find(c);
-    if (it == pieceMap.end()) {throw UnknownPiece("Unknown piece: " + std::string{c});}
-    return it->second;
-}
-
-namespace ParsePieces {
-    std::vector<std::vector<PiecePtr>> parsePiecePart(const std::string& PiecePart) {
-        std::stringstream RankReader(PiecePart);
-        std::vector<string> Ranks;
-        Ranks.resize(BOARD_SIZE);
-        for (size_t ranknum = 0; ranknum<BOARD_SIZE; ++ranknum) {
-            getline(RankReader, Ranks.at(BOARD_SIZE-ranknum-1), '/'); // FEN reads from rank 8 to rank 1
-        }
-        std::vector<std::vector<PiecePtr>> board;
-        for (size_t ranknum = 0; ranknum<Ranks.size(); ranknum++) {
-            string Rank = Ranks.at(ranknum);
-            board.push_back(std::vector<PiecePtr>());
-            for (char pieceChar : Rank) {
-                // if it's a digit
-                if (pieceChar >= '0' && pieceChar <= '9') { // piecechar is a digit
-                    int digitNum = pieceChar-'0';
-                    for (int i = 0; i<digitNum; ++i) { // add that many free spaces
-                        board.at(ranknum).push_back(std::shared_ptr<Piece>()); // a null piece
-                    }
-                    continue;
-                } 
-                // this is a piece! add it
-
-                board.at(ranknum).push_back(getPiece(pieceChar));
-            }
-            // check that it is of size BOARD_SIZE
-            if (board.at(ranknum).size() != BOARD_SIZE) {
-                throw InvalidFEN("Error: Board rank " + std::to_string(ranknum) + " is not of size 8, but of size " + std::to_string(board.at(ranknum).size()) + ".");
-            }
-        }
-        if (board.size() != BOARD_SIZE) {
-            throw InvalidFEN("Board does not have 8 ranks");
-        }
-        return board;
-    }
-    bool parsePlayerPart (std::string PlayerPart) {
-        if (PlayerPart.size() != 1) {
-            throw InvalidFEN("Error: Player argument must be 1 character");
-        }
-        char PlayerChar = PlayerPart[0];
-        if (PlayerChar != 'w' && PlayerChar != 'b') throw InvalidFEN("Error: Player Argument must be either \"w\" or \"b\".");
-        return (PlayerChar == 'w');
-    }
-    std::pair<PlayerState, PlayerState> parseCastlingPart(std::string CastlingPart) {
-        PlayerState whiteState{false, false};
-        PlayerState blackState{false, false};
-        if (CastlingPart == "-") {return {whiteState, blackState};}
-        for (char c : CastlingPart) {
-            switch (c) {
-                case 'K': whiteState.canKingsideCastle = true;
-                case 'Q': whiteState.canQueensideCastle = true;
-                case 'k': blackState.canKingsideCastle = true;
-                case 'q': blackState.canQueensideCastle = true;
-                default: throw InvalidFEN("Unknown castling character " + std::string(c, 1));
-            }
-        }
-        return {whiteState, blackState};
-    }
-    std::optional<Square> parseEnPassantPart(std::string EnPassantPart) {
-        if (EnPassantPart == "-") {
-            return std::optional<Square>();
-        }
-        std::optional<Square> sq(EnPassantPart);
-        if (!sq->isValid()) throw InvalidFEN("Square is out of bounds");
-        return sq;
-    }
-}
 ChessBoard::ChessBoard() : ChessBoard::ChessBoard("pppppppp/rnbqkbnr/8/8/8/8/RNBQKBNR/PPPPPPPP w KQkq - 0 1"){}
 
 ChessBoard::ChessBoard(const std::string& fen) {
@@ -362,7 +260,7 @@ std::set<Move> ChessBoard::allLegalMoves(const Square sq) const {
     throw NotImplementedError("std::set<Move> ChessBoard::allLegalMoves() is not yet implemented");
 }
 std::set<Move> ChessBoard::allLegalMoves() const {
-    // to be done by Joshua
+    // done by Samuel
     // return all legal moves from all pieces that the player owns
     // this function is necessary for the engine
     // it can call allLegalMoves for every piece it owns and splice them together into one set, then return that set
