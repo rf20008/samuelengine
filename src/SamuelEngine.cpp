@@ -1,3 +1,4 @@
+// This is a copy of the engine I made to play chess in Python. I am translating it into C++
 #include "SamuelEngine.hpp"
 #include "Errors.hpp"
 
