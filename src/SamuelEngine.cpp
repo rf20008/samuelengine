@@ -105,10 +105,31 @@ std::optional<double> returnStatusIfGameOver(const ChessBoard& board) {
     return std::optional<double>();
 }
 
+double PieceValue(const PiecePtr ptr, const Square sq) {
+    double rel_intrinsic_val = relative_value(ptr);
+    auto posValTable = getPosVal(ptr);
+    double pos_val = posValTable.at(sq.row-1).at(sq.col-1);
+    return rel_intrinsic_val + pos_val;
+}
+
+double relative_value(const ChessBoard& board, const bool isWhite) {
+    double tot_val = 0;
+    for (int rank = 0; rank<BOARD_SIZE; ++rank) {
+        for (int file = 0; file<BOARD_SIZE; ++file) {
+            Square sq{rank, file};
+            PiecePtr piece = board.getPiece(board);
+            if (!piece) continue;
+            if (piece->getBelongsToWhite() != isWhite) continue;
+            tot_val += PieceValue(piece, sq);
+        }
+    }
+    return tot_val;
+}
 double evaluate_chess_pos_without_depth(const ChessBoard& board) {
     std::optional<double> gameOverMaybe = returnStatusIfGameOver(board);
     if (!gameOverMaybe) return *gameOverMaybe;
-    throw NotImplementedError("double evaluate_chess_pos_without_depth(const ChessBoard& board)");
+
+    return relative_value(board, true) - relative_value(board, false);
 }
 SamuelEngine::SamuelEngine() {
     throw NotImplementedError("SamuelEngine::SamuelEngine() is not implemented yet");
