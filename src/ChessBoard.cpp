@@ -307,8 +307,26 @@ bool ChessBoard::isInStalemate() const {
 
 GameStatus ChessBoard::getStatus() const {
     // return the status of the game (whether white won, black won, it's a draw, or game is still going on)
-    // keep in mind the 50 move rule, draws
-    throw NotImplementedError("GameStatus ChessBoard::getStatus() is not yet implemented");
+    if (isInCheckmate()) { // the game is over, checkmate
+        // is it black's turn? then white won
+        if (whiteToMove) {
+            return GameStatus::BLACK_WON;
+        } else {
+            return GameStatus::WHITE_WON;
+        }
+    } else if (isInStalemate()) {
+        return GameStatus::DRAW;
+    } else if (halfmove_clock >= 100) {
+        return GameStatus::DRAW;
+    } else if (this->hasInsufficientMaterial()) {
+        return GameStatus::DRAW;
+    } else {
+        if (whiteToMove) {
+            return GameStatus::STILL_GOING_WHITE_TURN;
+        } else {
+            return GameStatus::STILL_GOING_BLACK_TURN;
+        }
+    }
 }
 
 // for engine use
@@ -339,8 +357,6 @@ std::set<Move> ChessBoard::allLegalMoves() const {
         }
     }
     return legalMoves;
-
-    throw NotImplementedError("std::set<Move> ChessBoard::allLegalMoves() is not yet implemented");
 }
 
 std::basic_ostream<char>& ChessBoard::operator<<(std::basic_ostream<char>& os) const {
