@@ -58,28 +58,28 @@ class ChessBoard {
         ChessBoard& operator=(ChessBoard&& other) = default;
 
         // getters 
-        PiecePtr getPiece(Square sq);
-        int get_halfmove_clock() {return halfmove_clock;}
-        int get_fullmove_clock() {return fullmove_clock;}
-        bool get_whiteToMove() {return whiteToMove;}
-        PlayerState getWhitePlayerState() {return whitePlayerState;}
-        PlayerState getBlackPlayerState() {return blackPlayerState;}
+        const PiecePtr getPiece(Square sq) const;
+        int get_halfmove_clock() const {return halfmove_clock;}
+        int get_fullmove_clock() const {return fullmove_clock;}
+        bool get_whiteToMove() const {return whiteToMove;}
+        PlayerState getWhitePlayerState() const {return whitePlayerState;}
+        PlayerState getBlackPlayerState() const {return blackPlayerState;}
 
         
         // chess engine methods
-        bool isMoveLegal(Move m); // return whether a move is legal
+        bool isMoveLegal(Move m) const; // return whether a move is legal
         void processMove(Move m);
-        bool isInCheck(bool player);
-        bool isInCheckmate();
-        bool isInStalemate();
-        GameStatus getStatus();
+        bool isInCheck(bool player) const;
+        bool isInCheckmate() const;
+        bool isInStalemate() const;
+        GameStatus getStatus() const;
 
         // for engine use
-        std::string fen();
-        std::set<Move> allLegalMoves(const Square sq);
-        std::set<Move> allLegalMoves();
+        std::string fen() const;
+        std::set<Move> allLegalMoves(const Square sq) const;
+        std::set<Move> allLegalMoves() const;
 
-        std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os);
+        std::basic_ostream<char>& operator<<(std::basic_ostream<char>& os) const;
 
 
 

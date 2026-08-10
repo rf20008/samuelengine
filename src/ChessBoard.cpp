@@ -160,7 +160,7 @@ ChessBoard::ChessBoard(
 	enPassant_targetSquare(enPassant_targetSquare)
 	{}
 
-PiecePtr ChessBoard::getPiece(Square sq) {
+const PiecePtr ChessBoard::getPiece(Square sq) const {
     // bounds check: an out-of-board square simply has no piece on it
     if (!sq.isValid()) {
         return nullptr;
@@ -169,7 +169,7 @@ PiecePtr ChessBoard::getPiece(Square sq) {
     return pieces[sq.row - 1][sq.col - 1];
 }
 
-bool ChessBoard::isMoveLegal(Move m){
+bool ChessBoard::isMoveLegal(Move m) const{
     // check whether m is a legal move
     // (may want to use allLegalMoves)
     // to be done by Joshua
@@ -191,7 +191,7 @@ namespace {
     // could capture along that ray -- i.e. a rook/queen on a rank/file ray,
     // or a bishop/queen on a diagonal ray? The ray stops at the first
     // occupied square either way (that piece blocks anything behind it).
-    bool isSlidingAttacker(ChessBoard& board, Square from, Square dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) {
+    bool isSlidingAttacker(const ChessBoard& board, Square from, Square dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) {
         Square cur = from + dir;
         while (cur.isValid()) {
             PiecePtr p = board.getPiece(cur);
@@ -213,7 +213,7 @@ namespace {
     // This is a raw-attack check (used to detect check): it only asks
     // "could this piece capture on `target` right now", not whether doing
     // so would be a legal move for the attacker.
-    bool squareAttackedBy(ChessBoard& board, Square target, bool attackerIsWhite) {
+    bool squareAttackedBy(const ChessBoard& board, Square target, bool attackerIsWhite) {
         static const Square knightOffsets[] = {
             {1, 2}, {2, 1}, {-1, 2}, {-2, 1}, {1, -2}, {2, -1}, {-1, -2}, {-2, -1}
         };
@@ -268,7 +268,7 @@ namespace {
         return false;
     }
 
-    Square findKing(ChessBoard& board, bool belongsToWhite) {
+    Square findKing(const ChessBoard& board, bool belongsToWhite) {
         for (int r = 1; r <= BOARD_SIZE; ++r) {
             for (int c = 1; c <= BOARD_SIZE; ++c) {
                 Square sq(r, c);
@@ -282,43 +282,43 @@ namespace {
     }
 }
 
-bool ChessBoard::isInCheck(bool player) {
+bool ChessBoard::isInCheck(bool player) const  {
     // can the player whose turn it is, capture the king who is owned by Player?
     Square kingSquare = findKing(*this, player);
     return squareAttackedBy(*this, kingSquare, !player);
 }
 
-bool ChessBoard::isInCheckmate() {
+bool ChessBoard::isInCheckmate() const {
     // this can be implemented by: are you in check right now
     // and for every legal move you make, would you still be in check? if so it's checkmate, otherwise no
     return isInCheck(whiteToMove) && allLegalMoves().empty();
 }
 
-bool ChessBoard::isInStalemate() {
+bool ChessBoard::isInStalemate() const {
     // is implemented by: if not in check now, but every legal move you make is in check
     return !isInCheck(whiteToMove) && allLegalMoves().empty();
 }
 
-GameStatus ChessBoard::getStatus() {
+GameStatus ChessBoard::getStatus() const {
     // return the status of the game (whether white won, black won, it's a draw, or game is still going on)
     // keep in mind the 50 move rule, draws
     throw NotImplementedError("GameStatus ChessBoard::getStatus() is not yet implemented");
 }
 
 // for engine use
-std::string ChessBoard::fen() {
+std::string ChessBoard::fen() const {
     // to be done by Samuel
     throw NotImplementedError("std::string ChessBoard::fen() is not yet implemented");
 }
 
-std::set<Move> ChessBoard::allLegalMoves(const Square sq) {
+std::set<Move> ChessBoard::allLegalMoves(const Square sq) const {
     // this method may need to be shared
     // let's share it
     // get all legal moves from the piece at the square indicated 
     // if there is no piece at that square, or if the piece at that square is owned by the opponent, return empty set
     throw NotImplementedError("std::set<Move> ChessBoard::allLegalMoves() is not yet implemented");
 }
-std::set<Move> ChessBoard::allLegalMoves() {
+std::set<Move> ChessBoard::allLegalMoves() const {
     // to be done by Joshua
     // return all legal moves from all pieces that the player owns
     // this function is necessary for the engine
@@ -327,7 +327,7 @@ std::set<Move> ChessBoard::allLegalMoves() {
     throw NotImplementedError("std::set<Move> ChessBoard::allLegalMoves() is not yet implemented");
 }
 
-std::basic_ostream<char>& ChessBoard::operator<<(std::basic_ostream<char>& os) {
+std::basic_ostream<char>& ChessBoard::operator<<(std::basic_ostream<char>& os) const {
     // to be done by Joshua
     (void) os;
     throw NotImplementedError("std::basic_ostream<char>& ChessBoard::operator<<(std::basic_ostream<char>& os) is not yet implemented");
