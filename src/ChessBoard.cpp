@@ -378,8 +378,8 @@ std::set<Move> ChessBoard::allLegalMoves() const {
     return legalMoves;
 }
 
-std::basic_ostream<char>& ChessBoard::operator<<(std::basic_ostream<char>& os) const {
-	for (const std::vector<std::shared_ptr<Piece>>& pieces_row: pieces){
+std::ostream& operator<<(std::ostream& os, const ChessBoard& board) {
+	for (const std::vector<std::shared_ptr<Piece>>& pieces_row: board.pieces){
 		for (const std::shared_ptr<Piece>& piece_ptr: pieces_row){
 			if (piece_ptr == nullptr){
 				os << ' ';
