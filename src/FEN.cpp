@@ -78,7 +78,14 @@ namespace ParsePieces {
         throw NotImplementedError("std::string getPiecePart(const std::vector<std::vector<PiecePtr>>& pieces) is not implemented yet");
     }
     std::string getCastlingPart(const PlayerState& whiteState, const PlayerState& blackState) {
-        throw NotImplementedError("std::string getCastlingPart(const PlayerState& whiteState, const PlayerState& blackState) is not implemented yet");
+        std::string castlingPart = "";
+        if (whiteState.canKingsideCastle) castlingPart.push_back('K');
+        if (whiteState.canQueensideCastle) castlingPart.push_back('Q');
+        if (blackState.canKingsideCastle) castlingPart.push_back('k');
+        if (blackState.canQueensideCastle) castlingPart.push_back('q');
+
+        if (castlingPart == "") castlingPart="-";
+        return castlingPart;
     }
     std::string getEnPassantPart(std::optional<Square> square) {
         if (!square) {return "-"};
