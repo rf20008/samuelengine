@@ -23,6 +23,8 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <optional>
+
 typedef std::shared_ptr<Piece> PiecePtr;
 std::shared_ptr<Piece> getPiece(char c); 
 
@@ -34,7 +36,7 @@ class ChessBoard {
         PlayerState blackPlayerState;
         int halfmove_clock;
         int fullmove_clock;
-        Square enPassant_targetSquare;
+        std::optional<Square> enPassant_targetSquare;
     public:
         // constructors
 

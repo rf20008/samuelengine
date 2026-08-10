@@ -5,6 +5,7 @@
 #include <map>
 #include <sstream>
 #include <iostream>
+#include <optional>
 using namespace std;
 
 
@@ -49,7 +50,8 @@ std::shared_ptr<Piece> getPiece(char c){
 namespace ParsePieces {
     std::vector<std::vector<PiecePtr>> parsePiecePart(const std::string& PiecePart) {
         std::stringstream RankReader(PiecePart);
-        std::vector<string> Ranks(BOARD_SIZE);
+        std::vector<string> Ranks;
+        Ranks.resize(BOARD_SIZE);
         for (size_t ranknum = 0; ranknum<BOARD_SIZE; ++ranknum) {
             getline(RankReader, Ranks[BOARD_SIZE-ranknum-1], '/'); // FEN reads from rank 8 to rank 1
         }
@@ -91,6 +93,7 @@ namespace ParsePieces {
     std::pair<PlayerState, PlayerState> parseCastlingPart(std::string CastlingPart) {
         PlayerState whiteState{false, false};
         PlayerState blackState{false, false};
+        if (CastlingPart == "-") {return {whiteState, blackState};}
         for (char c : CastlingPart) {
             switch (c) {
                 case 'K': whiteState.canKingsideCastle = true;
@@ -102,9 +105,12 @@ namespace ParsePieces {
         }
         return {whiteState, blackState};
     }
-    Square parseEnPassantPart(std::string EnPassantPart) {
-        Square sq(EnPassantPart);
-        if (!sq.isValid()) throw InvalidFEN("Square is out of bounds");
+    std::optional<Square> parseEnPassantPart(std::string EnPassantPart) {
+        if (EnPassantPart == "-") {
+            return std::optional<Square>();
+        }
+        std::optional<Square> sq(EnPassantPart);
+        if (!sq->isValid()) throw InvalidFEN("Square is out of bounds");
         return sq;
     }
 }
