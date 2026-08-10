@@ -43,10 +43,7 @@ std::shared_ptr<Piece> getPiece(char c){
     return it->second;
 }
 
-ChessBoard::ChessBoard() {
-    // to be done by Samuel
-    throw NotImplementedError("ChessBoard::ChessBoard() is not yet implemented");
-}
+ChessBoard::ChessBoard() : ChessBoard::ChessBoard("RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr w KQkq - 0 1"){}
 
 ChessBoard::ChessBoard(const std::string& fen) {
     (void) fen;
