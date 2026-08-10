@@ -1,4 +1,4 @@
-#include "Board.hpp"
+#include "ChessBoard.hpp"
 #include "Errors.hpp"
 
 #include <cctype>
@@ -62,27 +62,15 @@ ChessBoard::ChessBoard(
     const int& halfmove_clock,
     const int& fullmove_clock,
     const Square& enPassant_targetSquare
-) {
-    // to be done by Joshua
-    (void) pieces;
-    (void) whiteToMove;
-    (void) whitePlayerState;
-    (void) blackPlayerState;
-    (void) halfmove_clock;
-    (void) fullmove_clock;
-    (void) enPassant_targetSquare;
-    throw NotImplementedError(
-        "ChessBoard::ChessBoard(" 
-        "const std::vector<std::vector<std::shared_ptr<Piece>>>& pieces, " 
-        "const bool& whiteToMove, " 
-        "const PlayerState& whitePlayer, " 
-        "const PlayerState& blackPlayer, " 
-        "const int& halfmove_clock, "
-        "const int& fullmove_clock, "
-        "const Square& enPassant_targetSquare"
-        ") is not yet implemented"
-    );
-}
+):
+	pieces(pieces),
+	whiteToMove(whiteToMove),
+	whitePlayerState(whitePlayerState),
+	blackPlayerState(blackPlayerState),
+	halfmove_clock(halfmove_clock),
+	fullmove_clock(fullmove_clock),
+	enPassant_targetSquare(enPassant_targetSquare)
+	{}
 
 PiecePtr ChessBoard::getPiece(Square sq) {
     // bounds check: an out-of-board square simply has no piece on it

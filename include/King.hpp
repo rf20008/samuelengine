@@ -12,6 +12,7 @@ class King : public Piece {
         virtual char symbol() const {
             return (belongsToWhite?'K':'k');
         }
+	virtual ~King() {}
 };
 
 #endif

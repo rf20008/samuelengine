@@ -12,6 +12,7 @@ class Bishop : public Piece {
         virtual char symbol() const {
             return (belongsToWhite?'B':'b');
         }
+	virtual ~Bishop() {}
 };
 
 #endif

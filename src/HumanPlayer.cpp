@@ -1,5 +1,5 @@
 #include "HumanPlayer.hpp"
-#include "Board.hpp"
+#include "ChessBoard.hpp"
 
 #include <cctype>
 #include <iostream>
