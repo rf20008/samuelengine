@@ -252,7 +252,7 @@ std::string ChessBoard::fen() const {
 
 std::set<Move> ChessBoard::allLegalMoves(const Square sq) const {
     // this method may need to be shared
-    // let's share it
+    // to be done by Andrew
     // get all legal moves from the piece at the square indicated 
     // if there is no piece at that square, or if the piece at that square is owned by the opponent, return empty set
     throw NotImplementedError("std::set<Move> ChessBoard::allLegalMoves() is not yet implemented");
