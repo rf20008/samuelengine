@@ -130,7 +130,7 @@ double SamuelEngine::relative_value(const ChessBoard& board, const bool isWhite)
 }
 double SamuelEngine::evaluate_chess_pos_without_depth(const ChessBoard& board) const {
     std::optional<double> gameOverMaybe = returnStatusIfGameOver(board);
-    if (!gameOverMaybe) return *gameOverMaybe;
+    if (gameOverMaybe) return *gameOverMaybe;
 
     return relative_value(board, true) - relative_value(board, false);
 }
@@ -148,7 +148,7 @@ std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_depth(
     }
     numBoardsVisited++;
     std::optional<double> gameOverMaybe = returnStatusIfGameOver(board);
-    if (!gameOverMaybe) {
+    if (gameOverMaybe) {
         return {*gameOverMaybe, Move(Square("a1"), Square("a2"))};
     }
     std::set<Move> moves = board.allLegalMoves();
@@ -163,14 +163,16 @@ std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_depth(
             ChessBoard newBoard = board;
             newBoard.processMove(move);
             auto [new_val, new_move] = evaluate_chess_pos_with_depth(newBoard, depth-1, alpha, beta);
-            if (new_val >= beta) {
-                break; // beta cutoff
-            }
-            alpha = max(alpha, new_val);
             if (new_val > value) {
                 bestMove = move;
                 value = new_val;
             }
+            alpha = max(alpha, new_val);
+            if (new_val >= beta) {
+                break; // beta cutoff
+            }
+            
+            
         }
         return {value, bestMove};
     } else {
@@ -179,13 +181,13 @@ std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_depth(
             ChessBoard newBoard = board;
             newBoard.processMove(move);
             auto [new_val, new_move] = evaluate_chess_pos_with_depth(newBoard, depth-1, alpha, beta);
-            if (new_val <= alpha) {
-                break; //alpha cutoff
-            }
             beta = min(beta, new_val);
             if (new_val < value) {
                 value = new_val;
                 bestMove = move;
+            }
+            if (new_val <= alpha) {
+                break; //alpha cutoff
             }
         }
         return {value, bestMove};
@@ -204,7 +206,6 @@ std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_tl(const ChessBoar
     } catch (OutOfTime& err) {
     }
     return {bestValue, bestMove};
-    throw NotImplementedError("double SamuelEngine::evaluate_chess_pos_with_tl(const ChessBoard& board, double time_limit = 3.0) is not yet implemented");
 }
 inline bool SamuelEngine::shouldStop() const {
     return std::chrono::steady_clock::now() >= deadline;
