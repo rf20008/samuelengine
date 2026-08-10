@@ -40,3 +40,6 @@ build/test/*.cpp
 
 # Coverage stuff
 **.gcno
+
+# Linting
+compile_commands.json
