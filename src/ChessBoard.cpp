@@ -247,7 +247,13 @@ GameStatus ChessBoard::getStatus() const {
 // for engine use
 std::string ChessBoard::fen() const {
     // to be done by Samuel
-    throw NotImplementedError("std::string ChessBoard::fen() is not yet implemented");
+    std::string PiecePart = ParsePieces::getPiecePart(pieces);
+    std::string PlayerPart = ParsePieces::getPlayerPart(whiteToMove);
+    std::string CastlingPart = ParsePieces::getCastlingPart(whitePlayerState, blackPlayerState);
+    std::string enPassantPart = ParsePieces::getEnPassantPart(enPassant_targetSquare);
+    std::string halfMovePart = std::to_string(halfmove_clock);
+    std::string fullMovePart = std::to_string(fullmove_clock);
+    return PiecePart + " " + PlayerPart + " " + CastlingPart + " " + enPassantPart + " " + halfMovePart + " " + fullMovePart;
 }
 
 std::set<Move> ChessBoard::allLegalMoves(const Square sq) const {
