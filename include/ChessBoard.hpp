@@ -29,7 +29,7 @@
 
 class ChessBoard {
     protected:
-        std::vector<std::vector<std::shared_ptr<Piece>>> pieces;
+        std::vector<std::vector<PiecePtr>> pieces;
         bool whiteToMove;
         PlayerState whitePlayerState;
         PlayerState blackPlayerState;
@@ -42,7 +42,7 @@ class ChessBoard {
         ChessBoard(); // create a chess board with starting position
         ChessBoard(const std::string& fen); // create chess board from given FEN
         ChessBoard(
-            const std::vector<std::vector<std::shared_ptr<Piece>>>& pieces, 
+            const std::vector<std::vector<PiecePtr>>& pieces, 
             const bool& whiteToMove, 
             const PlayerState& whitePlayerState,
             const PlayerState& blackPlayerState,
@@ -59,7 +59,7 @@ class ChessBoard {
         ChessBoard& operator=(ChessBoard&& other) = default;
 
         // getters 
-        std::shared_ptr<const Piece> getPiece(Square sq) const;
+        PiecePtr getPiece(Square sq) const;
         int get_halfmove_clock() const {return halfmove_clock;}
         int get_fullmove_clock() const {return fullmove_clock;}
         bool get_whiteToMove() const {return whiteToMove;}

@@ -45,7 +45,7 @@ ChessBoard::ChessBoard(const std::string& fen) {
 }
 
 ChessBoard::ChessBoard(
-    const std::vector<std::vector<std::shared_ptr<Piece>>>& pieces, 
+    const std::vector<std::vector<std::shared_ptr<const Piece>>>& pieces, 
     const bool& whiteToMove, 
     const PlayerState& whitePlayerState,
     const PlayerState& blackPlayerState,
@@ -287,8 +287,8 @@ std::set<Move> ChessBoard::allLegalMoves() const {
 }
 
 std::ostream& operator<<(std::ostream& os, const ChessBoard& board) {
-	for (const std::vector<std::shared_ptr<Piece>>& pieces_row: board.pieces){
-		for (const std::shared_ptr<Piece>& piece_ptr: pieces_row){
+	for (const std::vector<std::shared_ptr<const Piece>>& pieces_row: board.pieces){
+		for (const std::shared_ptr<const Piece>& piece_ptr: pieces_row){
 			if (piece_ptr == nullptr){
 				os << ' ';
 			}

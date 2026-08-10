@@ -25,7 +25,7 @@ namespace ParsePieces {
                 if (pieceChar >= '0' && pieceChar <= '9') { // piecechar is a digit
                     int digitNum = pieceChar-'0';
                     for (int i = 0; i<digitNum; ++i) { // add that many free spaces
-                        board.at(ranknum).push_back(std::shared_ptr<Piece>()); // a null piece
+                        board.at(ranknum).push_back(std::shared_ptr<const Piece>()); // a null piece
                     }
                     continue;
                 } 
@@ -76,11 +76,11 @@ namespace ParsePieces {
     }
     std::string getPiecePart(const std::vector<std::vector<PiecePtr>>& pieces) {
         std::string PiecePart = "";
-        for (auto it = pieces.rbegin(); it != pieces.rend(); ++pieces) { // because FEN stores from rank 8 to rank 1
+        for (std::vector<std::vector<PiecePtr>>::const_reverse_iterator it = pieces.crbegin(); it != pieces.crend(); ++it) { // because FEN stores from rank 8 to rank 1
             // if it's a piece, increment it
             int numWOPiece = 0;
-            const std::vector<PiecePtr> pieces = *it;
-            for (const PiecePtr piece : pieces) {
+            const std::vector<PiecePtr> rank = *it;
+            for (const auto& piece : rank) {
                 if (!piece) {
                     ++numWOPiece; continue;
                 } else {
@@ -90,7 +90,7 @@ namespace ParsePieces {
                 }
             }
             if (numWOPiece != 0) PiecePart.push_back('0' + numWOPiece);
-            if ((it+1) != pieces.rend()) PiecePart.push_back('/');
+            if ((it+1) != pieces.crend()) PiecePart.push_back('/');
         }
         throw NotImplementedError("std::string getPiecePart(const std::vector<std::vector<PiecePtr>>& pieces) is not implemented yet");
     }
@@ -105,7 +105,7 @@ namespace ParsePieces {
         return castlingPart;
     }
     std::string getEnPassantPart(std::optional<Square> square) {
-        if (!square) {return "-"};
-        return square->to_string();
+        if (!square) {return "-";}
+        return square->toString();
     }
 }

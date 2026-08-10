@@ -10,7 +10,7 @@
 
 
 namespace ParsePieces {
-    std::vector<std::vector<std::shared_ptr<Piece>>> parsePiecePart(const std::string& PiecePart);
+    std::vector<std::vector<PiecePtr>> parsePiecePart(const std::string& PiecePart);
     bool parsePlayerPart(const std::string& PlayerPart);
     std::pair<PlayerState, PlayerState> parseCastlingPart(const std::string& CastlingPart);
     std::optional<Square> parseEnPassantPart(std::string EnPassantPart);

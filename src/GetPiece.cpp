@@ -11,8 +11,7 @@
 
 #include <memory>
 #include <map>
-typedef std::shared_ptr<Piece> PiecePtr;
-std::shared_ptr<Piece> getPiece(char c);
+
 const PiecePtr WhiteBishop = std::make_shared<Bishop>(true);
 const PiecePtr BlackBishop = std::make_shared<Bishop>(false);
 
@@ -45,7 +44,7 @@ const std::map<char, PiecePtr> pieceMap{
     {'Q', WhiteQueen},
     {'q', BlackQueen}
 };
-std::shared_ptr<Piece> getPiece(char c){
+PiecePtr getPiece(char c){
     std::map<char, PiecePtr>::const_iterator it = pieceMap.find(c);
     if (it == pieceMap.end()) {throw UnknownPiece("Unknown piece: " + std::string{c});}
     return it->second;
