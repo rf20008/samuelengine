@@ -134,7 +134,7 @@ ChessBoard::ChessBoard(const std::string& fen) {
     if (halfmove_clock < 0) {
         throw std::invalid_argument("halfmove clock too low");
     }
-    this->fullmove_clock= fullmove_clock;
+    this->fullmove_clock = Fullmove_part;
     if (fullmove_clock < 1) {
         throw std::invalid_argument("fullmove clock too low");
     }
