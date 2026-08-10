@@ -1,4 +1,4 @@
-#include "Board.hpp"
+#include "ChessBoard.hpp"
 #include "Errors.hpp"
 
 #include <map>

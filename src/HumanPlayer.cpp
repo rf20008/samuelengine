@@ -1,6 +1,6 @@
 #include "HumanPlayer.hpp"
 #include "Errors.hpp"
-#include "Board.hpp"
+#include "ChessBoard.hpp"
 HumanPlayer::HumanPlayer() {
     throw NotImplementedError("HumanPlayer::HumanPlayer() is not implemented yet");
 }

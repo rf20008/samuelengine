@@ -2,7 +2,7 @@
 #define CS3520_MINIPROJECT_SAMUELENGINE
 #include "Move.hpp"
 #include "AbstractPlayer.hpp"
-#include "Board.hpp"
+#include "ChessBoard.hpp"
 
 // to be done by Samuel
 class SamuelEngine : public AbstractPlayer {

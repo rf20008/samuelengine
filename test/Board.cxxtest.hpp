@@ -1,5 +1,5 @@
 #include <cxxtest/TestSuite.h>
-#include "Board.hpp"
+#include "ChessBoard.hpp"
 
 class TestBoard: public CxxTest::TestSuite
 {

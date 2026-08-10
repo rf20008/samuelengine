@@ -1,6 +1,6 @@
 #ifndef CS3520_MINIPROJECT_ABSTRACTPLAYER
 #define CS3520_MINIPROJECT_ABSTRACTPLAYER
-#include "Board.hpp"
+#include "ChessBoard.hpp"
 #include "Move.hpp"
 class AbstractPlayer {
 public:
