@@ -4,14 +4,24 @@ This is the final project for Joshua (duck\_master), Samuel (ay136416), and Andr
 
 ## File structure
 
-General structure:
- * src: for source (.cpp) files, everything here will get compiled/linked (src/main.cpp provided)
- * test: for test source code (using CxxText, expected to be in extern/cxxtest-4.4)
- * include: for header (.hpp) files, looked in for #include
- * res: for resources (e.g. images)
- * build: where created intermediate (e.g. object) files go
- * bin: where created executables go
- * doc: where generated documentation (Doxygen) goes
+Files and folders checked in:
+ * `.vscode`: VS Code-specific configuration files.
+ * `cxxtest`: The CXXTest source code, albeit with a few bugfixes of our own
+ * `include`: for header (`.hpp`) files, looked in for `#include`
+ * `src`: for source (`.cpp`) files, everything here will get compiled/linked (`src/main.cpp` provided)
+ * `test`: for test source code using CxxTest
+ * `res`: for resources (e.g. images); currently only has `.gitkeep`
+ * `.gitignore`
+ * `Doxyfile`: configuration for Doxygen (currently unused)
+ * `Makefile`
+ * `MoSCoW.txt`: short description of completed work
+ * `README.md`: this very file
+ * `SETUP_ONCE.sh`: currently blank
+
+Folders left out:
+ * `build`: where created intermediate (e.g. object) files go
+ * `bin`: where created executables go
+ * `doc`: where generated documentation (Doxygen) goes
 
 ## Making
 
