@@ -36,6 +36,7 @@
 
 # Unit testing
 cxxtest/python/python3/cxxtest/__pycache__/
+build/test/*.cpp
 
 # Coverage stuff
 **.gcno
