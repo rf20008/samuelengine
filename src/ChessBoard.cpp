@@ -53,7 +53,7 @@ namespace ParsePieces {
         std::vector<string> Ranks;
         Ranks.resize(BOARD_SIZE);
         for (size_t ranknum = 0; ranknum<BOARD_SIZE; ++ranknum) {
-            getline(RankReader, Ranks[BOARD_SIZE-ranknum-1], '/'); // FEN reads from rank 8 to rank 1
+            getline(RankReader, Ranks.at(BOARD_SIZE-ranknum-1), '/'); // FEN reads from rank 8 to rank 1
         }
         std::vector<std::vector<PiecePtr>> board;
         for (size_t ranknum = 0; ranknum<Ranks.size(); ranknum++) {
