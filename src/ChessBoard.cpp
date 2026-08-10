@@ -80,11 +80,17 @@ bool ChessBoard::isMoveLegal(Move m) const{
 } // return whether a move is legal
 
 void ChessBoard::processMove(Move m) {
-    // perform the given move if and only if m is a legal move 
-    // update the counters appropriately
-    // to be done by Joshua
-    (void) m;
-    throw NotImplementedError("void ChessBoard::processMove(Move m) is not yet implemented");
+	if (this->isMoveLegal(m)){
+		// update fullmove_clock
+		this->fullmove_clock += (not this->whiteToMove);
+
+		// TODO: update halfmove_clock
+		// TODO: update whitePlayerState, blackPlayerState
+		// TODO: update enPassant_targetSquare
+
+		// move the piece!
+		this->pieces.at(m.endingSquare.row).at(m.endingSquare.col) = std::move(this->pieces.at(m.startingSquare.row).at(m.startingSquare.col));
+	}
 }
 
 namespace {
