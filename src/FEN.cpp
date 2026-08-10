@@ -80,7 +80,8 @@ namespace ParsePieces {
     std::string getCastlingPart(const PlayerState& whiteState, const PlayerState& blackState) {
         throw NotImplementedError("std::string getCastlingPart(const PlayerState& whiteState, const PlayerState& blackState) is not implemented yet");
     }
-    std::string getEnPassantPart(std::optional<Square>) {
-        throw NotImplementedError("std::string getEnPassantPart(std::optional<Square>)is not implemented yet");
+    std::string getEnPassantPart(std::optional<Square> square) {
+        if (!square) {return "-"};
+        return square->to_string();
     }
 }
