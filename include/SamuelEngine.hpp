@@ -6,20 +6,23 @@
 #include "ChessBoard.hpp"
 #include <vector>
 #include <optional>
+#include <chrono>
 using ll = long long;
+
 // to be done by Samuel
 class SamuelEngine : public AbstractPlayer {
 protected:
     ll numBoardsVisited;
-
-    std::vector<std::vector<double>> getPosVal(const PiecePtr ptr);
-    double relative_value(const PiecePtr ptr);
-    std::optional<double> returnStatusIfGameOver(const ChessBoard& board);
-    double PieceValue(const PiecePtr ptr, const Square sq);
-    double relative_value(const ChessBoard& board, const bool isWhite);
-    double evaluate_chess_pos_without_depth(const ChessBoard& board);
-    double evaluate_chess_pos_with_depth(const ChessBoard& board, int depth, double alpha, double beta, bool maximizingPlayer);
-    double evaluate_chess_pos_with_tl(const ChessBoard& board, double time_limit = 3.0);
+    std::chrono::steady_clock::time_point deadline;
+    std::vector<std::vector<double>> getPosVal(const PiecePtr ptr) const;
+    double relative_value(const PiecePtr ptr) const;
+    std::optional<double> returnStatusIfGameOver(const ChessBoard& board) const;
+    double PieceValue(const PiecePtr ptr, const Square sq) const;
+    double relative_value(const ChessBoard& board, const bool isWhite) const;
+    double evaluate_chess_pos_without_depth(const ChessBoard& board) const;
+    std::pair<double, Move> evaluate_chess_pos_with_depth(const ChessBoard& board, int depth, double alpha, double beta, bool maximizingPlayer);
+    std::pair<double, Move> evaluate_chess_pos_with_tl(const ChessBoard& board, double time_limit = 3.0);
+    inline bool shouldStop() const;
 public:
     SamuelEngine();
     virtual Move getMove(const ChessBoard&);

@@ -3,6 +3,8 @@
 #include "Errors.hpp"
 
 #include <limits>
+#include <algorithm>
+#Include <optional>
 #include <vector>
 
 using namespace std;
@@ -132,13 +134,57 @@ double SamuelEngine::evaluate_chess_pos_without_depth(const ChessBoard& board) {
     return relative_value(board, true) - relative_value(board, false);
 }
 
-double SamuelEngine::evaluate_chess_pos_with_depth(
+std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_depth(
     const ChessBoard& board, 
     int depth, 
     double alpha, 
     double beta, 
-    bool maximizingPlayer
 ) {
+    numBoardsVisited++;
+    std::optional<double> gameOverMaybe = returnStatusIfGameOver(board);
+    if (!gameOverMaybe) {
+        return *gameOverMaybe;
+    }
+    std::set<Move> moves = board.allLegalMoves();
+    if (depth==0 || moves.empty()) {
+        return evaluate_chess_pos_without_depth(board);
+    }
+    Move bestMove = *moves.begin();
+    if (board.get_whiteToMove()) {
+        double value = NEG_INF;
+        
+        for (Move move : moves) {
+            ChessBoard newBoard = board;
+            newBoard.processMove(move);
+            auto [new_val, new_move] = evaluate_chess_pos_with_depth(newBoard, depth-1, alpha, beta);
+            if (new_val >= beta) {
+                break; // beta cutoff
+            }
+            alpha = max(alpha, new_val);
+            if (new_val > value) {
+                bestMove = move;
+                value = new_val;
+            }
+        }
+        return {value, new_val};
+    } else {
+        double value = INFINITY;
+        for (Move move : moves) {
+            ChessBoard newBoard = board;
+            newBoard.processMove(move);
+            auto [new_val, new_move] = evaluate_chess_pos_with_depth(newBoard, depth-1, alpha, beta);
+            if (new_val <= alpha) {
+                break; //alpha cutoff
+            }
+            beta = min(beta, new_val);
+            if (new_val < value) {
+                value = new_val;
+                bestMove = move;
+            }
+        }
+        return {value, bestMove};
+    }
+
     throw NotImplementedError("double SamuelEngine::evaluate_chess_pos_with_depth("
         "const ChessBoard& board, "
         "int depth, "
@@ -147,7 +193,7 @@ double SamuelEngine::evaluate_chess_pos_with_depth(
         "bool maximizingPlayer"
     ") is not yet implemented");
 }
-double SamuelEngine::evaluate_chess_pos_with_tl(const ChessBoard& board, double time_limit) {
+std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_tl(const ChessBoard& board, double time_limit) {
     throw NotImplementedError("double SamuelEngine::evaluate_chess_pos_with_tl(const ChessBoard& board, double time_limit = 3.0) is not yet implemented");
 }
 SamuelEngine::SamuelEngine() {
@@ -155,5 +201,6 @@ SamuelEngine::SamuelEngine() {
     throw NotImplementedError("SamuelEngine::SamuelEngine() is not implemented yet");
 }
 Move SamuelEngine::getMove(const ChessBoard&) {
+    numBoardsVisited++;
     throw NotImplementedError("virtual Move SamuelEngine::getMove(const ChessBoard&) is not implemented yet");
 }

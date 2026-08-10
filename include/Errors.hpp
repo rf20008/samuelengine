@@ -21,4 +21,14 @@ class InvalidFEN : public std::runtime_error {
     public:
         InvalidFEN(const std::string& message) : std::runtime_error(message) {}
 };
+
+class OutOfTime : public std::exception {
+    private:
+        std::string message;
+    public:
+        OutOfTime(const std::string& err = "Search stopped") : message(err) {}
+        virtual const char* what() {
+            return message.c_str();
+        }
+}
 #endif
