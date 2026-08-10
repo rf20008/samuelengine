@@ -4,7 +4,7 @@
 
 #include <limits>
 #include <algorithm>
-#Include <optional>
+#include <optional>
 #include <vector>
 
 using namespace std;
@@ -71,7 +71,7 @@ const std::vector<std::vector<double>> queen_pieceval = {
     {-1.0,  0.0,  0.5,  1.0,  1.0,  0.5,  0.0, -1.0},  // 2nd rank
     {-2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0}   // 1st rank
 };
-std::vector<std::vector<double>> SamuelEngine::getPosVal(const PiecePtr ptr) {
+std::vector<std::vector<double>> SamuelEngine::getPosVal(const PiecePtr ptr) const {
     switch (toupper(ptr->symbol())) {
         case 'K': return king_pieceval;
         case 'Q': return queen_pieceval;
@@ -82,7 +82,7 @@ std::vector<std::vector<double>> SamuelEngine::getPosVal(const PiecePtr ptr) {
         default: throw UnknownPiece("Unknown piece: " + std::string{ptr->symbol(), 1});
     }
 }
-double SamuelEngine::relative_value(const PiecePtr ptr) {
+double SamuelEngine::relative_value(const PiecePtr ptr) const {
     switch (toupper(ptr->symbol())) {
         case 'K': return 1000000;
         case 'Q': return 9;
@@ -95,7 +95,7 @@ double SamuelEngine::relative_value(const PiecePtr ptr) {
 }
 
 
-std::optional<double> SamuelEngine::returnStatusIfGameOver(const ChessBoard& board) {
+std::optional<double> SamuelEngine::returnStatusIfGameOver(const ChessBoard& board) const {
     GameStatus status = board.getStatus();
     if (isGameOver(status)) {
         switch (status) {
@@ -107,14 +107,14 @@ std::optional<double> SamuelEngine::returnStatusIfGameOver(const ChessBoard& boa
     return std::optional<double>();
 }
 
-double SamuelEngine::PieceValue(const PiecePtr ptr, const Square sq) {
+double SamuelEngine::PieceValue(const PiecePtr ptr, const Square sq) const {
     double rel_intrinsic_val = relative_value(ptr);
     auto posValTable = getPosVal(ptr);
     double pos_val = posValTable.at(sq.row-1).at(sq.col-1);
     return rel_intrinsic_val + pos_val;
 }
 
-double SamuelEngine::relative_value(const ChessBoard& board, const bool isWhite) {
+double SamuelEngine::relative_value(const ChessBoard& board, const bool isWhite) const {
     double tot_val = 0;
     for (int rank = 0; rank<BOARD_SIZE; ++rank) {
         for (int file = 0; file<BOARD_SIZE; ++file) {
@@ -127,19 +127,24 @@ double SamuelEngine::relative_value(const ChessBoard& board, const bool isWhite)
     }
     return tot_val;
 }
-double SamuelEngine::evaluate_chess_pos_without_depth(const ChessBoard& board) {
+double SamuelEngine::evaluate_chess_pos_without_depth(const ChessBoard& board) const {
     std::optional<double> gameOverMaybe = returnStatusIfGameOver(board);
     if (!gameOverMaybe) return *gameOverMaybe;
 
     return relative_value(board, true) - relative_value(board, false);
 }
 
+
+
 std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_depth(
     const ChessBoard& board, 
     int depth, 
     double alpha, 
     double beta, 
-) {
+) const {
+    if (shouldStop()) {
+        throw OutOfTime();
+    }
     numBoardsVisited++;
     std::optional<double> gameOverMaybe = returnStatusIfGameOver(board);
     if (!gameOverMaybe) {
@@ -184,23 +189,31 @@ std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_depth(
         }
         return {value, bestMove};
     }
-
-    throw NotImplementedError("double SamuelEngine::evaluate_chess_pos_with_depth("
-        "const ChessBoard& board, "
-        "int depth, "
-        "double alpha, "
-        "double beta, "
-        "bool maximizingPlayer"
-    ") is not yet implemented");
 }
 std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_tl(const ChessBoard& board, double time_limit) {
+    this->deadline = std::chrono::steady_clock::now() + std::chrono::microseconds(time_limit * 1e6);
+    double bestValue = 0;
+    Move bestMove = *(board.allLegalMoves().begin());
+    try {
+        for (int depth = 1; !shouldStop(); ++depth) {
+            auto [newValue, newMove] = evaluate_chess_pos_with_depth(board, depth, NEG_INF, INFINITY);
+            bestValue = newValue;
+            bestMove = newMove;
+        }
+    } catch (OutOfTime& err) {
+    }
+    return {bestValue, bestMove};
     throw NotImplementedError("double SamuelEngine::evaluate_chess_pos_with_tl(const ChessBoard& board, double time_limit = 3.0) is not yet implemented");
+}
+inline bool SamuelEngine::shouldStop() const {
+    return std::chrono::steady_clock::now() >= deadline;
 }
 SamuelEngine::SamuelEngine() {
     numBoardsVisited = 0;
     throw NotImplementedError("SamuelEngine::SamuelEngine() is not implemented yet");
 }
 Move SamuelEngine::getMove(const ChessBoard&) {
-    numBoardsVisited++;
-    throw NotImplementedError("virtual Move SamuelEngine::getMove(const ChessBoard&) is not implemented yet");
+    numBoardsVisited=0;
+
+    throw NotImplementedError("virtual Move SamuelEngine::getMove(const ChessBoard&) is not implemented yet")
 }
