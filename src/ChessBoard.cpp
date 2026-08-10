@@ -51,7 +51,7 @@ namespace ParsePieces {
         std::stringstream RankReader(PiecePart);
         std::vector<string> Ranks(BOARD_SIZE);
         for (size_t ranknum = 0; ranknum<BOARD_SIZE; ++ranknum) {
-            RankReader>>Ranks[ranknum];
+            getline(RankReader, Ranks[BOARD_SIZE-ranknum-1], '/'); // FEN reads from rank 8 to rank 1
         }
         std::vector<std::vector<PiecePtr>> board;
         for (size_t ranknum = 0; ranknum<Ranks.size(); ranknum++) {
@@ -62,16 +62,16 @@ namespace ParsePieces {
                 if (pieceChar >= '0' && pieceChar <= '9') { // piecechar is a digit
                     int digitNum = pieceChar-'0';
                     for (int i = 0; i<digitNum; ++i) { // add that many free spaces
-                        board.at(BOARD_SIZE - ranknum - 1).push_back(std::shared_ptr<Piece>()); // a null piece
+                        board.at(ranknum).push_back(std::shared_ptr<Piece>()); // a null piece
                     }
                     continue;
                 } 
                 // this is a piece! add it
 
-                board.at(BOARD_SIZE - ranknum - 1).push_back(getPiece(pieceChar));
+                board.at(ranknum).push_back(getPiece(pieceChar));
             }
             // check that it is of size BOARD_SIZE
-            if (board.at(BOARD_SIZE - ranknum - 1).size() != BOARD_SIZE) {
+            if (board.at(ranknum).size() != BOARD_SIZE) {
                 throw InvalidFEN("Error: Board rank " + std::to_string(ranknum) + " is not of size 8, but of size " + std::to_string(board.at(ranknum).size()) + ".");
             }
         }
