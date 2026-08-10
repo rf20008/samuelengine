@@ -74,4 +74,13 @@ namespace ParsePieces {
         if (!sq->isValid()) throw InvalidFEN("Square is out of bounds");
         return sq;
     }
+    std::string getPiecePart(const std::vector<std::vector<PiecePtr>>& pieces) {
+        throw NotImplementedError("std::string getPiecePart(const std::vector<std::vector<PiecePtr>>& pieces) is not implemented yet");
+    }
+    std::string getCastlingPart(const PlayerState& whiteState, const PlayerState& blackState) {
+        throw NotImplementedError("std::string getCastlingPart(const PlayerState& whiteState, const PlayerState& blackState) is not implemented yet");
+    }
+    std::string getEnPassantPart(std::optional<Square>) {
+        throw NotImplementedError("std::string getEnPassantPart(std::optional<Square>)is not implemented yet");
+    }
 }

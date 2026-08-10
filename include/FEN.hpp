@@ -14,5 +14,9 @@ namespace ParsePieces {
     bool parsePlayerPart(const std::string& PlayerPart);
     std::pair<PlayerState, PlayerState> parseCastlingPart(const std::string& CastlingPart);
     std::optional<Square> parseEnPassantPart(std::string EnPassantPart);
+    std::string getPiecePart(const std::vector<std::vector<PiecePtr>>& pieces);
+    std::string getPlayerPart(bool whiteToMove) {return (whiteToMove?"w":"b");}
+    std::string getCastlingPart(const PlayerState& whiteState, const PlayerState& blackState);
+    std::string getEnPassantPart(std::optional<Square>);
 }
 #endif
