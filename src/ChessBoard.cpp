@@ -274,23 +274,24 @@ namespace {
         return false;
     }
 
-    Square findKing(const ChessBoard& board, bool belongsToWhite) {
-        for (int r = 1; r <= BOARD_SIZE; ++r) {
-            for (int c = 1; c <= BOARD_SIZE; ++c) {
-                Square sq(r, c);
-                std::shared_ptr<const Piece> p = board.getPiece(sq);
-                if (p && p->getBelongsToWhite() == belongsToWhite && std::toupper(p->symbol()) == 'K') {
-                    return sq;
-                }
+    
+}
+Square ChessBoard::findKing(bool belongsToWhite) const {
+    for (int r = 1; r <= BOARD_SIZE; ++r) {
+        for (int c = 1; c <= BOARD_SIZE; ++c) {
+            Square sq(r, c);
+            std::shared_ptr<const Piece> p = this->getPiece(sq);
+            if (p && p->getBelongsToWhite() == belongsToWhite && std::toupper(p->symbol()) == 'K') {
+                return sq;
             }
         }
-        throw std::logic_error("findKing: no king found for the requested player");
     }
+    throw std::logic_error("findKing: no king found for the requested player");
 }
 
 bool ChessBoard::isInCheck(bool player) const  {
     // can the player whose turn it is, capture the king who is owned by Player?
-    Square kingSquare = findKing(*this, player);
+    Square kingSquare = this->findKing(player);
     return squareAttackedBy(*this, kingSquare, !player);
 }
 
@@ -304,7 +305,9 @@ bool ChessBoard::isInStalemate() const {
     // is implemented by: if not in check now, but every legal move you make is in check
     return !isInCheck(whiteToMove) && allLegalMoves().empty();
 }
-
+bool ChessBoard::hasInsufficientMaterial() const {
+    throw NotImplementedError("bool ChessBoard::hasInsufficientMaterial() is not implemented yet");
+}
 GameStatus ChessBoard::getStatus() const {
     // return the status of the game (whether white won, black won, it's a draw, or game is still going on)
     if (isInCheckmate()) { // the game is over, checkmate

@@ -74,6 +74,8 @@ class ChessBoard {
         bool isInCheck(bool player) const;
         bool isInCheckmate() const;
         bool isInStalemate() const;
+        bool hasInsufficientMaterial() const;
+        Square findKing(bool belongsToWhite) const;
         GameStatus getStatus() const;
 
         // for engine use
