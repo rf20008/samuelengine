@@ -58,7 +58,7 @@ class ChessBoard {
         ChessBoard& operator=(ChessBoard&& other) = default;
 
         // getters 
-        const PiecePtr getPiece(Square sq) const;
+        std::shared_ptr<const Piece> getPiece(Square sq) const;
         int get_halfmove_clock() const {return halfmove_clock;}
         int get_fullmove_clock() const {return fullmove_clock;}
         bool get_whiteToMove() const {return whiteToMove;}

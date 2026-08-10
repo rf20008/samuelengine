@@ -160,7 +160,7 @@ ChessBoard::ChessBoard(
 	enPassant_targetSquare(enPassant_targetSquare)
 	{}
 
-const PiecePtr ChessBoard::getPiece(Square sq) const {
+std::shared_ptr<const Piece> ChessBoard::getPiece(Square sq) const {
     // bounds check: an out-of-board square simply has no piece on it
     if (!sq.isValid()) {
         return nullptr;
@@ -194,7 +194,7 @@ namespace {
     bool isSlidingAttacker(const ChessBoard& board, Square from, Square dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) {
         Square cur = from + dir;
         while (cur.isValid()) {
-            PiecePtr p = board.getPiece(cur);
+            std::shared_ptr<const Piece> p = board.getPiece(cur);
             if (p) {
                 if (p->getBelongsToWhite() == attackerIsWhite) {
                     char sym = static_cast<char>(std::toupper(p->symbol()));
@@ -220,7 +220,7 @@ namespace {
         for (const Square& off : knightOffsets) {
             Square sq = target + off;
             if (!sq.isValid()) continue;
-            PiecePtr p = board.getPiece(sq);
+            std::shared_ptr<const Piece> p = board.getPiece(sq);
             if (p && p->getBelongsToWhite() == attackerIsWhite && std::toupper(p->symbol()) == 'N') {
                 return true;
             }
@@ -231,7 +231,7 @@ namespace {
                 if (dr == 0 && dc == 0) continue;
                 Square sq = target + Square(dr, dc);
                 if (!sq.isValid()) continue;
-                PiecePtr p = board.getPiece(sq);
+                std::shared_ptr<const Piece> p = board.getPiece(sq);
                 if (p && p->getBelongsToWhite() == attackerIsWhite && std::toupper(p->symbol()) == 'K') {
                     return true;
                 }
@@ -245,7 +245,7 @@ namespace {
         for (int dc : {-1, 1}) {
             Square sq = target + Square(behind, dc);
             if (!sq.isValid()) continue;
-            PiecePtr p = board.getPiece(sq);
+            std::shared_ptr<const Piece> p = board.getPiece(sq);
             if (p && p->getBelongsToWhite() == attackerIsWhite && std::toupper(p->symbol()) == 'P') {
                 return true;
             }
@@ -272,7 +272,7 @@ namespace {
         for (int r = 1; r <= BOARD_SIZE; ++r) {
             for (int c = 1; c <= BOARD_SIZE; ++c) {
                 Square sq(r, c);
-                PiecePtr p = board.getPiece(sq);
+                std::shared_ptr<const Piece> p = board.getPiece(sq);
                 if (p && p->getBelongsToWhite() == belongsToWhite && std::toupper(p->symbol()) == 'K') {
                     return sq;
                 }
