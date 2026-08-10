@@ -30,5 +30,5 @@ class OutOfTime : public std::exception {
         virtual const char* what() {
             return message.c_str();
         }
-}
+};
 #endif

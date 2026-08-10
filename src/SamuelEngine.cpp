@@ -5,6 +5,7 @@
 #include <limits>
 #include <algorithm>
 #include <optional>
+#include <iostream>
 #include <vector>
 
 using namespace std;
@@ -140,19 +141,19 @@ std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_depth(
     const ChessBoard& board, 
     int depth, 
     double alpha, 
-    double beta, 
-) const {
+    double beta
+) {
     if (shouldStop()) {
         throw OutOfTime();
     }
     numBoardsVisited++;
     std::optional<double> gameOverMaybe = returnStatusIfGameOver(board);
     if (!gameOverMaybe) {
-        return *gameOverMaybe;
+        return {*gameOverMaybe, Move(Square("a1"), Square("a2"))};
     }
     std::set<Move> moves = board.allLegalMoves();
     if (depth==0 || moves.empty()) {
-        return evaluate_chess_pos_without_depth(board);
+        return {evaluate_chess_pos_without_depth(board), Move(Square("a1"), Square("a2"))};
     }
     Move bestMove = *moves.begin();
     if (board.get_whiteToMove()) {
@@ -171,7 +172,7 @@ std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_depth(
                 value = new_val;
             }
         }
-        return {value, new_val};
+        return {value, bestMove};
     } else {
         double value = INFINITY;
         for (Move move : moves) {
@@ -191,7 +192,7 @@ std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_depth(
     }
 }
 std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_tl(const ChessBoard& board, double time_limit) {
-    this->deadline = std::chrono::steady_clock::now() + std::chrono::microseconds(time_limit * 1e6);
+    this->deadline = std::chrono::steady_clock::now() + std::chrono::nanoseconds(static_cast<long int>(time_limit * 1'000'000'000));
     double bestValue = 0;
     Move bestMove = *(board.allLegalMoves().begin());
     try {
@@ -208,17 +209,16 @@ std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_tl(const ChessBoar
 inline bool SamuelEngine::shouldStop() const {
     return std::chrono::steady_clock::now() >= deadline;
 }
-SamuelEngine::SamuelEngine(double tl, bool debug=false) : default_tl(tl), numBoardsVisited(0), deadline(std::chrono::steady_clock::now()) {
-    this->debug = debug;
+SamuelEngine::SamuelEngine(double tl, bool dbg) : debug(dbg), numBoardsVisited(0), default_tl(tl), deadline(std::chrono::steady_clock::now()) {
 }
-Move SamuelEngine::getMove(const ChessBoard&) {
+Move SamuelEngine::getMove(const ChessBoard& board) {
     numBoardsVisited=0;
     if (debug) {
         cerr<<"Beginning search";
     }
     auto [val, move] = evaluate_chess_pos_with_tl(board, default_tl);
     if (debug) {
-        cerr<<"Finished search\n. Searched "<<numBoardsVisited<<" positions to find a value of "<< value;
+        cerr<<"Finished search\n. Searched "<<numBoardsVisited<<" positions to find a value of "<< val<<endl;
         
     }
     return move;
