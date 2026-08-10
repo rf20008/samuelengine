@@ -69,7 +69,7 @@ const std::vector<std::vector<double>> queen_pieceval = {
     {-1.0,  0.0,  0.5,  1.0,  1.0,  0.5,  0.0, -1.0},  // 2nd rank
     {-2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0}   // 1st rank
 };
-std::vector<std::vector<double>> getPosVal(const PiecePtr ptr) {
+std::vector<std::vector<double>> SamuelEngine::getPosVal(const PiecePtr ptr) {
     switch (toupper(ptr->symbol())) {
         case 'K': return king_pieceval;
         case 'Q': return queen_pieceval;
@@ -80,7 +80,7 @@ std::vector<std::vector<double>> getPosVal(const PiecePtr ptr) {
         default: throw UnknownPiece("Unknown piece: " + std::string{c});
     }
 }
-double relative_value(const PiecePtr ptr) {
+double SamuelEngine::relative_value(const PiecePtr ptr) {
     switch (toupper(ptr->symbol())) {
         case 'K': return 1000000;
         case 'Q': return 9;
@@ -93,7 +93,7 @@ double relative_value(const PiecePtr ptr) {
 }
 
 
-std::optional<double> returnStatusIfGameOver(const ChessBoard& board) {
+std::optional<double> SamuelEngine::returnStatusIfGameOver(const ChessBoard& board) {
     GameStatus status = board.getStatus();
     if (isGameOver(status)) {
         switch (status) {
@@ -105,14 +105,14 @@ std::optional<double> returnStatusIfGameOver(const ChessBoard& board) {
     return std::optional<double>();
 }
 
-double PieceValue(const PiecePtr ptr, const Square sq) {
+double SamuelEngine::PieceValue(const PiecePtr ptr, const Square sq) {
     double rel_intrinsic_val = relative_value(ptr);
     auto posValTable = getPosVal(ptr);
     double pos_val = posValTable.at(sq.row-1).at(sq.col-1);
     return rel_intrinsic_val + pos_val;
 }
 
-double relative_value(const ChessBoard& board, const bool isWhite) {
+double SamuelEngine::relative_value(const ChessBoard& board, const bool isWhite) {
     double tot_val = 0;
     for (int rank = 0; rank<BOARD_SIZE; ++rank) {
         for (int file = 0; file<BOARD_SIZE; ++file) {
@@ -125,13 +125,15 @@ double relative_value(const ChessBoard& board, const bool isWhite) {
     }
     return tot_val;
 }
-double evaluate_chess_pos_without_depth(const ChessBoard& board) {
+double SamuelEngine::evaluate_chess_pos_without_depth(const ChessBoard& board) {
     std::optional<double> gameOverMaybe = returnStatusIfGameOver(board);
     if (!gameOverMaybe) return *gameOverMaybe;
 
     return relative_value(board, true) - relative_value(board, false);
 }
+
 SamuelEngine::SamuelEngine() {
+    numBoardsVisited = 0;
     throw NotImplementedError("SamuelEngine::SamuelEngine() is not implemented yet");
 }
 Move SamuelEngine::getMove(const ChessBoard&) {
