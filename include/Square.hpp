@@ -20,7 +20,7 @@ public:
             return col<other.col;
         }
     }
-    bool operator!=(const Square& other) {
+    bool operator!=(const Square& other) const {
         return !(this->operator==(other));
     }
     
