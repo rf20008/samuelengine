@@ -3,7 +3,10 @@
 #include <vector>
 #include <optional>
 #include <string>
-
+#include <memory>
+#include "Piece.hpp"
+#include "Square.hpp"
+#include "PlayerState.hpp"
 
 
 namespace ParsePieces {
