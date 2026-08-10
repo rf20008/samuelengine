@@ -144,8 +144,6 @@ ChessBoard::ChessBoard(const std::string& fen) {
     if (fullmove_clock < 1) {
         throw std::invalid_argument("fullmove clock too low");
     }
-    // to be done by Samuel
-    throw NotImplementedError("ChessBoard::ChessBoard(std::string& fen) is not yet implemented");
 }
 
 ChessBoard::ChessBoard(
