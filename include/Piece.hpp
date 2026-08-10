@@ -11,6 +11,7 @@ class Piece {
         Piece(bool ownedbyWhite) : belongsToWhite(ownedbyWhite) {}
         bool getBelongsToWhite() const {return belongsToWhite;}
         virtual char symbol() const = 0;
+        bool operator==(const Piece& other) const {return this->symbol() == other.symbol();}
 };
 
 #endif
