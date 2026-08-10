@@ -7,4 +7,8 @@ enum class GameStatus {
     STILL_GOING_WHITE_TURN,
     STILL_GOING_BLACK_TURN,
 };
+
+bool isGameOver(const GameStatus& status) {
+    return status==GameStatus::WHITE_WON || status == GameStatus::BLACK_WON || status == GameStatus::DRAW;
+}
 #endif
