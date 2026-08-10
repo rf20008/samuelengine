@@ -62,16 +62,16 @@ namespace ParsePieces {
                 if (pieceChar >= '0' && pieceChar <= '9') { // piecechar is a digit
                     int digitNum = pieceChar-'0';
                     for (int i = 0; i<digitNum; ++i) { // add that many free spaces
-                        board.at(ranknum).push_back(std::shared_ptr<Piece>()); // a null piece
+                        board.at(BOARD_SIZE - ranknum - 1).push_back(std::shared_ptr<Piece>()); // a null piece
                     }
                     continue;
                 } 
                 // this is a piece! add it
 
-                board.at(ranknum).push_back(getPiece(pieceChar));
+                board.at(BOARD_SIZE - ranknum - 1).push_back(getPiece(pieceChar));
             }
             // check that it is of size BOARD_SIZE
-            if (board.at(ranknum).size() != BOARD_SIZE) {
+            if (board.at(BOARD_SIZE - ranknum - 1).size() != BOARD_SIZE) {
                 throw InvalidFEN("Error: Board rank " + std::to_string(ranknum) + " is not of size 8, but of size " + std::to_string(board.at(ranknum).size()) + ".");
             }
         }
@@ -108,7 +108,7 @@ namespace ParsePieces {
         return sq;
     }
 }
-ChessBoard::ChessBoard() : ChessBoard::ChessBoard("RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr w KQkq - 0 1"){}
+ChessBoard::ChessBoard() : ChessBoard::ChessBoard("pppppppp/rnbqkbnr/8/8/8/8/RNBQKBNR/PPPPPPPP w KQkq - 0 1"){}
 
 ChessBoard::ChessBoard(const std::string& fen) {
     (void) fen;
