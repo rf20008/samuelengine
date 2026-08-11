@@ -7,10 +7,10 @@ using namespace ParsePieces;
 
 class TestFEN : public CxxTest::TestSuite {
 	public:
-		void testPlayerGet() {
-			TS_ASSERT_EQUALS(true, ParsePieces::parsePlayerPart("w"));
-			TS_ASSERT_EQUALS(false, ParsePieces::parsePlayerPart("b"));
-			TS_ASSERT_THROWS_ANYTHING(ParsePieces::parsePlayerPart(""));
+		void testParsePlayerPart() {
+			TS_ASSERT_EQUALS(true, parsePlayerPart("w"));
+			TS_ASSERT_EQUALS(false, parsePlayerPart("b"));
+			TS_ASSERT_THROWS_ANYTHING(parsePlayerPart(""));
 			TS_ASSERT_THROWS_ANYTHING(parsePlayerPart("t"));
 			TS_ASSERT_THROWS_ANYTHING(parsePlayerPart("ttt"));
 		}
