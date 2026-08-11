@@ -40,4 +40,7 @@ public:
         return Square(row-other.row, col-other.col);
     }
 };
+inline int maxNorm(Square sq) {
+    return std::max(std::abs(sq.row), std::abs(sq.col));
+}
 #endif

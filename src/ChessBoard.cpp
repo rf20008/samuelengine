@@ -104,8 +104,10 @@ void ChessBoard::processMove(Move m) {
 
 		// TODO: modify `Move` type to include castling as an option
 		// TODO: update whitePlayerState, blackPlayerState
-		// TODO: update enPassant_targetSquare
-
+		// TODO: update enPassant_targetSquare)
+        if (start_ptr && toupper(start_ptr->symbol()) == 'p' && maxNorm(m.endingSquare-m.startingSquare)>1) {
+            enPassant_targetSquare = m.startingSquare + ((shared_ptr->symbol() =='p') ? Square(1, 0) : Square(-1, 0));
+        }
 		// move the piece!
 		end_ptr = std::move(start_ptr);
 		this->whiteToMove = !this->whiteToMove;
@@ -177,7 +179,7 @@ std::set<Square> ChessBoard::wherePawnCouldMove(const Square origin) const {
         // if there is a piece of a different color, then it's okay
         // else not
         PiecePtr p = getPiece(target);
-        if ((p && p->getBelongsToWhite() != attackerIsWhite)) places.insert(target);
+        if ((p && p->getBelongsToWhite() != attackerIsWhite) || target == enPassant_targetSquare) places.insert(target); // it's enPassant!!
     }
     // consider the spaces it can move
     for (size_t i = 1; i<=(1+canMoveTwoSpaces); ++i) {
@@ -274,6 +276,8 @@ std::set<Square> ChessBoard::allPseudoLegalDestinations(const Square origin) con
     }
 
 }
+
+
 // Is `target` attacked by any piece belonging to `attackerIsWhite`?
 // This is a raw-attack check (used to detect check): it only asks
 // "could this piece capture on `target` right now", not whether doing
