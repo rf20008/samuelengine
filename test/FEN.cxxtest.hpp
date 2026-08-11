@@ -6,17 +6,16 @@
 using namespace ParsePieces;
 
 class TestFEN : public CxxTest::TestSuite {
-    void testPlayerGet() {
-        TS_ASSERT_EQUALS(true, ParsePieces::parsePlayerPart("w"));
-        TS_ASSERT_EQUALS(false, ParsePieces::parsePlayerPart("b"));
-        TS_ASSERT_THROWS_ANYTHING(ParsePieces::parsePlayerPart(""));
-        TS_ASSERT_THROWS_ANYTHING(parsePlayerPart("t"));
-        TS_ASSERT_THROWS_ANYTHING(parsePlayerPart("ttt"));
-    }
-    void testGetPlayerPart() {
-        TS_ASSERT_EQUALS(getPlayerPart(true), "w");
-        TS_ASSERT_EQUALS(getPlayerPart(false), "b");
-    }
-    void test
-}
-#endif
+	public:
+		void testPlayerGet() {
+			TS_ASSERT_EQUALS(true, ParsePieces::parsePlayerPart("w"));
+			TS_ASSERT_EQUALS(false, ParsePieces::parsePlayerPart("b"));
+			TS_ASSERT_THROWS_ANYTHING(ParsePieces::parsePlayerPart(""));
+			TS_ASSERT_THROWS_ANYTHING(parsePlayerPart("t"));
+			TS_ASSERT_THROWS_ANYTHING(parsePlayerPart("ttt"));
+		}
+        void testGetPlayerPart() {
+            TS_ASSERT_EQUALS(getPlayerPart(true), "w");
+            TS_ASSERT_EQUALS(getPlayerPart(false), "b");
+        }
+};
