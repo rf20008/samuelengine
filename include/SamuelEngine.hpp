@@ -20,8 +20,8 @@ protected:
 
             MoveOrderer(const ChessBoard& board) : m_board(board) {}
             int priorityOfMove(const Move& mov) const;
-            bool operator<(const Move& m1, const Move& m2) const;
-    }
+            bool operator()(const Move& m1, const Move& m2) const;
+    };
     ll numBoardsVisited;
     double default_tl;
     std::chrono::steady_clock::time_point deadline;

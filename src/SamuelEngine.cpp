@@ -75,7 +75,7 @@ const std::vector<std::vector<double>> queen_pieceval = {
     {-2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0}   // 1st rank
 };
 
-SamuelEngine::MoveOrderer::priorityOfMove(const Move& mov) const {
+int SamuelEngine::MoveOrderer::priorityOfMove(const Move& mov) const {
     if (m_board.move_ends_game(mov)) {return 1000;}
     else if (m_board.move_is_castling(mov)) {return 4;}
     else if (m_board.move_is_check(mov)) {return 3;}
@@ -83,7 +83,7 @@ SamuelEngine::MoveOrderer::priorityOfMove(const Move& mov) const {
     else if (m_board.move_is_zeroing(mov)) {return 1;}
     else {return 0;}
 }
-SamuelEngine::MoveOrderer::operator<(const Move& m1, const Move& m2) {
+bool SamuelEngine::MoveOrderer::operator()(const Move& m1, const Move& m2) const {
     return priorityOfMove(m1)<priorityOfMove(m2);
 }
 
@@ -238,7 +238,7 @@ inline bool SamuelEngine::shouldStop() const {
 SamuelEngine::SamuelEngine(double tl, bool dbg) : debug(dbg), numBoardsVisited(0), default_tl(tl), deadline(std::chrono::steady_clock::now()) {
 }
 Move SamuelEngine::getMove(const ChessBoard& board) {
-    numBoardsVisited=0;
+    this->numBoardsVisited=0;
     if (debug) {
         cerr<<"Beginning search";
     }
