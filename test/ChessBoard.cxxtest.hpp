@@ -43,11 +43,10 @@ class TestBoard : public CxxTest::TestSuite {
 			(void)myBoard;
 		}
         void testEnPassantBlack() {
-            std::string myFen = "RNBQKBNR/1PPPP1PP/8/P3pP2/8/7p/PPPP1PP1/rnbqkbnr w KQkq f6 0 4";
+            std::string myFen = "rnbqkbnr/1pppp1pp/8/p3Pp2/8/7P/PPPP1PP1/RNBQKBNR w KQkq f6 0 4";
             ChessBoard myBoard = ChessBoard(myFen);
             TS_ASSERT_EQUALS(*myBoard.getEnPassantTargetSquare(), Square("f6"));
-            std::cout<<std::endl<<myBoard<<std::endl;
-            TS_ASSERT_EQUALS(myBoard.getPiece(Square("e5"))->symbol(), 'p');
+            TS_ASSERT_EQUALS(myBoard.getPiece(Square("e5"))->symbol(), 'P');
             TS_ASSERT(myBoard.isMoveLegal(Move(Square("e5"), Square("f6"))))
         }
 };

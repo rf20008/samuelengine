@@ -32,7 +32,7 @@ public:
     bool operator!=(const Square& other) const {
         return !(this->operator==(other));
     }
-    std::string toString() {
+    std::string toString() const {
 	// note: number has to go first because the second argument is of type char, not char*
         return std::string(1, 'a' + this->row - 1) + std::string(1, '1' + this->col - 1);
     }

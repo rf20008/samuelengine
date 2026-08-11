@@ -228,7 +228,7 @@ std::set<Square> ChessBoard::wherePawnCouldMove(const Square origin) const {
         // if there is a piece of a different color, then it's okay
         // else not
         PiecePtr p = getPiece(target);
-        if ((p && p->getBelongsToWhite() != attackerIsWhite) || target == enPassant_targetSquare) places.insert(target); // it's enPassant!!
+        if ((p && p->getBelongsToWhite() != attackerIsWhite) || (enPassant_targetSquare && target == *enPassant_targetSquare)) places.insert(target); // it's enPassant!!
     }
     // consider the spaces it can move
     for (size_t i = 1; i<=(1+canMoveTwoSpaces); ++i) {
