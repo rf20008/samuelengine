@@ -19,3 +19,4 @@ class TestFEN : public CxxTest::TestSuite {
             TS_ASSERT_EQUALS(getPlayerPart(false), "b");
         }
 };
+#endif
