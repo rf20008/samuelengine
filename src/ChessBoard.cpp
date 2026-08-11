@@ -118,8 +118,8 @@ void ChessBoard::processMove(Move m) {
                 rookNewLoc = Square(4, whiteToMove ? 1 : 8);
             }
             // move the rook
-            std::shared_ptr<const Piece>& rookOldPtr = pieces.at(rookOldLoc.row-1).at(rookOldLoc.col-1);
-            std::shared_ptr<const Piece>& rookNewPtr = pieces.at(rookNewLoc.row-1).at(rookNewLoc.col-1);
+            std::shared_ptr<const Piece>& rookOldPtr = pieces.at(rookOldLoc.col-1).at(rookOldLoc.row-1);
+            std::shared_ptr<const Piece>& rookNewPtr = pieces.at(rookNewLoc.col-1).at(rookNewLoc.row-1);
             rookNewPtr=std::move(rookOldPtr);
 
         }
@@ -142,9 +142,9 @@ void ChessBoard::processMove(Move m) {
             blackPlayerState=cur_state;
         }
         // if was an enpassant capture, must remove the pawn it en-passanted
-        if (m.endingSquare == enPassant_targetSquare) {
+        if (m.endingSquare == enPassant_targetSquare && toupper(start_ptr->symbol() == 'P') && !end_ptr) {
             Square squareCaptured = m.endingSquare + ((start_ptr->symbol() =='P') ? Square(-1, 0) : Square(1, 0));
-            this->pieces.at(squareCaptured.row-1).at(squareCaptured.col-1) = PiecePtr();
+            this->pieces.at(squareCaptured.col-1).at(squareCaptured.row-1) = PiecePtr();
         }
         // update enPassantTargetSquare
         if (start_ptr && toupper(start_ptr->symbol()) == 'p' && maxNorm(m.endingSquare-m.startingSquare)>1) {
@@ -391,9 +391,9 @@ bool squareAttackedBy(const ChessBoard& board, Square target, bool attackerIsWhi
 Square ChessBoard::findKing(bool belongsToWhite) const {
     for (int r = 0; r < BOARD_SIZE; ++r) {
         for (int c = 0; c < BOARD_SIZE; ++c) {
-            std::shared_ptr<const Piece> p = pieces[r][c];
+            std::shared_ptr<const Piece> p = pieces[c][r];
             if (p && p->getBelongsToWhite() == belongsToWhite && std::toupper(p->symbol()) == 'K') {
-                return sq;
+                return {r+1, c+1};
             }
         }
     }
