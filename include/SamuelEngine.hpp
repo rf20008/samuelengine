@@ -39,5 +39,6 @@ protected:
 public:
     SamuelEngine(double tl, bool debug=false);
     virtual Move getMove(const ChessBoard&);
+    virtual ~SamuelEngine() {}
 };
 #endif

@@ -6,5 +6,6 @@ class HumanPlayer : public AbstractPlayer {
 public:
     HumanPlayer();
     virtual Move getMove(const ChessBoard&);
+    virtual ~HumanPlayer() {}
 };
 #endif
