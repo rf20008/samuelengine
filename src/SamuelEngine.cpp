@@ -176,10 +176,14 @@ std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_depth(
     if (gameOverMaybe) {
         return {*gameOverMaybe, Move(Square("a1"), Square("a2"))};
     }
-    std::vector<Move> moves = orderMoves(board);
-    if (depth==0 || moves.empty()) {
+    if (depth==0) {
         return {evaluate_chess_pos_without_depth(board), Move(Square("a1"), Square("a2"))};
     }
+    std::vector<Move> moves = orderMoves(board);
+    if (moves.empty()) {
+        return {evaluate_chess_pos_without_depth(board), Move(Square("a1"), Square("a2"))};
+    }
+    
     Move bestMove = *moves.begin();
     if (board.get_whiteToMove()) {
         double value = NEG_INF;
@@ -196,8 +200,6 @@ std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_depth(
             if (new_val >= beta) {
                 break; // beta cutoff
             }
-            
-            
         }
         return {value, bestMove};
     } else {
