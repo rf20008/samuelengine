@@ -128,7 +128,7 @@ double SamuelEngine::PieceValue(const PiecePtr ptr, const Square sq) const {
     double rel_intrinsic_val = relative_value(ptr);
     auto posValTable = getPosVal(ptr);
     double pos_val = posValTable.at(sq.row-1).at(sq.col-1);
-    return rel_intrinsic_val + pos_val;
+    return rel_intrinsic_val + 6*pos_val;
 }
 
 double SamuelEngine::relative_value(const ChessBoard& board, const bool isWhite) const {
