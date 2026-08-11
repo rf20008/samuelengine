@@ -6,5 +6,6 @@ class AbstractPlayer {
 public:
     AbstractPlayer();
     virtual Move getMove(const ChessBoard&) = 0;
+    virtual ~AbstractPlayer() {}
 };
 #endif
