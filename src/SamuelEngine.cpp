@@ -168,7 +168,7 @@ std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_depth(
     double alpha, 
     double beta
 ) {
-    if (shouldStop()) {
+    if ((numBoardsVisited & 127) == 0 && shouldStop()) {
         throw OutOfTime();
     }
     numBoardsVisited++;
