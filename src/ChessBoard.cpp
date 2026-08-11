@@ -104,6 +104,25 @@ void ChessBoard::processMove(Move m) {
 
 		// TODO: modify `Move` type to include castling as an option
         
+        if (this->move_is_castling(m)) {
+            // we need to move the rook
+            Square rookOldLoc;
+            Square rookNewLoc;
+            // was it kingside?
+            bool kingside = m.endingSquare.col > m.startingSquare.col;
+            if (kingside) {
+                rookOldLoc = Square(8, whiteToMove ? 1 : 8);
+                rookNewLoc = Square(6, whiteToMove ? 1 : 8);
+            } else {
+                rookOldLoc = Square(1, whiteToMove ? 1 : 8);
+                rookNewLoc = Square(4, whiteToMove ? 1 : 8);
+            }
+            // move the rook
+            std::shared_ptr<const Piece>& rookOldPtr = pieces.at(rookOldLoc.row-1).at(rookOldLoc.col-1);
+            std::shared_ptr<const Piece>& rookNewPtr = pieces.at(rookNewLoc.row-1).at(rookNewLoc.col-1);
+            rookNewPtr=std::move(rookOldPtr);
+
+        }
 
 		// TODO: update whitePlayerState, blackPlayerState
 
