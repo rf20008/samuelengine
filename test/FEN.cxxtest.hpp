@@ -32,11 +32,11 @@ class TestFEN : public CxxTest::TestSuite {
             TS_ASSERT_EQUALS(getCastlingPart(PlayerState(false, true), PlayerState(false, true)), "Kk");
         }
         void testGetEnPassantPart() {
-            TS_ASSERT_EQUALS(getEnPassantPart("e3"), std::optional<Square>(Square("e3")));
-            TS_ASSERT_THROWS_ANYTHING(getEnPassantPart("iurektwnv"));
-            TS_ASSERT_THROWS_ANYTHING(getEnPassantPart("h9"));
-            TS_ASSERT_THROWS_ANYTHING(getEnPassantPart("9h"));
-            TS_ASSERT_THROWS_ANYTHING(getEnPassantPart(""));
+            TS_ASSERT_EQUALS(parseEnPassantPart("e3"), std::optional<Square>(Square("e3")));
+            TS_ASSERT_THROWS_ANYTHING(parseEnPassantPart("iurektwnv"));
+            TS_ASSERT_THROWS_ANYTHING(parseEnPassantPart("h9"));
+            TS_ASSERT_THROWS_ANYTHING(parseEnPassantPart("9h"));
+            TS_ASSERT_THROWS_ANYTHING(parseEnPassantPart(""));
         }
 };  
 #endif
