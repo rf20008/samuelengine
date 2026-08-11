@@ -1,70 +1,70 @@
-#include <cxxtest/TestSuite.h>
-#include "Piece.hpp"
 #include "Bishop.hpp"
 #include "King.hpp"
 #include "Knight.hpp"
 #include "Pawn.hpp"
+#include "Piece.hpp"
 #include "Queen.hpp"
 #include "Rook.hpp"
+#include <cxxtest/TestSuite.h>
 
-class TestPiece: public CxxTest::TestSuite{
+class TestPiece : public CxxTest::TestSuite {
 	public:
-		void testWhiteBishop(){
+		void testWhiteBishop() {
 			Bishop b = Bishop(true);
 			TS_ASSERT_EQUALS(b.getBelongsToWhite(), true);
 			TS_ASSERT_EQUALS(b.symbol(), 'B');
 		}
-		void testBlackBishop(){
+		void testBlackBishop() {
 			Bishop b = Bishop(false);
 			TS_ASSERT_EQUALS(b.getBelongsToWhite(), false);
 			TS_ASSERT_EQUALS(b.symbol(), 'b');
 		}
-		void testWhiteKing(){
+		void testWhiteKing() {
 			King k = King(true);
 			TS_ASSERT_EQUALS(k.getBelongsToWhite(), true);
 			TS_ASSERT_EQUALS(k.symbol(), 'K');
 		}
-		void testBlackKing(){
+		void testBlackKing() {
 			King k = King(false);
 			TS_ASSERT_EQUALS(k.getBelongsToWhite(), false);
 			TS_ASSERT_EQUALS(k.symbol(), 'k');
 		}
-		void testWhiteKnight(){
+		void testWhiteKnight() {
 			Knight n = Knight(true);
 			TS_ASSERT_EQUALS(n.getBelongsToWhite(), true);
 			TS_ASSERT_EQUALS(n.symbol(), 'N');
 		}
-		void testBlackKnight(){
+		void testBlackKnight() {
 			Knight n = Knight(false);
 			TS_ASSERT_EQUALS(n.getBelongsToWhite(), false);
 			TS_ASSERT_EQUALS(n.symbol(), 'n');
 		}
-		void testWhitePawn(){
+		void testWhitePawn() {
 			Pawn p = Pawn(true);
 			TS_ASSERT_EQUALS(p.getBelongsToWhite(), true);
 			TS_ASSERT_EQUALS(p.symbol(), 'P');
 		}
-		void testBlackPawn(){
+		void testBlackPawn() {
 			Pawn p = Pawn(false);
 			TS_ASSERT_EQUALS(p.getBelongsToWhite(), false);
 			TS_ASSERT_EQUALS(p.symbol(), 'p');
 		}
-		void testWhiteQueen(){
+		void testWhiteQueen() {
 			Queen q = Queen(true);
 			TS_ASSERT_EQUALS(q.getBelongsToWhite(), true);
 			TS_ASSERT_EQUALS(q.symbol(), 'Q');
 		}
-		void testBlackQueen(){
+		void testBlackQueen() {
 			Queen q = Queen(false);
 			TS_ASSERT_EQUALS(q.getBelongsToWhite(), false);
 			TS_ASSERT_EQUALS(q.symbol(), 'q');
 		}
-		void testWhiteRook(){
+		void testWhiteRook() {
 			Rook r = Rook(true);
 			TS_ASSERT_EQUALS(r.getBelongsToWhite(), true);
 			TS_ASSERT_EQUALS(r.symbol(), 'R');
 		}
-		void testBlackRook(){
+		void testBlackRook() {
 			Rook r = Rook(false);
 			TS_ASSERT_EQUALS(r.getBelongsToWhite(), false);
 			TS_ASSERT_EQUALS(r.symbol(), 'r');

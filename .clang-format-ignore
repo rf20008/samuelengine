@@ -1,0 +1,8 @@
+.vscode/
+cxxtest/
+.gitignore
+Doxyfile
+Makefile
+MoSCoW.txt
+README.md
+SETUP_ONCE.sh

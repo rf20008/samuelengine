@@ -11,6 +11,8 @@ Files and folders checked in:
  * `src`: for source (`.cpp`) files, everything here will get compiled/linked (`src/main.cpp` provided)
  * `test`: for test source code using CxxTest
  * `res`: for resources (e.g. images); currently only has `.gitkeep`
+ * `.clang-format`
+ * `.clang-format-ignore` 
  * `.gitignore`
  * `Doxyfile`: configuration for Doxygen (currently unused)
  * `Makefile`
