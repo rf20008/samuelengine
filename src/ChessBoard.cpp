@@ -389,10 +389,9 @@ bool squareAttackedBy(const ChessBoard& board, Square target, bool attackerIsWhi
     
 
 Square ChessBoard::findKing(bool belongsToWhite) const {
-    for (int r = 1; r <= BOARD_SIZE; ++r) {
-        for (int c = 1; c <= BOARD_SIZE; ++c) {
-            Square sq(r, c);
-            std::shared_ptr<const Piece> p = this->getPiece(sq);
+    for (int r = 0; r < BOARD_SIZE; ++r) {
+        for (int c = 0; c < BOARD_SIZE; ++c) {
+            std::shared_ptr<const Piece> p = pieces[r][c];
             if (p && p->getBelongsToWhite() == belongsToWhite && std::toupper(p->symbol()) == 'K') {
                 return sq;
             }
@@ -554,7 +553,7 @@ bool ChessBoard::move_is_castling(const Move move) const {
 }
 bool ChessBoard::move_is_check(const Move move) const {
     ChessBoard newBoard = this->board_with_move(move);
-    return newBoard.isInCheck(true) || newBoard.isInCheck(false);
+    return newBoard.isInCheck(!whiteToMove);
 }
 bool ChessBoard::move_is_capture(const Move move) const {
     return static_cast<bool>(this->getPiece(move.endingSquare));
