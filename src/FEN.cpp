@@ -57,11 +57,11 @@ namespace ParsePieces {
         if (CastlingPart == "-") {return {whiteState, blackState};}
         for (char c : CastlingPart) {
             switch (c) {
-                case 'K': whiteState.canKingsideCastle = true;
-                case 'Q': whiteState.canQueensideCastle = true;
-                case 'k': blackState.canKingsideCastle = true;
-                case 'q': blackState.canQueensideCastle = true;
-                default: throw InvalidFEN("Unknown castling character " + std::string(c, 1));
+                case 'K': whiteState.canKingsideCastle = true; break;
+                case 'Q': whiteState.canQueensideCastle = true; break;
+                case 'k': blackState.canKingsideCastle = true; break;
+                case 'q': blackState.canQueensideCastle = true; break;
+                default: throw InvalidFEN("Unknown castling character " + std::string(1, c));
             }
         }
         return {whiteState, blackState};

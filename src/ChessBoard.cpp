@@ -16,7 +16,7 @@ vector<Square> getPawnDirs(int direction) {
     return pawnDirs;
 }
 
-ChessBoard::ChessBoard() : ChessBoard::ChessBoard("pppppppp/rnbqkbnr/8/8/8/8/RNBQKBNR/PPPPPPPP w KQkq - 0 1"){}
+ChessBoard::ChessBoard() : ChessBoard::ChessBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"){}
 
 ChessBoard::ChessBoard(const std::string& fen) {
     (void) fen;
@@ -75,25 +75,27 @@ std::shared_ptr<const Piece> ChessBoard::getPiece(Square sq) const {
     return pieces[sq.row - 1][sq.col - 1];
 }
 
-bool ChessBoard::isMoveLegal(Move m) const{
-    // check whether m is a legal move
-    // (may want to use allLegalMoves)
-    // to be done by Joshua
-    (void) m;
-    throw NotImplementedError("bool ChessBoard::isMoveLegal(Move m) is not yet implemented");
+bool ChessBoard::isMoveLegal(Move m) const {
+    // A move is legal exactly when its destination shows up among the legal
+    // destinations for whichever piece sits on the move's starting square --
+    // allLegalMoves(sq) does the real work of applying piece movement rules
+    // and rejecting anything that would leave our own king in check.
+    std::set<Move> legalMovesFromStart = allLegalMoves(m.startingSquare);
+    return legalMovesFromStart.count(m) > 0;
 } // return whether a move is legal
 
 void ChessBoard::processMove(Move m) {
 	if (this->isMoveLegal(m)){
-		// update fullmove_clock
+		// update fullmove_clock (increments once Black's move completes a full move pair)
 		this->fullmove_clock += (!this->whiteToMove);
-        
-		// TODO: update halfmove_clock
-		shared_ptr<const Piece>& start_ptr = this->pieces.at(m.startingSquare.row).at(m.endingSquare.col);
-		shared_ptr<const Piece>& end_ptr = this->pieces.at(m.endingSquare.row).at(m.endingSquare.col);
+
+		// Square rows/cols are 1-indexed, pieces is 0-indexed (see getPiece)
+		shared_ptr<const Piece>& start_ptr = this->pieces.at(m.startingSquare.row - 1).at(m.startingSquare.col - 1);
+		shared_ptr<const Piece>& end_ptr = this->pieces.at(m.endingSquare.row - 1).at(m.endingSquare.col - 1);
 		bool isCapture = (end_ptr != nullptr);
-		bool isPawnMove = (end_ptr != nullptr) && ((end_ptr->symbol() == 'p') || (end_ptr->symbol() == 'P'));
-		this->halfmove_clock += (isCapture || isPawnMove);
+		bool isPawnMove = (start_ptr != nullptr) && ((start_ptr->symbol() == 'p') || (start_ptr->symbol() == 'P'));
+		// the halfmove clock counts moves since the last capture/pawn move (for the 50-move rule), so it resets on either
+		this->halfmove_clock = (isCapture || isPawnMove) ? 0 : (this->halfmove_clock + 1);
 
 		// TODO: modify `Move` type to include castling as an option
 		// TODO: update whitePlayerState, blackPlayerState
@@ -101,6 +103,7 @@ void ChessBoard::processMove(Move m) {
 
 		// move the piece!
 		end_ptr = std::move(start_ptr);
+		this->whiteToMove = !this->whiteToMove;
 	}
 }
 
@@ -156,7 +159,7 @@ std::set<Square> ChessBoard::whereKingCouldMove(const Square origin) const {
 }
 
 std::set<Square> ChessBoard::wherePawnCouldMove(const Square origin) const {
-    PiecePtr pawn = getAndAssertPiece(origin, 'K');
+    PiecePtr pawn = getAndAssertPiece(origin, 'P');
     bool attackerIsWhite = pawn->getBelongsToWhite();
     int direction = attackerIsWhite ? 1 : -1; // pawns move up if white, down if black
     size_t canMoveTwoSpaces = ((attackerIsWhite) ? ((origin.row == 2) ? 1 : 0) : ((origin.row==7) ? 1 : 0));
@@ -239,7 +242,7 @@ std::set<Square> ChessBoard::whereRookCouldMove(const Square origin) const {
     return places;
 }
 std::set<Square> ChessBoard::whereQueenCouldMove(const Square origin) const {
-    PiecePtr queen = getAndAssertPiece(origin, 'R');
+    PiecePtr queen = getAndAssertPiece(origin, 'Q');
     bool attackerIsWhite = queen->getBelongsToWhite();
     std::set<Square> places;
     for (Square dir : {Square(-1, 0), Square(1, 0), Square(0, -1), Square(0,1), Square(-1, -1), Square(-1, 1), Square(1, -1), Square(1,1)}) {
@@ -415,11 +418,36 @@ std::string ChessBoard::fen() const {
 
 
 std::set<Move> ChessBoard::allLegalMoves(const Square sq) const {
-    // this method may need to be shared
-    // to be done by Andrew
-    // get all legal moves from the piece at the square indicated 
+    // get all legal moves from the piece at the square indicated
     // if there is no piece at that square, or if the piece at that square is owned by the opponent, return empty set
-    throw NotImplementedError("std::set<Move> ChessBoard::allLegalMoves() is not yet implemented");
+    std::set<Move> legalMoves;
+    std::set<Square> pseudoLegalDestinations = allPseudoLegalDestinations(sq);
+    if (pseudoLegalDestinations.empty()) {
+        return legalMoves; // no piece there, or it belongs to the opponent
+    }
+
+    bool moverIsWhite = getPiece(sq)->getBelongsToWhite();
+
+    for (const Square& dest : pseudoLegalDestinations) {
+        Move candidate{sq, dest};
+
+        // Simulate the move on a scratch copy of the board -- deliberately
+        // *not* going through processMove/isMoveLegal here, since that
+        // would call right back into allLegalMoves and recurse forever --
+        // then reject the move if it would leave our own king in check.
+        std::vector<std::vector<PiecePtr>> hypothetical = pieces;
+        hypothetical[dest.row - 1][dest.col - 1] = hypothetical[sq.row - 1][sq.col - 1];
+        hypothetical[sq.row - 1][sq.col - 1] = nullptr;
+
+        ChessBoard hypotheticalBoard(
+            hypothetical, whiteToMove, whitePlayerState, blackPlayerState,
+            halfmove_clock, fullmove_clock, enPassant_targetSquare.value_or(Square())
+        );
+        if (!hypotheticalBoard.isInCheck(moverIsWhite)) {
+            legalMoves.insert(candidate);
+        }
+    }
+    return legalMoves;
 }
 std::set<Move> ChessBoard::allLegalMoves() const {
     // done by Samuel
