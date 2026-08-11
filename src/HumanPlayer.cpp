@@ -33,8 +33,10 @@ namespace {
             return false;
         }
 
-        Square start(rankFrom - '0', fileFrom - 'a' + 1);
-        Square end(rankTo - '0', fileTo - 'a' + 1);
+        // Square.row is the file and Square.col is the rank (see
+        // Square::Square(std::string) in Square.hpp), so file goes first.
+        Square start(fileFrom - 'a' + 1, rankFrom - '0');
+        Square end(fileTo - 'a' + 1, rankTo - '0');
         out = Move{start, end};
         return true;
     }
