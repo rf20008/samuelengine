@@ -26,7 +26,7 @@ protected:
     double default_tl;
     std::chrono::steady_clock::time_point deadline;
 
-    std::vector<std::vector<double>> getPosVal(const PiecePtr ptr) const;
+    const std::vector<std::vector<double>>& getPosVal(const PiecePtr ptr) const;
     double relative_value(const PiecePtr ptr) const;
     std::optional<double> returnStatusIfGameOver(const ChessBoard& board) const;
     double PieceValue(const PiecePtr ptr, const Square sq) const;

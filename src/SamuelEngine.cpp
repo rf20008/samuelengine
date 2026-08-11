@@ -88,7 +88,7 @@ bool SamuelEngine::MoveOrderer::operator()(const Move& m1, const Move& m2) const
 }
 
 
-std::vector<std::vector<double>>& SamuelEngine::getPosVal(const PiecePtr ptr) const {
+const std::vector<std::vector<double>>& SamuelEngine::getPosVal(const PiecePtr ptr) const {
     switch (toupper(ptr->symbol())) {
         case 'K': return king_pieceval;
         case 'Q': return queen_pieceval;
