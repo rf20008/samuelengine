@@ -37,7 +37,7 @@ class TestSquare : public CxxTest::TestSuite {
 			Square s = Square(4, 6);
 			TS_ASSERT_EQUALS(s.toString(), "d6");
 		}
-		void testSubtract(){
+		void testSubtract() {
 			Square s = Square(-7, 2) - Square(-10, -9);
 			TS_ASSERT_EQUALS(s, Square(3, 11));
 		}
