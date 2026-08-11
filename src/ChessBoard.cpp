@@ -224,7 +224,7 @@ std::set<Square> ChessBoard::whereBishopCouldMove(const Square origin) const {
     }
     return places;
 }
-std::set<Square> ChessBoard::whereBishopCouldMove(const Square origin) const {
+std::set<Square> ChessBoard::whereRookCouldMove(const Square origin) const {
     PiecePtr rook = getAndAssertPiece(origin, 'R');
     bool attackerIsWhite = rook->getBelongsToWhite();
     std::set<Square> places;
@@ -233,7 +233,7 @@ std::set<Square> ChessBoard::whereBishopCouldMove(const Square origin) const {
     }
     return places;
 }
-std::set<Square> ChessBoard::whereBishopCouldMove(const Square origin) const {
+std::set<Square> ChessBoard::whereQueenCouldMove(const Square origin) const {
     PiecePtr queen = getAndAssertPiece(origin, 'R');
     bool attackerIsWhite = queen->getBelongsToWhite();
     std::set<Square> places;
@@ -242,11 +242,32 @@ std::set<Square> ChessBoard::whereBishopCouldMove(const Square origin) const {
     }
     return places;
 }
+
+
+std::set<Square> ChessBoard::allPseudoLegalDestinations(const Square origin) const {
+    PiecePtr piece = getPiece(origin);
+    std::set<Square> moves;
+    if (!piece) return moves; // no piece there
+    if (piece->getBelongsToWhite() != whiteToMove) return moves; // can't move the piece, is of wrong color
+    switch (toupper(piece->symbol())) {
+        case 'R': return whereRookCouldMove(origin);
+        case 'B': return whereBishopCouldMove(origin);
+        case 'Q': return whereQueenCouldMove(origin);
+        case 'N': return whereKnightCouldMove(origin);
+        case 'P': return wherePawnCouldMove(origin);
+        case 'K': return whereKingCouldMove(origin);
+        default: throw UnknownPiece("unknown piece");
+    }
+
+}
 // Is `target` attacked by any piece belonging to `attackerIsWhite`?
 // This is a raw-attack check (used to detect check): it only asks
 // "could this piece capture on `target` right now", not whether doing
 // so would be a legal move for the attacker.
 bool squareAttackedBy(const ChessBoard& board, Square target, bool attackerIsWhite) {
+    // get all the psuedo-legal moves
+    // and check if they would end on the target
+
     static const Square knightOffsets[] = {
         {1, 2}, {2, 1}, {-1, 2}, {-2, 1}, {1, -2}, {2, -1}, {-1, -2}, {-2, -1}
     };

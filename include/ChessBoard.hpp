@@ -95,6 +95,7 @@ class ChessBoard {
         std::set<Square> whereBishopCouldMove(const Square origin) const;
         std::set<Square> whereRookCouldMove(const Square origin) const;
         std::set<Square> whereQueenCouldMove(const Square origin) const;
+        std::set<Square> ChessBoard::allPseudoLegalDestinations(const Square origin) const;
 
         std::set<Move> allLegalMoves(const Square sq) const;
         std::set<Move> allLegalMoves() const;
