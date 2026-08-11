@@ -103,10 +103,28 @@ void ChessBoard::processMove(Move m) {
 		this->halfmove_clock = (isCapture || isPawnMove) ? 0 : (this->halfmove_clock + 1);
 
 		// TODO: modify `Move` type to include castling as an option
+
 		// TODO: update whitePlayerState, blackPlayerState
-		// TODO: update enPassant_targetSquare)
+
+        PlayerState cur_state = whiteToMove?whitePlayerState:blackPlayerState;
+        
+        // if king moved, both are gone
+        if (toupper(start_ptr -> symbol()) == 'K') cur_state = PlayerState(false, false);
+
+        // if rook on a file moved, queenside is gone
+        if (toupper(start_ptr->symbol()) == 'R' && m.startingSquare==Square(1, whiteToMove ? 1 : 8)) cur_state.canQueensideCastle=false;
+        // if rook on h file moved, kingside is gone
+        if (toupper(start_ptr->symbol()) == 'R' && m.startingSquare==Square(9, whiteToMove ? 1 : 8)) cur_state.canKingsideCastle=false;
+
+        if (whiteToMove) {
+            whitePlayerState=cur_state;
+        } else {
+            blackPlayerState=cur_state;
+        }
+
+        // update enPassantTargetSquare
         if (start_ptr && toupper(start_ptr->symbol()) == 'p' && maxNorm(m.endingSquare-m.startingSquare)>1) {
-            enPassant_targetSquare = m.startingSquare + ((shared_ptr->symbol() =='p') ? Square(1, 0) : Square(-1, 0));
+            enPassant_targetSquare = m.startingSquare + ((start_ptr->symbol() =='p') ? Square(1, 0) : Square(-1, 0));
         }
 		// move the piece!
 		end_ptr = std::move(start_ptr);
