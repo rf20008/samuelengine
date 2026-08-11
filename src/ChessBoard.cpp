@@ -129,7 +129,7 @@ const Square kingOffsets[] = {
     {-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1,-1}, {1,0}, {1, 1}
 };
 
-PiecePtr getAndAssertPiece(const Square origin, const char pieceType) const {
+PiecePtr ChessBoard::getAndAssertPiece(const Square origin, const char pieceType) const {
     // get the piece at origin, and assert it is of tpe pieceTzype
     PiecePtr ptr = getPiece(origin);
     if (!ptr || toupper(ptr->symbol()) != toupper(pieceType)) throw WrongPieceType("Wrong piece type at origin");
