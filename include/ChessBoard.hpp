@@ -91,7 +91,7 @@ class ChessBoard {
         std::set<Square> whereKingCouldMove(const Square origin) const;
         std::set<Square> wherePawnCouldMove(const Square origin) const;
         std::set<Square> whereKnightCouldMove(const Square origin) const;
-        bool isSlidingAttacker(const Square from, const Square dir, bool attackerIsWhite) const;
+        std::set<Square> isSlidingAttacker(const Square from, const Square dir, bool attackerIsWhite) const;
         std::set<Square> whereBishopCouldMove(const Square origin) const;
         std::set<Square> whereRookCouldMove(const Square origin) const;
         std::set<Square> whereQueenCouldMove(const Square origin) const;

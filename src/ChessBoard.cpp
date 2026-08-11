@@ -11,7 +11,10 @@
 using namespace std;
 
 
-
+vector<Square> getPawnDirs(int direction) {
+    vector<Square> pawnDirs {Square(direction, -1), Square(direction, 1)};
+    return pawnDirs;
+}
 
 ChessBoard::ChessBoard() : ChessBoard::ChessBoard("pppppppp/rnbqkbnr/8/8/8/8/RNBQKBNR/PPPPPPPP w KQkq - 0 1"){}
 
@@ -159,7 +162,7 @@ std::set<Square> ChessBoard::wherePawnCouldMove(const Square origin) const {
     size_t canMoveTwoSpaces = ((attackerIsWhite) ? ((origin.row == 2) ? 1 : 0) : ((origin.row==7) ? 1 : 0));
     // check 2 capturing pieces
     std::set<Square> places;
-    for (const Square& off : {Square(direction, -1), Square(direction, 1)}) {
+    for (const Square& off : getPawnDirs(direction)) {
         Square target = origin + off;
         if (!target.isValid()) continue;
         // if there is a piece of a different color, then it's okay
@@ -169,8 +172,8 @@ std::set<Square> ChessBoard::wherePawnCouldMove(const Square origin) const {
     }
     // consider the spaces it can move
     for (size_t i = 1; i<=(1+canMoveTwoSpaces); ++i) {
-        Square firstTarget = origin + Square({i*direction, 0});
-        if (!firstTarget.isValid()) continue;
+        Square target = origin + Square(i*direction, 0);
+        if (!target.isValid()) continue;
         PiecePtr p = getPiece(target);
         if (p) break;
         else {places.insert(target);}
@@ -201,7 +204,7 @@ std::set<Square> ChessBoard::isSlidingAttacker(const Square from, const Square d
     Square cur = from + dir;
     std::set<Square> places;
     while (cur.isValid()) {
-        PiecePtr p = board.getPiece(cur);
+        PiecePtr p = getPiece(cur);
         if (p) {
             if (p->getBelongsToWhite() != attackerIsWhite) {
                 // not of same color, so can capture!
@@ -215,6 +218,8 @@ std::set<Square> ChessBoard::isSlidingAttacker(const Square from, const Square d
     }
     return places;
 }
+
+
 std::set<Square> ChessBoard::whereBishopCouldMove(const Square origin) const {
     PiecePtr bishop = getAndAssertPiece(origin, 'B');
     bool attackerIsWhite = bishop->getBelongsToWhite();
