@@ -33,4 +33,8 @@ class TestSquare : public CxxTest::TestSuite {
 			TS_ASSERT(Square(3, 7) < Square(3, 8));
 			TS_ASSERT(!(Square(4, 8) < Square(3, 1)));
 		}
+		void testSubtract(){
+			Square s = Square(-7, 2) - Square(-10, -9);
+			TS_ASSERT_EQUALS(s, Square(3, 11));
+		}
 };
