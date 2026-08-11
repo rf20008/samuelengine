@@ -22,6 +22,11 @@ class InvalidFEN : public std::runtime_error {
         InvalidFEN(const std::string& message) : std::runtime_error(message) {}
 };
 
+class WrongPieceType : public std::logic_error {
+    public:
+        WrongPieceType(const std::string& message) : std::logic_error(message) {}
+};
+
 class OutOfTime : public std::exception {
     private:
         std::string message;

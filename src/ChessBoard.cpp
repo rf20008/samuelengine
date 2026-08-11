@@ -9,7 +9,9 @@
 #include <optional>
 using namespace std;
 
-
+static const Square knightOffsets[] = {
+    {1, 2}, {2, 1}, {-1, 2}, {-2, 1}, {1, -2}, {2, -1}, {-1, -2}, {-2, -1}
+};
 
 
 ChessBoard::ChessBoard() : ChessBoard::ChessBoard("pppppppp/rnbqkbnr/8/8/8/8/RNBQKBNR/PPPPPPPP w KQkq - 0 1"){}
@@ -83,7 +85,7 @@ void ChessBoard::processMove(Move m) {
 	if (this->isMoveLegal(m)){
 		// update fullmove_clock
 		this->fullmove_clock += (!this->whiteToMove);
-
+        
 		// TODO: update halfmove_clock
 		shared_ptr<const Piece>& start_ptr = this->pieces.at(m.startingSquare.row).at(m.endingSquare.col);
 		shared_ptr<const Piece>& end_ptr = this->pieces.at(m.endingSquare.row).at(m.endingSquare.col);
@@ -100,91 +102,158 @@ void ChessBoard::processMove(Move m) {
 	}
 }
 
-namespace {
-    // Is there a piece belonging to `attackerIsWhite` on the far end of the
-    // ray starting at `from` and stepping by `dir` (one step at a time) that
-    // could capture along that ray -- i.e. a rook/queen on a rank/file ray,
-    // or a bishop/queen on a diagonal ray? The ray stops at the first
-    // occupied square either way (that piece blocks anything behind it).
-    bool isSlidingAttacker(const ChessBoard& board, Square from, Square dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) {
-        Square cur = from + dir;
-        while (cur.isValid()) {
-            std::shared_ptr<const Piece> p = board.getPiece(cur);
-            if (p) {
-                if (p->getBelongsToWhite() == attackerIsWhite) {
-                    char sym = static_cast<char>(std::toupper(p->symbol()));
-                    if (sym == pieceLetterA || sym == pieceLetterB) {
-                        return true;
-                    }
-                }
-                return false; // occupied, so the ray is blocked past here regardless
-            }
-            cur = cur + dir;
-        }
-        return false;
-    }
 
-    // Is `target` attacked by any piece belonging to `attackerIsWhite`?
-    // This is a raw-attack check (used to detect check): it only asks
-    // "could this piece capture on `target` right now", not whether doing
-    // so would be a legal move for the attacker.
-    bool squareAttackedBy(const ChessBoard& board, Square target, bool attackerIsWhite) {
-        static const Square knightOffsets[] = {
-            {1, 2}, {2, 1}, {-1, 2}, {-2, 1}, {1, -2}, {2, -1}, {-1, -2}, {-2, -1}
-        };
-        for (const Square& off : knightOffsets) {
-            Square sq = target + off;
-            if (!sq.isValid()) continue;
-            std::shared_ptr<const Piece> p = board.getPiece(sq);
-            if (p && p->getBelongsToWhite() == attackerIsWhite && std::toupper(p->symbol()) == 'N') {
-                return true;
-            }
-        }
-
-        for (int dr = -1; dr <= 1; ++dr) {
-            for (int dc = -1; dc <= 1; ++dc) {
-                if (dr == 0 && dc == 0) continue;
-                Square sq = target + Square(dr, dc);
-                if (!sq.isValid()) continue;
-                std::shared_ptr<const Piece> p = board.getPiece(sq);
-                if (p && p->getBelongsToWhite() == attackerIsWhite && std::toupper(p->symbol()) == 'K') {
+// Is there a piece belonging to `attackerIsWhite` on the far end of the
+// ray starting at `from` and stepping by `dir` (one step at a time) that
+// could capture along that ray -- i.e. a rook/queen on a rank/file ray,
+// or a bishop/queen on a diagonal ray? The ray stops at the first
+// occupied square either way (that piece blocks anything behind it).
+bool isSlidingAttacker(const ChessBoard& board, Square from, Square dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) {
+    Square cur = from + dir;
+    while (cur.isValid()) {
+        std::shared_ptr<const Piece> p = board.getPiece(cur);
+        if (p) {
+            if (p->getBelongsToWhite() == attackerIsWhite) {
+                char sym = static_cast<char>(std::toupper(p->symbol()));
+                if (sym == pieceLetterA || sym == pieceLetterB) {
                     return true;
                 }
             }
+            return false; // occupied, so the ray is blocked past here regardless
         }
+        cur = cur + dir;
+    }
+    return false;
+}
 
-        // A pawn attacks diagonally, one row "ahead" of where it sits (from
-        // its own side's perspective): white pawns advance toward higher
-        // rows, so an attacking white pawn sits one row *below* the target.
-        int behind = attackerIsWhite ? -1 : 1;
-        for (int dc : {-1, 1}) {
-            Square sq = target + Square(behind, dc);
-            if (!sq.isValid()) continue;
-            std::shared_ptr<const Piece> p = board.getPiece(sq);
-            if (p && p->getBelongsToWhite() == attackerIsWhite && std::toupper(p->symbol()) == 'P') {
-                return true;
-            }
+const Square kingOffsets[] = {
+    {-1, -1}, {-1, 0}, {-1, 1}, {0, -1}, {0, 1}, {1,-1}, {1,0}, {1, 1}
+};
+
+PiecePtr getAndAssertPiece(const Square origin, const char pieceType) const {
+    // get the piece at origin, and assert it is of tpe pieceTzype
+    PiecePtr ptr = getPiece(origin);
+    if (!ptr || toupper(ptr->symbol()) != toupper(pieceType)) throw WrongPieceType("Wrong piece type at origin");
+    return ptr;
+}
+std::set<Square> ChessBoard::whereKingCouldMove(const Square origin) const {
+    // get al neighboring places
+    PiecePtr king = getAndAssertPiece(origin, 'K');
+    bool attackerIsWhite = king->getBelongsToWhite();
+
+    std::set<Square> places;
+    for (const Square& off : kingOffsets) {
+        Square target = origin + off;
+        if (!target.isValid()) continue;
+        // if there is a piece of a different color, then it's okay
+        // else not
+        Piece p = getPiece(target);
+        if ((!p) || (p && p->getBelongsToWhite() != attackerIsWhite)) places.insert(target);
+    }
+    return places;
+}
+
+std::set<Square> ChessBoard::wherePawnCouldMove(const Square origin) const {
+    PiecePtr pawn = getAndAssertPiece(origin, 'K');
+    bool attackerIsWhite = pawn->getBelongsToWhite();
+    int direction = attackerIsWhite ? 1 : -1; // pawns move up if white, down if black
+    bool canMoveTwoSpaces = (attackerIsWhite) ? (origin.row == 2) || (origin.row==7);
+    // check 2 capturing pieces
+    std::set<Square> places;
+    for (const Square& off : {Square(direction, -1), Square(direction, 1)}) {
+        Square target = origin + off;
+        if (!target.isValid()) continue;
+        // if there is a piece of a different color, then it's okay
+        // else not
+        PiecePtr p = getPiece(target);
+        if ((p && p->getBelongsToWhite() != attackerIsWhite)) places.insert(target);
+    }
+    // consider the spaces it can move
+    for (size_t i = 1; i<=(1+canMoveTwoSpaces); ++i) {
+        Square firstTarget = origin + Square({i*direction, 0});
+        if (!firstTarget.isValid()) continue;
+        PiecePtr p = getPiece(target);
+        if (p) break;
+        else {places.insert(target);}
+    }
+    return places;
+}
+std::set<Square> ChessBoard::whereKnightCouldMove(const Square origin) const {
+    throw NotImplementedError("Error: std::set<Square> ChessBoard::whereKnightCouldMove(const Square origin) const is not implemented yet");
+}
+bool ChessBoard::isSlidingAttacker(Square from, Square dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) {
+    throw NotImplementedError("Error: bool ChessBoard::isSlidingAttacker(const ChessBoard& board, Square from, Square dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) is not implemented yet");
+}
+std::set<Square> ChessBoard::whereBishopCouldMove(const Square origin) const {
+    throw NotImplementedError("std::set<Square> ChessBoard::whereBishopCouldMove(const Square origin) const is not implemented yet");
+}
+std::set<Square> ChessBoard::whereRookCouldMove(const Square origin) const {
+    throw NotImplementedError("std::set<Square> ChessBoard::whereRookCouldMove(const Square origin) const  is not implemented yet");
+}
+std::set<Square> ChessBoard::whereQueenCouldMove(const Square origin) const {
+    throw NotImplementedError("std::set<Square> ChessBoard::whereQueenCouldMove(const Square origin) const  const is not implemented yet");
+}
+// Is `target` attacked by any piece belonging to `attackerIsWhite`?
+// This is a raw-attack check (used to detect check): it only asks
+// "could this piece capture on `target` right now", not whether doing
+// so would be a legal move for the attacker.
+bool squareAttackedBy(const ChessBoard& board, Square target, bool attackerIsWhite) {
+    static const Square knightOffsets[] = {
+        {1, 2}, {2, 1}, {-1, 2}, {-2, 1}, {1, -2}, {2, -1}, {-1, -2}, {-2, -1}
+    };
+    for (const Square& off : knightOffsets) {
+        Square sq = target + off;
+        if (!sq.isValid()) continue;
+        std::shared_ptr<const Piece> p = board.getPiece(sq);
+        if (p && p->getBelongsToWhite() == attackerIsWhite && std::toupper(p->symbol()) == 'N') {
+            return true;
         }
-
-        static const Square rookDirs[] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
-        for (const Square& dir : rookDirs) {
-            if (isSlidingAttacker(board, target, dir, attackerIsWhite, 'R', 'Q')) {
-                return true;
-            }
-        }
-
-        static const Square bishopDirs[] = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
-        for (const Square& dir : bishopDirs) {
-            if (isSlidingAttacker(board, target, dir, attackerIsWhite, 'B', 'Q')) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
-    
+    for (int dr = -1; dr <= 1; ++dr) {
+        for (int dc = -1; dc <= 1; ++dc) {
+            if (dr == 0 && dc == 0) continue;
+            Square sq = target + Square(dr, dc);
+            if (!sq.isValid()) continue;
+            std::shared_ptr<const Piece> p = board.getPiece(sq);
+            if (p && p->getBelongsToWhite() == attackerIsWhite && std::toupper(p->symbol()) == 'K') {
+                return true;
+            }
+        }
+    }
+
+    // A pawn attacks diagonally, one row "ahead" of where it sits (from
+    // its own side's perspective): white pawns advance toward higher
+    // rows, so an attacking white pawn sits one row *below* the target.
+    int behind = attackerIsWhite ? -1 : 1;
+    for (int dc : {-1, 1}) {
+        Square sq = target + Square(behind, dc);
+        if (!sq.isValid()) continue;
+        std::shared_ptr<const Piece> p = board.getPiece(sq);
+        if (p && p->getBelongsToWhite() == attackerIsWhite && std::toupper(p->symbol()) == 'P') {
+            return true;
+        }
+    }
+
+    static const Square rookDirs[] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+    for (const Square& dir : rookDirs) {
+        if (isSlidingAttacker(board, target, dir, attackerIsWhite, 'R', 'Q')) {
+            return true;
+        }
+    }
+
+    static const Square bishopDirs[] = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
+    for (const Square& dir : bishopDirs) {
+        if (isSlidingAttacker(board, target, dir, attackerIsWhite, 'B', 'Q')) {
+            return true;
+        }
+    }
+
+    return false;
 }
+
+    
+
 Square ChessBoard::findKing(bool belongsToWhite) const {
     for (int r = 1; r <= BOARD_SIZE; ++r) {
         for (int c = 1; c <= BOARD_SIZE; ++c) {
@@ -267,6 +336,19 @@ std::string ChessBoard::fen() const {
     std::string halfMovePart = std::to_string(halfmove_clock);
     std::string fullMovePart = std::to_string(fullmove_clock);
     return PiecePart + " " + PlayerPart + " " + CastlingPart + " " + enPassantPart + " " + halfMovePart + " " + fullMovePart;
+}
+std::set<Square> ChessBoard::whereKnightCouldMove(Square origin) {
+    PiecePtr piece = this->getPiece(origin);
+    std::set<Square> places;
+
+    for (const Square& off : knightOffsets) {
+        Square sq = target + off;
+        if (!sq.isValid()) continue;
+        std::shared_ptr<const Piece> p = board.getPiece(sq);
+        if (p && p->getBelongsToWhite() == attackerIsWhite && std::toupper(p->symbol()) == 'N') {
+            return true;
+        }
+    }
 }
 
 std::set<Move> ChessBoard::allLegalMoves(const Square sq) const {

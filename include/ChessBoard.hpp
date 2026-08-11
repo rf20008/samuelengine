@@ -79,6 +79,17 @@ class ChessBoard {
 
         // for engine use
         std::string fen() const;
+
+        PiecePtr getAndAssertPiece(const Square origin, const char pieceType) const;
+        
+        std::set<Square> whereKingCouldMove(const Square origin) const;
+        std::set<Square> wherePawnCouldMove(const Square origin) const;
+        std::set<Square> whereKnightCouldMove(const Square origin) const;
+        bool isSlidingAttacker(const ChessBoard& board, Square from, Square dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB)
+        std::set<Square> whereBishopCouldMove(const Square origin) const;
+        std::set<Square> whereRookCouldMove(const Square origin) const;
+        std::set<Square> whereQueenCouldMove(const Square origin) const;
+
         std::set<Move> allLegalMoves(const Square sq) const;
         std::set<Move> allLegalMoves() const;
 
