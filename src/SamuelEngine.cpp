@@ -12,7 +12,7 @@ using namespace std;
 const double INFINITY = std::numeric_limits<double>::infinity();
 const double NEG_INF = -INFINITY;
 
-// todo: move ordering
+// todo: move ordering (is castling=4, check=3, capture=2, pawn move=1, other=0)
 const std::vector<std::vector<double>> pawn_pieceval = {
     {7.0, 8.0, 9.0, 10.0, 10.0, 9.0, 8.0, 7.0},  // 8th rank
     {3.0, 4.0, 5.0, 6.0, 6.0, 5.0, 4.0, 3.0},       // 7th rank

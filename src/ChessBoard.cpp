@@ -82,7 +82,7 @@ bool ChessBoard::isMoveLegal(Move m) const{
 void ChessBoard::processMove(Move m) {
 	if (this->isMoveLegal(m)){
 		// update fullmove_clock
-		this->fullmove_clock += (not this->whiteToMove);
+		this->fullmove_clock += (!this->whiteToMove);
 
 		// TODO: update halfmove_clock
 		// TODO: update whitePlayerState, blackPlayerState
@@ -299,4 +299,32 @@ std::ostream& operator<<(std::ostream& os, const ChessBoard& board) {
 		os << endl;
 	}
 	return os;
+}
+
+ChessBoard ChessBoard::board_with_move(const Move& move) const {
+    ChessBoard newBoard = (*this);
+    newBoard.processMove(move);
+    return newBoard;
+}
+bool ChessBoard::move_ends_game(const Move move) const {
+    ChessBoard newBoard = this->board_with_move(move);
+    return isGameOver(newBoard.getStatus());
+}
+bool ChessBoard::move_is_castling(const Move move) const {
+    PiecePtr pieceAtBeginning = this->getPiece(move.startingSquare);
+    if (!pieceAtBeginning || toupper(pieceAtBeginning->symbol()) != 'K') return false;
+    Square diff = move.endingSquare - move.startingSquare;
+    return max(abs(diff.row), abs(diff.col)) > 1;
+}
+bool ChessBoard::move_is_check(const Move move) const {
+    ChessBoard newBoard = this->board_with_move(move);
+    return newBoard.isInCheck(true) || newBoard.isInCheck(false);
+}
+bool ChessBoard::move_is_capture(const Move move) const {
+    return static_cast<bool>(this->getPiece(move.endingSquare));
+}
+bool ChessBoard::move_is_zeroing(const Move move) const {
+    if (this->move_is_capture(move)) return true;
+    PiecePtr pieceAtBeginning = this->getPiece(move.startingSquare);
+    return (static_cast<bool>(pieceAtBeginning) && toupper(pieceAtBeginning->symbol()) == 'P');
 }

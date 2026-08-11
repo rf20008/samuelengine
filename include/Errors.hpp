@@ -27,7 +27,7 @@ class OutOfTime : public std::exception {
         std::string message;
     public:
         OutOfTime(const std::string& err = "Search stopped") : message(err) {}
-        virtual const char* what() {
+        virtual const char* what() const noexcept override {
             return message.c_str();
         }
 };

@@ -83,5 +83,15 @@ class ChessBoard {
         std::set<Move> allLegalMoves() const;
 
         friend std::ostream& operator<<(std::ostream& os, const ChessBoard& board);
+
+        // move evaluation
+        ChessBoard board_with_move(const Move& move) const; // return a copy of the board, with move move applied
+        bool move_ends_game(const Move move) const;
+        bool move_is_castling(const Move move) const;
+        bool move_is_check(const Move move) const;
+        bool move_is_capture(const Move m) const;
+        bool move_is_zeroing(const Move m) const;
+
+
 };
 #endif

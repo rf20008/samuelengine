@@ -35,6 +35,8 @@ public:
     std::string toString() {
         return std::string('a' + this->row - 1, 1) + std::string('1' + this->col - 1, 1);
     }
+    Square operator-(const Square& other) const {
+        return Square(row-other.row, col-other.col);
+    }
 };
-
 #endif
