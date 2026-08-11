@@ -12,7 +12,9 @@ using namespace std;
 
 
 vector<Square> getPawnDirs(int direction) {
-    vector<Square> pawnDirs {Square(direction, -1), Square(direction, 1)};
+    // Square.row is the file, Square.col is the rank, and pawns capture
+    // diagonally: one file over (row), one rank forward (col, by direction).
+    vector<Square> pawnDirs {Square(-1, direction), Square(1, direction)};
     return pawnDirs;
 }
 
@@ -71,8 +73,11 @@ std::shared_ptr<const Piece> ChessBoard::getPiece(Square sq) const {
     if (!sq.isValid()) {
         return nullptr;
     }
-    // Square rows/cols are 1-indexed (see Square::isValid), pieces is 0-indexed
-    return pieces[sq.row - 1][sq.col - 1];
+    // Square rows/cols are 1-indexed (see Square::isValid), pieces is 0-indexed.
+    // pieces is stored rank-major (see ParsePieces::parsePiecePart), while
+    // Square.row is the file and Square.col is the rank -- so the rank
+    // (col) is the outer index and the file (row) is the inner one.
+    return pieces[sq.col - 1][sq.row - 1];
 }
 
 bool ChessBoard::isMoveLegal(Move m) const {
@@ -89,9 +94,9 @@ void ChessBoard::processMove(Move m) {
 		// update fullmove_clock (increments once Black's move completes a full move pair)
 		this->fullmove_clock += (!this->whiteToMove);
 
-		// Square rows/cols are 1-indexed, pieces is 0-indexed (see getPiece)
-		shared_ptr<const Piece>& start_ptr = this->pieces.at(m.startingSquare.row - 1).at(m.startingSquare.col - 1);
-		shared_ptr<const Piece>& end_ptr = this->pieces.at(m.endingSquare.row - 1).at(m.endingSquare.col - 1);
+		// Square rows/cols are 1-indexed, pieces is 0-indexed and rank-major (see getPiece)
+		shared_ptr<const Piece>& start_ptr = this->pieces.at(m.startingSquare.col - 1).at(m.startingSquare.row - 1);
+		shared_ptr<const Piece>& end_ptr = this->pieces.at(m.endingSquare.col - 1).at(m.endingSquare.row - 1);
 		bool isCapture = (end_ptr != nullptr);
 		bool isPawnMove = (start_ptr != nullptr) && ((start_ptr->symbol() == 'p') || (start_ptr->symbol() == 'P'));
 		// the halfmove clock counts moves since the last capture/pawn move (for the 50-move rule), so it resets on either
@@ -162,7 +167,8 @@ std::set<Square> ChessBoard::wherePawnCouldMove(const Square origin) const {
     PiecePtr pawn = getAndAssertPiece(origin, 'P');
     bool attackerIsWhite = pawn->getBelongsToWhite();
     int direction = attackerIsWhite ? 1 : -1; // pawns move up if white, down if black
-    size_t canMoveTwoSpaces = ((attackerIsWhite) ? ((origin.row == 2) ? 1 : 0) : ((origin.row==7) ? 1 : 0));
+    // origin.col is the rank: white's pawns start on rank 2, black's on rank 7.
+    size_t canMoveTwoSpaces = ((attackerIsWhite) ? ((origin.col == 2) ? 1 : 0) : ((origin.col==7) ? 1 : 0));
     // check 2 capturing pieces
     std::set<Square> places;
     for (const Square& off : getPawnDirs(direction)) {
@@ -175,7 +181,7 @@ std::set<Square> ChessBoard::wherePawnCouldMove(const Square origin) const {
     }
     // consider the spaces it can move
     for (size_t i = 1; i<=(1+canMoveTwoSpaces); ++i) {
-        Square target = origin + Square(i*direction, 0);
+        Square target = origin + Square(0, i*direction);
         if (!target.isValid()) continue;
         PiecePtr p = getPiece(target);
         if (p) break;
@@ -300,12 +306,13 @@ bool squareAttackedBy(const ChessBoard& board, Square target, bool attackerIsWhi
         }
     }
 
-    // A pawn attacks diagonally, one row "ahead" of where it sits (from
+    // A pawn attacks diagonally, one rank "ahead" of where it sits (from
     // its own side's perspective): white pawns advance toward higher
-    // rows, so an attacking white pawn sits one row *below* the target.
+    // ranks, so an attacking white pawn sits one rank *below* the target.
+    // Square.row is the file, Square.col is the rank.
     int behind = attackerIsWhite ? -1 : 1;
     for (int dc : {-1, 1}) {
-        Square sq = target + Square(behind, dc);
+        Square sq = target + Square(dc, behind);
         if (!sq.isValid()) continue;
         std::shared_ptr<const Piece> p = board.getPiece(sq);
         if (p && p->getBelongsToWhite() == attackerIsWhite && std::toupper(p->symbol()) == 'P') {
@@ -436,8 +443,8 @@ std::set<Move> ChessBoard::allLegalMoves(const Square sq) const {
         // would call right back into allLegalMoves and recurse forever --
         // then reject the move if it would leave our own king in check.
         std::vector<std::vector<PiecePtr>> hypothetical = pieces;
-        hypothetical[dest.row - 1][dest.col - 1] = hypothetical[sq.row - 1][sq.col - 1];
-        hypothetical[sq.row - 1][sq.col - 1] = nullptr;
+        hypothetical[dest.col - 1][dest.row - 1] = hypothetical[sq.col - 1][sq.row - 1];
+        hypothetical[sq.col - 1][sq.row - 1] = nullptr;
 
         ChessBoard hypotheticalBoard(
             hypothetical, whiteToMove, whitePlayerState, blackPlayerState,
