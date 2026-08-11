@@ -1,3 +1,5 @@
+#ifndef CS3520_FEN_CXXTEST_HPP
+#define CS3520_FEN_CXXTEST_HPP
 #include "FEN.hpp"
 
 #include "cxxtest/TestSuite.h"
@@ -11,4 +13,10 @@ class TestFEN : public CxxTest::TestSuite {
         TS_ASSERT_THROWS_ANYTHING(parsePlayerPart("t"));
         TS_ASSERT_THROWS_ANYTHING(parsePlayerPart("ttt"));
     }
+    void testGetPlayerPart() {
+        TS_ASSERT_EQUALS(getPlayerPart(true), "w");
+        TS_ASSERT_EQUALS(getPlayerPart(false), "b");
+    }
+    void test
 }
+#endif
