@@ -33,7 +33,8 @@ public:
         return !(this->operator==(other));
     }
     std::string toString() {
-        return std::string('a' + this->row - 1, 1) + std::string('1' + this->col - 1, 1);
+	// note: number has to go first because the second argument is of type char, not char*
+        return std::string(1, 'a' + this->row - 1) + std::string(1, '1' + this->col - 1);
     }
     Square operator-(const Square& other) const {
         return Square(row-other.row, col-other.col);
