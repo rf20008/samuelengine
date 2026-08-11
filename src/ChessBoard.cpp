@@ -85,11 +85,18 @@ void ChessBoard::processMove(Move m) {
 		this->fullmove_clock += (!this->whiteToMove);
 
 		// TODO: update halfmove_clock
+		shared_ptr<const Piece>& start_ptr = this->pieces.at(m.startingSquare.row).at(m.endingSquare.col);
+		shared_ptr<const Piece>& end_ptr = this->pieces.at(m.endingSquare.row).at(m.endingSquare.col);
+		bool isCapture = (end_ptr != nullptr);
+		bool isPawnMove = (end_ptr != nullptr) && ((end_ptr->symbol() == 'p') || (end_ptr->symbol() == 'P'));
+		this->halfmove_clock += (isCapture || isPawnMove);
+
+		// TODO: modify `Move` type to include castling as an option
 		// TODO: update whitePlayerState, blackPlayerState
 		// TODO: update enPassant_targetSquare
 
 		// move the piece!
-		this->pieces.at(m.endingSquare.row).at(m.endingSquare.col) = std::move(this->pieces.at(m.startingSquare.row).at(m.startingSquare.col));
+		end_ptr = std::move(start_ptr);
 	}
 }
 
