@@ -25,3 +25,4 @@ class TestFEN : public CxxTest::TestSuite {
             TS_ASSERT_EQUALS(getCastlingPart("Kk"), {PlayerState(false, true), PlayerState(false, true)});
         }
 };
+#endif
