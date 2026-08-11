@@ -32,7 +32,7 @@ LDFLAGS_EXTRA_PRF:=-pg
 ## the following should not need to change
 
 ## generic options
-CXXFLAGS_BASE:=$(CXXFLAGS_BASE) -std=c++20 -Wall -Werror -pedantic-errors -Iinclude -Isrc
+CXXFLAGS_BASE:=$(CXXFLAGS_BASE) -std=c++20 -Wall -Werror -pedantic-errors -Iinclude -Isrc -Ilib
 LDFLAGS_BASE:=$(LDFLAGS_BASE) -std=c++20
 
 # ## platform-specific options for SDL2
@@ -63,7 +63,7 @@ DEFAULT_EXE_COV=$(addsuffix _cov,$(DEFAULT_EXE))
 DEFAULT_EXE_PRF=$(addsuffix _prf,$(DEFAULT_EXE))
 EXECUTABLE_SOURCE_FILES=$(shell sh -c '/usr/bin/find src -name "main*.cpp" 2>/dev/null')
 SOURCE_FILES=$(filter-out $(EXECUTABLE_SOURCE_FILES),$(shell sh -c '/usr/bin/find src -name "*.cpp" 2>/dev/null'))
-HEADER_FILES=$(shell sh -c '/usr/bin/find include src -name "*.hpp" 2>/dev/null')
+HEADER_FILES=$(shell sh -c '/usr/bin/find include src lib -name "*.hpp" 2>/dev/null')
 OBJECT_FILES_REL=$(SOURCE_FILES:src/%.cpp=build/exe/%.o)
 OBJECT_FILES_DBG=$(SOURCE_FILES:src/%.cpp=build/exe/%_dbg.o)
 OBJECT_FILES_COV=$(SOURCE_FILES:src/%.cpp=build/exe/%_cov.o)
