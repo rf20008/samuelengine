@@ -111,11 +111,11 @@ void ChessBoard::processMove(Move m) {
             // was it kingside?
             bool kingside = m.endingSquare.col > m.startingSquare.col;
             if (kingside) {
-                rookOldLoc = Square(whiteToMove ? 1 : 8, 8);
-                rookNewLoc = Square(whiteToMove ? 1 : 8, 6);
+                rookOldLoc = Square(8, whiteToMove ? 1 : 8);
+                rookNewLoc = Square(6, whiteToMove ? 1 : 8);
             } else {
-                rookOldLoc = Square(whiteToMove ? 1 : 8, 8);
-                rookNewLoc = Square(whiteToMove ? 1 : 8, 4);
+                rookOldLoc = Square(8, whiteToMove ? 1 : 8);
+                rookNewLoc = Square(4, whiteToMove ? 1 : 8);
             }
             // move the rook
             std::shared_ptr<const Piece>& rookOldPtr = pieces.at(rookOldLoc.col-1).at(rookOldLoc.row-1);
@@ -141,18 +141,22 @@ void ChessBoard::processMove(Move m) {
         } else {
             blackPlayerState=cur_state;
         }
-        // if was an enpassant capture, must remove the pawn it en-passanted
+         if was an enpassant capture, must remove the pawn it en-passanted*/
         if (m.endingSquare == enPassant_targetSquare && toupper(start_ptr->symbol()) == 'P' && !end_ptr) {
             Square squareCaptured = m.endingSquare + ((start_ptr->symbol() =='P') ? Square(0, -1) : Square(0, 1));
+            //cout<<"removing piece at"<<(squareCaptured.toString())<<endl;
             this->pieces.at(squareCaptured.col-1).at(squareCaptured.row-1) = PiecePtr();
         }
         // update enPassantTargetSquare
-        if (start_ptr && toupper(start_ptr->symbol()) == 'p' && maxNorm(m.endingSquare-m.startingSquare)>1) {
-            enPassant_targetSquare = std::optional<Square>(m.startingSquare + ((start_ptr->symbol() =='P') ? Square(0, 1) : Square( 0, -1)));
+        //cout<<"isPawnMove: "<<isPawnMove<<endl;
+        //if (enPassant_targetSquare) cout<<"enPassant target Square: "<< (enPassant_targetSquare->toString())<<endl;
+        if (isPawnMove && maxNorm(m.endingSquare-m.startingSquare)>1) {
+            //cout<<"a Pawn moved 2 squares\n";
+            enPassant_targetSquare = std::optional<Square>(m.startingSquare + ((start_ptr->symbol() =='P') ? Square(0, 1) : Square(0, -1)));
         } else {
             enPassant_targetSquare = std::optional<Square>();
-        }*/
-        
+        }
+        //if (enPassant_targetSquare) cout<<"enPassant target Square: "<< (enPassant_targetSquare->toString())<<endl;
 		// move the piece!
 		end_ptr = std::move(start_ptr);
 		this->whiteToMove = !this->whiteToMove;

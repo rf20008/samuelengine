@@ -1,6 +1,6 @@
 #include "ChessBoard.hpp"
 #include <cxxtest/TestSuite.h>
-
+#include <iostream>
 class TestBoard : public CxxTest::TestSuite {
 	public:
 		void testChessBoardMemberConstructor() {
@@ -42,4 +42,12 @@ class TestBoard : public CxxTest::TestSuite {
 			ChessBoard myBoard = ChessBoard(myFen);
 			(void)myBoard;
 		}
+        void testEnPassantBlack() {
+            std::string myFen = "RNBQKBNR/1PPPP1PP/8/P3pP2/8/7p/PPPP1PP1/rnbqkbnr w KQkq f6 0 4";
+            ChessBoard myBoard = ChessBoard(myFen);
+            TS_ASSERT_EQUALS(*myBoard.getEnPassantTargetSquare(), Square("f6"));
+            std::cout<<std::endl<<myBoard<<std::endl;
+            TS_ASSERT_EQUALS(myBoard.getPiece(Square("e5"))->symbol(), 'p');
+            TS_ASSERT(myBoard.isMoveLegal(Move(Square("e5"), Square("f6"))))
+        }
 };

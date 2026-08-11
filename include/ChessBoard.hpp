@@ -71,6 +71,7 @@ class ChessBoard {
         bool get_whiteToMove() const {return whiteToMove;}
         PlayerState getWhitePlayerState() const {return whitePlayerState;}
         PlayerState getBlackPlayerState() const {return blackPlayerState;}
+        std::optional<Square> getEnPassantTargetSquare() const {return enPassant_targetSquare;}
 
         
         // chess engine methods
