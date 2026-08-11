@@ -9,9 +9,7 @@
 #include <optional>
 using namespace std;
 
-static const Square knightOffsets[] = {
-    {1, 2}, {2, 1}, {-1, 2}, {-2, 1}, {1, -2}, {2, -1}, {-1, -2}, {-2, -1}
-};
+
 
 
 ChessBoard::ChessBoard() : ChessBoard::ChessBoard("pppppppp/rnbqkbnr/8/8/8/8/RNBQKBNR/PPPPPPPP w KQkq - 0 1"){}
@@ -178,8 +176,24 @@ std::set<Square> ChessBoard::wherePawnCouldMove(const Square origin) const {
     }
     return places;
 }
+static const Square knightOffsets[] = {
+    {1, 2}, {2, 1}, {-1, 2}, {-2, 1}, {1, -2}, {2, -1}, {-1, -2}, {-2, -1}
+};
+
 std::set<Square> ChessBoard::whereKnightCouldMove(const Square origin) const {
-    throw NotImplementedError("Error: std::set<Square> ChessBoard::whereKnightCouldMove(const Square origin) const is not implemented yet");
+    PiecePtr knight = getAndAssertPiece(origin, 'N');
+    bool attackerIsWhite = knight->getBelongsToWhite();
+
+    std::set<Square> places;
+    for (const Square& off : knightOffsets) {
+        Square target = origin + off;
+        if (!target.isValid()) continue;
+        // if there is a piece of a different color, then it's okay
+        // else not
+        Piece p = getPiece(target);
+        if ((!p) || (p && p->getBelongsToWhite() != attackerIsWhite)) places.insert(target);
+    }
+    return places;
 }
 bool ChessBoard::isSlidingAttacker(Square from, Square dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) {
     throw NotImplementedError("Error: bool ChessBoard::isSlidingAttacker(const ChessBoard& board, Square from, Square dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) is not implemented yet");
