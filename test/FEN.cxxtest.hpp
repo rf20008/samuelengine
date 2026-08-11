@@ -11,4 +11,4 @@ class TestFEN : public CxxTest::TestSuite {
         TS_ASSERT_THROWS_ANYTHING(parsePlayerPart("t"));
         TS_ASSERT_THROWS_ANYTHING(parsePlayerPart("ttt"));
     }
-}
+};
