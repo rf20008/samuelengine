@@ -114,7 +114,7 @@ void ChessBoard::processMove(Move m) {
         // if rook on a file moved, queenside is gone
         if (toupper(start_ptr->symbol()) == 'R' && m.startingSquare==Square(1, whiteToMove ? 1 : 8)) cur_state.canQueensideCastle=false;
         // if rook on h file moved, kingside is gone
-        if (toupper(start_ptr->symbol()) == 'R' && m.startingSquare==Square(9, whiteToMove ? 1 : 8)) cur_state.canKingsideCastle=false;
+        if (toupper(start_ptr->symbol()) == 'R' && m.startingSquare==Square(8, whiteToMove ? 1 : 8)) cur_state.canKingsideCastle=false;
 
         if (whiteToMove) {
             whitePlayerState=cur_state;
