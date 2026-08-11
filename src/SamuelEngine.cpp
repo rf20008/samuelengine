@@ -240,7 +240,7 @@ SamuelEngine::SamuelEngine(double tl, bool dbg) : debug(dbg), numBoardsVisited(0
 Move SamuelEngine::getMove(const ChessBoard& board) {
     this->numBoardsVisited=0;
     if (debug) {
-        cerr<<"Beginning search";
+        cerr<<"Beginning search"<<endl;
     }
     auto [val, move] = evaluate_chess_pos_with_tl(board, default_tl);
     if (debug) {
