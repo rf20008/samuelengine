@@ -4,5 +4,8 @@ struct PlayerState {
 public:
     bool canQueensideCastle;
     bool canKingsideCastle;
+    bool operator==(const PlayerState& other) const {
+        return canQueensideCastle==other.canQueensideCastle && canKingsideCastle==other.canKingsideCastle;
+    }
 };
 #endif
