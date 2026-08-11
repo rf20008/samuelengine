@@ -76,8 +76,8 @@ const std::vector<std::vector<double>> queen_pieceval = {
 };
 
 int SamuelEngine::MoveOrderer::priorityOfMove(const Move& mov) const {
-    if (m_board.move_ends_game(mov)) {return 1000;}
-    else if (m_board.move_is_castling(mov)) {return 4;}
+    //if (m_board.move_ends_game(mov)) {return 1000;}
+    if (m_board.move_is_castling(mov)) {return 4;}
     else if (m_board.move_is_check(mov)) {return 3;}
     else if (m_board.move_is_capture(mov)) {return 2;}
     else if (m_board.move_is_zeroing(mov)) {return 1;}
