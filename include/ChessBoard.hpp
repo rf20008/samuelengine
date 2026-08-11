@@ -24,8 +24,14 @@
 #include <memory>
 #include <string>
 #include <optional>
+#include <set>
 
- 
+template<typename T>
+inline std::set<T>& mergeSets(std::set<T>& A, const std::set<T>& B) {
+    // return the set, consisting of adding all the items in B to A
+    for (const T& item : B) {A.insert(item);}
+    return A;
+}
 
 class ChessBoard {
     protected:

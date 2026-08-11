@@ -4,6 +4,7 @@
 
 #include <cctype>
 #include <map>
+#include <set>
 #include <sstream>
 #include <iostream>
 #include <optional>
@@ -195,17 +196,51 @@ std::set<Square> ChessBoard::whereKnightCouldMove(const Square origin) const {
     }
     return places;
 }
-bool ChessBoard::isSlidingAttacker(Square from, Square dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) {
-    throw NotImplementedError("Error: bool ChessBoard::isSlidingAttacker(const ChessBoard& board, Square from, Square dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) is not implemented yet");
+// get all pieces an attacker with the ray (dir) starting at from, who his of color belongsToWhite, could reach legally (without considering check)
+std::set<Square> ChessBoard::isSlidingAttacker(Square from, Square dir, bool attackerIsWhite) {
+    Square cur = from + dir;
+    std::set<Square> places;
+    while (cur.isValid()) {
+        PiecePtr p = board.getPiece(cur);
+        if (p) {
+            if (p->getBelongsToWhite() != attackerIsWhite) {
+                // not of same color, so can capture!
+                places.insert(cur);
+            }
+            break; // occupied, so the ray is blocked past here regardless
+        }
+        places.insert(cur);
+        cur = cur + dir;
+        
+    }
+    return places;
 }
 std::set<Square> ChessBoard::whereBishopCouldMove(const Square origin) const {
-    throw NotImplementedError("std::set<Square> ChessBoard::whereBishopCouldMove(const Square origin) const is not implemented yet");
+    PiecePtr bishop = getAndAssertPiece(origin, 'B');
+    bool attackerIsWhite = bishop->getBelongsToWhite();
+    std::set<Square> places;
+    for (Square dir : {Square(-1, -1), Square(-1, 1), Square(1, -1), Square(1,1)}) {
+        mergeSets(places, isSlidingAttacker(origin, dir, attackerIsWhite));
+    }
+    return places;
 }
-std::set<Square> ChessBoard::whereRookCouldMove(const Square origin) const {
-    throw NotImplementedError("std::set<Square> ChessBoard::whereRookCouldMove(const Square origin) const  is not implemented yet");
+std::set<Square> ChessBoard::whereBishopCouldMove(const Square origin) const {
+    PiecePtr rook = getAndAssertPiece(origin, 'R');
+    bool attackerIsWhite = rook->getBelongsToWhite();
+    std::set<Square> places;
+    for (Square dir : {Square(-1, 0), Square(1, 0), Square(0, -1), Square(0,1)}) {
+        mergeSets(places, isSlidingAttacker(origin, dir, attackerIsWhite));
+    }
+    return places;
 }
-std::set<Square> ChessBoard::whereQueenCouldMove(const Square origin) const {
-    throw NotImplementedError("std::set<Square> ChessBoard::whereQueenCouldMove(const Square origin) const  const is not implemented yet");
+std::set<Square> ChessBoard::whereBishopCouldMove(const Square origin) const {
+    PiecePtr queen = getAndAssertPiece(origin, 'R');
+    bool attackerIsWhite = queen->getBelongsToWhite();
+    std::set<Square> places;
+    for (Square dir : {Square(-1, 0), Square(1, 0), Square(0, -1), Square(0,1), Square(-1, -1), Square(-1, 1), Square(1, -1), Square(1,1)}) {
+        mergeSets(places, isSlidingAttacker(origin, dir, attackerIsWhite));
+    }
+    return places;
 }
 // Is `target` attacked by any piece belonging to `attackerIsWhite`?
 // This is a raw-attack check (used to detect check): it only asks
