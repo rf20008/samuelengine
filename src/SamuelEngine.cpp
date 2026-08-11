@@ -74,6 +74,20 @@ const std::vector<std::vector<double>> queen_pieceval = {
     {-1.0,  0.0,  0.5,  1.0,  1.0,  0.5,  0.0, -1.0},  // 2nd rank
     {-2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0}   // 1st rank
 };
+
+SamuelEngine::MoveOrderer::priorityOfMove(const Move& mov) const {
+    if (m_board.move_ends_game(mov)) {return 1000;}
+    else if (m_board.move_is_castling(mov)) {return 4;}
+    else if (m_board.move_is_check(mov)) {return 3;}
+    else if (m_board.move_is_capture(mov)) {return 2;}
+    else if (m_board.move_is_zeroing(mov)) {return 1;}
+    else {return 0;}
+}
+SamuelEngine::MoveOrderer::operator<(const Move& m1, const Move& m2) {
+    return priorityOfMove(m1)<priorityOfMove(m2);
+}
+
+
 std::vector<std::vector<double>> SamuelEngine::getPosVal(const PiecePtr ptr) const {
     switch (toupper(ptr->symbol())) {
         case 'K': return king_pieceval;
@@ -137,7 +151,16 @@ double SamuelEngine::evaluate_chess_pos_without_depth(const ChessBoard& board) c
     return relative_value(board, true) - relative_value(board, false);
 }
 
-
+std::vector<Move> SamuelEngine::orderMoves(const ChessBoard& board) const {
+    std::set<Move> moves = board.allLegalMoves();
+    std::vector<Move> movesVec;
+    movesVec.reserve(moves.size());
+    for (const Move& move : moves) {
+        movesVec.push_back(move);
+    }
+    std::sort(begin(movesVec), end(movesVec), SamuelEngine::MoveOrderer(board));
+    return movesVec;
+}
 
 std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_depth(
     const ChessBoard& board, 
@@ -153,7 +176,7 @@ std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_depth(
     if (gameOverMaybe) {
         return {*gameOverMaybe, Move(Square("a1"), Square("a2"))};
     }
-    std::set<Move> moves = board.allLegalMoves();
+    std::vector<Move> moves = orderMoves(board);
     if (depth==0 || moves.empty()) {
         return {evaluate_chess_pos_without_depth(board), Move(Square("a1"), Square("a2"))};
     }
