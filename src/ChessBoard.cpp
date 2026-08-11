@@ -146,7 +146,7 @@ std::set<Square> ChessBoard::whereKingCouldMove(const Square origin) const {
         if (!target.isValid()) continue;
         // if there is a piece of a different color, then it's okay
         // else not
-        Piece p = getPiece(target);
+        PiecePtr p = getPiece(target);
         if ((!p) || (p && p->getBelongsToWhite() != attackerIsWhite)) places.insert(target);
     }
     return places;
@@ -156,7 +156,7 @@ std::set<Square> ChessBoard::wherePawnCouldMove(const Square origin) const {
     PiecePtr pawn = getAndAssertPiece(origin, 'K');
     bool attackerIsWhite = pawn->getBelongsToWhite();
     int direction = attackerIsWhite ? 1 : -1; // pawns move up if white, down if black
-    bool canMoveTwoSpaces = (attackerIsWhite) ? (origin.row == 2) || (origin.row==7);
+    size_t canMoveTwoSpaces = ((attackerIsWhite) ? ((origin.row == 2) ? 1 : 0) : ((origin.row==7) ? 1 : 0));
     // check 2 capturing pieces
     std::set<Square> places;
     for (const Square& off : {Square(direction, -1), Square(direction, 1)}) {
@@ -191,13 +191,13 @@ std::set<Square> ChessBoard::whereKnightCouldMove(const Square origin) const {
         if (!target.isValid()) continue;
         // if there is a piece of a different color, then it's okay
         // else not
-        Piece p = getPiece(target);
+        PiecePtr p = getPiece(target);
         if ((!p) || (p && p->getBelongsToWhite() != attackerIsWhite)) places.insert(target);
     }
     return places;
 }
 // get all pieces an attacker with the ray (dir) starting at from, who his of color belongsToWhite, could reach legally (without considering check)
-std::set<Square> ChessBoard::isSlidingAttacker(Square from, Square dir, bool attackerIsWhite) {
+std::set<Square> ChessBoard::isSlidingAttacker(const Square from, const Square dir, bool attackerIsWhite) const {
     Square cur = from + dir;
     std::set<Square> places;
     while (cur.isValid()) {
@@ -407,19 +407,7 @@ std::string ChessBoard::fen() const {
     std::string fullMovePart = std::to_string(fullmove_clock);
     return PiecePart + " " + PlayerPart + " " + CastlingPart + " " + enPassantPart + " " + halfMovePart + " " + fullMovePart;
 }
-std::set<Square> ChessBoard::whereKnightCouldMove(Square origin) {
-    PiecePtr piece = this->getPiece(origin);
-    std::set<Square> places;
 
-    for (const Square& off : knightOffsets) {
-        Square sq = target + off;
-        if (!sq.isValid()) continue;
-        std::shared_ptr<const Piece> p = board.getPiece(sq);
-        if (p && p->getBelongsToWhite() == attackerIsWhite && std::toupper(p->symbol()) == 'N') {
-            return true;
-        }
-    }
-}
 
 std::set<Move> ChessBoard::allLegalMoves(const Square sq) const {
     // this method may need to be shared
