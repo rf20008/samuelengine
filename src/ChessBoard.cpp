@@ -103,6 +103,7 @@ void ChessBoard::processMove(Move m) {
 		this->halfmove_clock = (isCapture || isPawnMove) ? 0 : (this->halfmove_clock + 1);
 
 		// TODO: modify `Move` type to include castling as an option
+        
 
 		// TODO: update whitePlayerState, blackPlayerState
 
@@ -121,11 +122,18 @@ void ChessBoard::processMove(Move m) {
         } else {
             blackPlayerState=cur_state;
         }
-
+        // if was an enpassant capture, must remove the pawn it en-passanted
+        if (m.endingSquare == enPassant_targetSquare) {
+            Square squareCaptured = m.endingSquare + ((start_ptr->symbol() =='P') ? Square(-1, 0) : Square(1, 0));
+            this->pieces.at(squareCaptured.row-1).at(squareCaptured.col-1) = PiecePtr();
+        }
         // update enPassantTargetSquare
         if (start_ptr && toupper(start_ptr->symbol()) == 'p' && maxNorm(m.endingSquare-m.startingSquare)>1) {
-            enPassant_targetSquare = m.startingSquare + ((start_ptr->symbol() =='p') ? Square(1, 0) : Square(-1, 0));
+            enPassant_targetSquare = std::optional<Square>(m.startingSquare + ((start_ptr->symbol() =='P') ? Square(1, 0) : Square(-1, 0)));
+        } else {
+            enPassant_targetSquare = std::optional<Square>();
         }
+        
 		// move the piece!
 		end_ptr = std::move(start_ptr);
 		this->whiteToMove = !this->whiteToMove;
