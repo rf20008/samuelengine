@@ -91,14 +91,14 @@ class ChessBoard {
 		bool squareAttackedBy(Square target, bool attackerIsWhite) const;
 		bool isSlidingAttacker(Square from, Square dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) const;
 
-		std::set<Square> whereKingCouldMove(const Square origin) const;
-		std::set<Square> wherePawnCouldMove(const Square origin) const;
-		std::set<Square> whereKnightCouldMove(const Square origin) const;
-		std::set<Square> isSlidingAttacker(const Square from, const Square dir, bool attackerIsWhite) const;
-		std::set<Square> whereBishopCouldMove(const Square origin) const;
-		std::set<Square> whereRookCouldMove(const Square origin) const;
-		std::set<Square> whereQueenCouldMove(const Square origin) const;
-		std::set<Square> allPseudoLegalDestinations(const Square origin) const;
+		std::set<Move> whereKingCouldMove(const Square origin) const;
+		std::set<Move> wherePawnCouldMove(const Square origin) const;
+		std::set<Move> whereKnightCouldMove(const Square origin) const;
+		std::set<Move> isSlidingAttacker(const Square from, const Square dir, bool attackerIsWhite) const;
+		std::set<Move> whereBishopCouldMove(const Square origin) const;
+		std::set<Move> whereRookCouldMove(const Square origin) const;
+		std::set<Move> whereQueenCouldMove(const Square origin) const;
+		std::set<Move> allPseudoLegalDestinations(const Square origin) const;
 
 		std::set<Move> allLegalMoves(const Square sq) const;
 		std::set<Move> allLegalMoves() const;
