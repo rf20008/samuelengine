@@ -57,10 +57,6 @@ class TestFEN : public CxxTest::TestSuite {
 			TS_ASSERT_THROWS_ANYTHING(parsePlayerPart("t"));
 			TS_ASSERT_THROWS_ANYTHING(parsePlayerPart("ttt"));
 		}
-		void testGetPlayerPart() {
-			TS_ASSERT_EQUALS(getPlayerPart(true), "w");
-			TS_ASSERT_EQUALS(getPlayerPart(false), "b");
-		}
 		void testParseCastlingPart() {
 			TS_ASSERT_EQUALS(parseCastlingPart("KQkq"),
 							 std::make_pair(PlayerState(true, true),
@@ -75,7 +71,19 @@ class TestFEN : public CxxTest::TestSuite {
 							 std::make_pair(PlayerState(false, true),
 											PlayerState(false, true)));
 		}
-
+		void testParseEnPassantPart() {
+			TS_ASSERT_EQUALS(parseEnPassantPart("e3"),
+							 std::optional<Square>(Square("e3")));
+			TS_ASSERT_THROWS_ANYTHING(parseEnPassantPart("iurektwnv"));
+			TS_ASSERT_THROWS_ANYTHING(parseEnPassantPart("h9"));
+			TS_ASSERT_THROWS_ANYTHING(parseEnPassantPart("9h"));
+			TS_ASSERT_THROWS_ANYTHING(parseEnPassantPart(""));
+		}
+		// TODO: test ParsePieces::getPiecePart
+		void testGetPlayerPart() {
+			TS_ASSERT_EQUALS(getPlayerPart(true), "w");
+			TS_ASSERT_EQUALS(getPlayerPart(false), "b");
+		}
 		void testGetCastlingPart() {
 			TS_ASSERT_EQUALS(getCastlingPart(PlayerState(true, true),
 											 PlayerState(true, true)),
@@ -90,13 +98,6 @@ class TestFEN : public CxxTest::TestSuite {
 											 PlayerState(false, true)),
 							 "Kk");
 		}
-		void testGetEnPassantPart() {
-			TS_ASSERT_EQUALS(parseEnPassantPart("e3"),
-							 std::optional<Square>(Square("e3")));
-			TS_ASSERT_THROWS_ANYTHING(parseEnPassantPart("iurektwnv"));
-			TS_ASSERT_THROWS_ANYTHING(parseEnPassantPart("h9"));
-			TS_ASSERT_THROWS_ANYTHING(parseEnPassantPart("9h"));
-			TS_ASSERT_THROWS_ANYTHING(parseEnPassantPart(""));
-		}
+		// TODO: test ParsePieces::getEnPassantPart
 };
 #endif
