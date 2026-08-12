@@ -15,7 +15,7 @@
 #include <string>
 
 namespace {
-const double ENGINE_TIME_LIMIT_SECONDS = 3.0;
+const double ENGINE_TIME_LIMIT_SECONDS = 1.0;
 
 std::unique_ptr<AbstractPlayer> makePlayer(const std::string &colorName) {
 	while (true) {
