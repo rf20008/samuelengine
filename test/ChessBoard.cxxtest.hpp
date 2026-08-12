@@ -67,5 +67,8 @@ class TestBoard : public CxxTest::TestSuite {
             ChessBoard myBoard = ChessBoard();
             TS_ASSERT(!myBoard.isInCheckmate());
             TS_ASSERT(!isGameOver(myBoard.getStatus()));
+            TS_ASSERT_EQUALS(myBoard.perft(1), 20);
+            TS_ASSERT_EQUALS(myBoard.perft(2), 400);
+            TS_ASSERT_EQUALS(myBoard.perft(3), 8902);
         }
 };
