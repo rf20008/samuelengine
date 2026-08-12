@@ -176,13 +176,24 @@ class TestBoard : public CxxTest::TestSuite {
             TS_ASSERT(!myBoard.hasPiece("e8"));
             TS_ASSERT(!myBoard.hasPiece("a8"));
         }
-        void testEngineFoundPosition() {
-ChessBoard myBoard ("rnbqkbnr/ppp1pppp/8/3p4/8/2N5/PPPPPPPP/R1BQKB1R w KQkq - 0 3");
-            SamuelEngine engine (5.0, true);
-            engine.getMove(myBoard);
-        }
+        void testKingDoesNotDisappear() {
+            ChessBoard board;
+            board.processMove(Move("b1","c3"));
+            board.processMove(Move("d7","d5"));
+            board.processMove(Move("c3", "a4"));
+            board.processMove(Move("e8", "d7"));
+            //std::cout<<board.debug_board()<<std::endl;
+            board.processMove(Move("a4", "c3"));
+            //std::cout<<board.debug_board()<<std::endl;
+            board.processMove(Move("e7", "d6"));
+            //std::cout<<board.debug_board()<<std::endl;
+            TS_ASSERT_EQUALS(board.findKing(false), Square("d7"));
+        }   
         void testNoKingFound() {
-            ChessBoard myBoard("rnbq1bnr/pp2pppp/3p4/3p4/N7/8/PPPPPPPP/R1BQKBNR b KQ d6 5 4")
-            TS_ASSERT_THROWS_ANYTHING(myBoard.findKing(false));
+            ChessBoard myBoard("rnbq1bnr/pp2pppp/3p4/3p4/N7/8/PPPPPPPP/R1BQKBNR b KQ d6 5 4");
+            try {
+                myBoard.findKing(false);
+                TS_FAIL("ERROR: myBoard found a king");
+            } catch (std::logic_error& error) {}
         }
 };
