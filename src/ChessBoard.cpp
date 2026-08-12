@@ -211,18 +211,13 @@ std::set<Square> ChessBoard::whereKingCouldMove(const Square origin) const {
 	}
     // check for castling
     if (whiteToMove && !squareAttackedBy("e1", false)) {
-        //cout<<"White to move, e1 not attacked\nCQS: "<<whitePlayerState.canQueensideCastle<<" CKS: "<<whitePlayerState.canKingsideCastle<<"\n";
         // if white can kingside castle, and f1 and g1 are open
-        if (whitePlayerState.canKingsideCastle) {
-            //cout<<"white has kingside castling right"<<hasPiece("f1")<< hasPiece("g1")<<endl;
-            
-            if(!hasPiece("f1") && !hasPiece("g1")) {
-                //cout<<"f1 and g1 are free, can kingside castle\n";
-                if (!squareAttackedBy("f1", false)) places.insert(Square("g1"));
-            } 
-        }
+        if (whitePlayerState.canKingsideCastle && !hasPiece("f1") && !hasPiece("g1")) {
+            if (!squareAttackedBy("f1", false)) places.insert(Square("g1"));
+        } 
+    
         // check queenside castling
-        else if (whitePlayerState.canQueensideCastle && !hasPiece("c1") && !hasPiece("d1")) {
+        else if (whitePlayerState.canQueensideCastle && !hasPiece("b1")&& !hasPiece("c1") && !hasPiece("d1")) {
             if (!squareAttackedBy("d1", false)) places.insert(Square("c1"));
         }
     }
@@ -233,7 +228,7 @@ std::set<Square> ChessBoard::whereKingCouldMove(const Square origin) const {
             if (!squareAttackedBy("f8", true)) places.insert(Square("g8"));
         }
         // check queenside castling
-        if (blackPlayerState.canQueensideCastle && !hasPiece("c8") && !hasPiece("d8")) {
+        if (blackPlayerState.canQueensideCastle && !hasPiece("b8") && !hasPiece("c8") && !hasPiece("d8")) {
             if (!squareAttackedBy("d8", true)) places.insert(Square("c8"));
         }
     }
