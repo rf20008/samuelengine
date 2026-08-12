@@ -85,4 +85,34 @@ class TestBoard : public CxxTest::TestSuite {
             TS_ASSERT_EQUALS(myBoard.perft(2), 191);
             TS_ASSERT_EQUALS(myBoard.perft(3), 2039);
         }
+        void testKingsideCastling() {
+            ChessBoard myBoard ("6k1/8/8/8/8/8/8/4K2R w K - 0 1");
+            TS_ASSERT(myBoard.isMoveLegal(Move("e1", "g1")));
+            myBoard.processMove(Move("e1", "g1"));
+            try {
+                TS_ASSERT(myBoard.getAndAssertPiece("g1", 'K'));
+            } catch (WrongPieceType& err) {
+                TS_FAIL("g1 does not contain king");
+            }
+            try {
+                TS_ASSERT(myBoard.getAndAssertPiece("f1", 'R'));
+            } catch (WrongPieceType& err) {
+                TS_FAIL("f1 does not contain rook");
+            }
+        }
+        void testQueensideCastling() {
+            ChessBoard myBoard ("6k1/8/8/8/8/8/8/R3K3 w K - 0 1");
+            TS_ASSERT(myBoard.isMoveLegal(Move("e1", "c1")));
+            myBoard.processMove(Move("e1", "c1"));
+            try {
+                TS_ASSERT(myBoard.getAndAssertPiece("c1", 'K'));
+            } catch (WrongPieceType& err) {
+                TS_FAIL("g1 does not contain king");
+            }
+            try {
+                TS_ASSERT(myBoard.getAndAssertPiece("d1", 'R'));
+            } catch (WrongPieceType& err) {
+                TS_FAIL("f1 does not contain rook");
+            }
+        }
 };
