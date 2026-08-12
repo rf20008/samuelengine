@@ -10,23 +10,14 @@ class TestFEN : public CxxTest::TestSuite {
 	public:
 		void testParsePiecePart() {
 			// generated using http://bernd.bplaced.net/fengenerator/fengenerator.html; feel free to change this
-			const std::string myPiecePart =
-				"5r2/nK6/6Pk/1b2p3/N2p1pP1/3p2Pp/3B4/1Q6";
+			const std::string myPiecePart = "5r2/nK6/6Pk/1b2p3/N2p1pP1/3p2Pp/3B4/1Q6";
 			// TODO: investigate why parsedPieces returns an upside down board
-            // this is because of the FEN specification!
+			// this is because of the FEN specification!
 			const std::vector<std::string> groundTruth = {
-				" Q      ",
-				"   B    ",
-				"   p  Pp",
-				"N  p pP ",
-				" b  p   ",
-				"      Pk",
-				"nK      ",
-				"     r  ",
+				" Q      ", "   B    ", "   p  Pp", "N  p pP ", " b  p   ", "      Pk", "nK      ", "     r  ",
 			};
 
-			const std::vector<std::vector<PiecePtr>> parsedPieces =
-				parsePiecePart(myPiecePart);
+			const std::vector<std::vector<PiecePtr>> parsedPieces = parsePiecePart(myPiecePart);
 			TS_ASSERT_EQUALS(parsedPieces.size(), 8);
 
 			for (size_t i = 0; i < 8; i++) {
@@ -59,22 +50,13 @@ class TestFEN : public CxxTest::TestSuite {
 			TS_ASSERT_THROWS_ANYTHING(parsePlayerPart("ttt"));
 		}
 		void testParseCastlingPart() {
-			TS_ASSERT_EQUALS(parseCastlingPart("KQkq"),
-							 std::make_pair(PlayerState(true, true),
-											PlayerState(true, true)));
-			TS_ASSERT_EQUALS(parseCastlingPart("-"),
-							 std::make_pair(PlayerState(false, false),
-											PlayerState(false, false)));
-			TS_ASSERT_EQUALS(parseCastlingPart("KQ"),
-							 std::make_pair(PlayerState(true, true),
-											PlayerState(false, false)));
-			TS_ASSERT_EQUALS(parseCastlingPart("Kk"),
-							 std::make_pair(PlayerState(false, true),
-											PlayerState(false, true)));
+			TS_ASSERT_EQUALS(parseCastlingPart("KQkq"), std::make_pair(PlayerState(true, true), PlayerState(true, true)));
+			TS_ASSERT_EQUALS(parseCastlingPart("-"), std::make_pair(PlayerState(false, false), PlayerState(false, false)));
+			TS_ASSERT_EQUALS(parseCastlingPart("KQ"), std::make_pair(PlayerState(true, true), PlayerState(false, false)));
+			TS_ASSERT_EQUALS(parseCastlingPart("Kk"), std::make_pair(PlayerState(false, true), PlayerState(false, true)));
 		}
 		void testParseEnPassantPart() {
-			TS_ASSERT_EQUALS(parseEnPassantPart("e3"),
-							 std::optional<Square>(Square("e3")));
+			TS_ASSERT_EQUALS(parseEnPassantPart("e3"), std::optional<Square>(Square("e3")));
 			TS_ASSERT_THROWS_ANYTHING(parseEnPassantPart("iurektwnv"));
 			TS_ASSERT_THROWS_ANYTHING(parseEnPassantPart("h9"));
 			TS_ASSERT_THROWS_ANYTHING(parseEnPassantPart("9h"));
@@ -90,18 +72,10 @@ class TestFEN : public CxxTest::TestSuite {
 			TS_ASSERT_EQUALS(getPlayerPart(false), "b");
 		}
 		void testGetCastlingPart() {
-			TS_ASSERT_EQUALS(getCastlingPart(PlayerState(true, true),
-											 PlayerState(true, true)),
-							 "KQkq");
-			TS_ASSERT_EQUALS(getCastlingPart(PlayerState(false, false),
-											 PlayerState(false, false)),
-							 "-");
-			TS_ASSERT_EQUALS(getCastlingPart(PlayerState(true, true),
-											 PlayerState(false, false)),
-							 "KQ");
-			TS_ASSERT_EQUALS(getCastlingPart(PlayerState(false, true),
-											 PlayerState(false, true)),
-							 "Kk");
+			TS_ASSERT_EQUALS(getCastlingPart(PlayerState(true, true), PlayerState(true, true)), "KQkq");
+			TS_ASSERT_EQUALS(getCastlingPart(PlayerState(false, false), PlayerState(false, false)), "-");
+			TS_ASSERT_EQUALS(getCastlingPart(PlayerState(true, true), PlayerState(false, false)), "KQ");
+			TS_ASSERT_EQUALS(getCastlingPart(PlayerState(false, true), PlayerState(false, true)), "Kk");
 		}
 		void testGetEnPassantPart() {
 			TS_ASSERT_EQUALS(getEnPassantPart(std::optional<Square>()), "-");
