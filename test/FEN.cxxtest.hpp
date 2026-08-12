@@ -13,6 +13,7 @@ class TestFEN : public CxxTest::TestSuite {
 			const std::string myPiecePart =
 				"5r2/nK6/6Pk/1b2p3/N2p1pP1/3p2Pp/3B4/1Q6";
 			// TODO: investigate why parsedPieces returns an upside down board
+            // this is because of the FEN specification!
 			const std::vector<std::string> groundTruth = {
 				" Q      ",
 				"   B    ",
