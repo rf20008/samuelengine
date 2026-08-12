@@ -84,7 +84,6 @@ class TestBoard : public CxxTest::TestSuite {
             ChessBoard myBoard("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1");
             TS_ASSERT_EQUALS(myBoard.perft(1), 14);
             TS_ASSERT_EQUALS(myBoard.perft(2), 191);
-            std::cout<<"myBoard3PERF2: "<<myBoard.perft(2)<<std::endl;
             TS_ASSERT_EQUALS(myBoard.perft(3), 2812);
         }
         void testWhiteKingsideCastling() {
