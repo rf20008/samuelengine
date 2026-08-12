@@ -26,7 +26,7 @@ ChessBoard::ChessBoard(const std::string &fen) {
 	std::string PlayerPart;
 	std::string CastlingPart;
 	std::string EnPassantPart;
-    previousMoves = {};
+	previousMoves = {};
 	int Halfmove_Part;
 	int Fullmove_part;
 	fenSS >> PiecePart >> PlayerPart >> CastlingPart >> EnPassantPart >> Halfmove_Part >> Fullmove_part;
@@ -50,7 +50,7 @@ ChessBoard::ChessBoard(const std::string &fen) {
 	}
 }
 
-ChessBoard::ChessBoard(const std::vector<std::vector<std::shared_ptr<const Piece>>> &pieces, const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare, const std::vector<Move>& moves) : pieces(pieces), whiteToMove(whiteToMove), whitePlayerState(whitePlayerState), blackPlayerState(blackPlayerState), halfmove_clock(halfmove_clock), fullmove_clock(fullmove_clock), enPassant_targetSquare(enPassant_targetSquare), previousMoves(moves) {}
+ChessBoard::ChessBoard(const std::vector<std::vector<std::shared_ptr<const Piece>>> &pieces, const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare, const std::vector<Move> &moves) : pieces(pieces), whiteToMove(whiteToMove), whitePlayerState(whitePlayerState), blackPlayerState(blackPlayerState), halfmove_clock(halfmove_clock), fullmove_clock(fullmove_clock), enPassant_targetSquare(enPassant_targetSquare), previousMoves(moves) {}
 
 ChessBoard::ChessBoard(const std::vector<std::vector<std::shared_ptr<const Piece>>> &pieces, const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare) : pieces(pieces), whiteToMove(whiteToMove), whitePlayerState(whitePlayerState), blackPlayerState(blackPlayerState), halfmove_clock(halfmove_clock), fullmove_clock(fullmove_clock), enPassant_targetSquare(enPassant_targetSquare), previousMoves({}) {}
 
@@ -75,98 +75,115 @@ bool ChessBoard::isMoveLegal(Move m) const {
 	return legalMovesFromStart.count(m) > 0;
 } // return whether a move is legal
 
-void ChessBoard::processEnPassantCapture(Move m, const PiecePtr& start_ptr, const PiecePtr& end_ptr) {
-    if (enPassant_targetSquare && (m.endingSquare == *enPassant_targetSquare) && toupper(start_ptr->symbol()) == 'P' && !end_ptr) {
-        Square squareCaptured = m.endingSquare + ((start_ptr->symbol() == 'P') ? Square(0, -1) : Square(0, 1));
-        //cout<<"removing piece at"<<(squareCaptured.toString())<<endl;
-        this->pieces.at(squareCaptured.col - 1).at(squareCaptured.row - 1) = PiecePtr();
-    }
-    
+void ChessBoard::processEnPassantCapture(Move m, const PiecePtr &start_ptr, const PiecePtr &end_ptr) {
+	if (enPassant_targetSquare && (m.endingSquare == *enPassant_targetSquare) && toupper(start_ptr->symbol()) == 'P' && !end_ptr) {
+		Square squareCaptured = m.endingSquare + ((start_ptr->symbol() == 'P') ? Square(0, -1) : Square(0, 1));
+		//cout<<"removing piece at"<<(squareCaptured.toString())<<endl;
+		this->pieces.at(squareCaptured.col - 1).at(squareCaptured.row - 1) = PiecePtr();
+	}
 }
-void ChessBoard::processEnPassantUpdate(Move m, const PiecePtr& start_ptr, const PiecePtr& end_ptr) {
-    // update enPassantTargetSquare
-    //cout<<"isPawnMove: "<<isPawnMove<<endl;
-    //if (enPassant_targetSquare) cout<<"enPassant target Square: "<< (enPassant_targetSquare->toString())<<endl;
-    if (toupper(start_ptr->symbol()) == 'P' && maxNorm(m.endingSquare - m.startingSquare) > 1) {
-        //cout<<"a Pawn moved 2 squares\n";
-        enPassant_targetSquare = std::optional<Square>(m.startingSquare + ((start_ptr->symbol() == 'P') ? Square(0, 1) : Square(0, -1)));
-    } else {
-        enPassant_targetSquare = std::optional<Square>();
-    }
+void ChessBoard::processEnPassantUpdate(Move m, const PiecePtr &start_ptr, const PiecePtr &end_ptr) {
+	// update enPassantTargetSquare
+	//cout<<"isPawnMove: "<<isPawnMove<<endl;
+	//if (enPassant_targetSquare) cout<<"enPassant target Square: "<< (enPassant_targetSquare->toString())<<endl;
+	if (toupper(start_ptr->symbol()) == 'P' && maxNorm(m.endingSquare - m.startingSquare) > 1) {
+		//cout<<"a Pawn moved 2 squares\n";
+		enPassant_targetSquare = std::optional<Square>(m.startingSquare + ((start_ptr->symbol() == 'P') ? Square(0, 1) : Square(0, -1)));
+	} else {
+		enPassant_targetSquare = std::optional<Square>();
+	}
 }
-void ChessBoard::processCastling(Move m, const PiecePtr& start_ptr) {
-    // check it's a king move, else do nothing
-    if (!start_ptr || toupper(start_ptr->symbol()) != 'K') return;
-    // need to move rook to appropriate location
-    if (maxNorm(m.endingSquare-m.startingSquare)<=1) return; // this was a normal king move, not castling
-    Square oldRookPos;
-    Square newRookPos;
-    if (m == Move("e1", "g1")) {oldRookPos="h1"; newRookPos="f1";} // white kingside castling
-    if (m == Move("e1", "c1")) {oldRookPos="a1"; newRookPos="d1";} // white queenside castling
-    if (m == Move("e8", "g8")) {oldRookPos="h8"; newRookPos="f8";} // black kingside castling
-    if (m == Move("e8", "c8")) {oldRookPos="a8"; newRookPos="d8";} // black queenside castling
-    // sanity check
-    // assert a rook at oldRookPos, and newRookPOs is empty
-    PiecePtr& oldRook = pieces.at(oldRookPos.col-1).at(oldRookPos.row-1);
-    PiecePtr& newRook = pieces.at(newRookPos.col-1).at(newRookPos.row-1);
-    if (!oldRook || toupper(oldRook->symbol()) != 'R') {
-        throw WrongPieceType("Expected a rook at " + oldRookPos.toString() + " that was not found");
-    } 
-    if (newRook) {
-        throw WrongPieceType("Expected newRookPos to be empty, but found " + std::string(1, newRook->symbol()) + " instead");
-    }
-    newRook = std::move(oldRook);
-    return;
-
+void ChessBoard::processCastling(Move m, const PiecePtr &start_ptr) {
+	// check it's a king move, else do nothing
+	if (!start_ptr || toupper(start_ptr->symbol()) != 'K')
+		return;
+	// need to move rook to appropriate location
+	if (maxNorm(m.endingSquare - m.startingSquare) <= 1)
+		return; // this was a normal king move, not castling
+	Square oldRookPos;
+	Square newRookPos;
+	if (m == Move("e1", "g1")) {
+		oldRookPos = "h1";
+		newRookPos = "f1";
+	} // white kingside castling
+	if (m == Move("e1", "c1")) {
+		oldRookPos = "a1";
+		newRookPos = "d1";
+	} // white queenside castling
+	if (m == Move("e8", "g8")) {
+		oldRookPos = "h8";
+		newRookPos = "f8";
+	} // black kingside castling
+	if (m == Move("e8", "c8")) {
+		oldRookPos = "a8";
+		newRookPos = "d8";
+	} // black queenside castling
+	// sanity check
+	// assert a rook at oldRookPos, and newRookPOs is empty
+	PiecePtr &oldRook = pieces.at(oldRookPos.col - 1).at(oldRookPos.row - 1);
+	PiecePtr &newRook = pieces.at(newRookPos.col - 1).at(newRookPos.row - 1);
+	if (!oldRook || toupper(oldRook->symbol()) != 'R') {
+		throw WrongPieceType("Expected a rook at " + oldRookPos.toString() + " that was not found");
+	}
+	if (newRook) {
+		throw WrongPieceType("Expected newRookPos to be empty, but found " + std::string(1, newRook->symbol()) + " instead");
+	}
+	newRook = std::move(oldRook);
+	return;
 }
 void ChessBoard::processPsuedoLegalMove(Move m) {
-    this->previousMoves.push_back(m);
-    // update fullmove_clock (increments once Black's move completes a full move pair)
-    this->fullmove_clock += (!this->whiteToMove);
+	this->previousMoves.push_back(m);
+	// update fullmove_clock (increments once Black's move completes a full move pair)
+	this->fullmove_clock += (!this->whiteToMove);
 
-    // Square rows/cols are 1-indexed, pieces is 0-indexed and rank-major (see getPiece)
-    shared_ptr<const Piece> &start_ptr = this->pieces.at(m.startingSquare.col - 1).at(m.startingSquare.row - 1);
-    shared_ptr<const Piece> &end_ptr = this->pieces.at(m.endingSquare.col - 1).at(m.endingSquare.row - 1);
-    bool isCapture = (end_ptr != nullptr);
-    bool isPawnMove = (start_ptr != nullptr) && ((start_ptr->symbol() == 'p') || (start_ptr->symbol() == 'P'));
-    // the halfmove clock counts moves since the last capture/pawn move (for the 50-move rule), so it resets on either
-    this->halfmove_clock = (isCapture || isPawnMove) ? 0 : (this->halfmove_clock + 1);
+	// Square rows/cols are 1-indexed, pieces is 0-indexed and rank-major (see getPiece)
+	shared_ptr<const Piece> &start_ptr = this->pieces.at(m.startingSquare.col - 1).at(m.startingSquare.row - 1);
+	shared_ptr<const Piece> &end_ptr = this->pieces.at(m.endingSquare.col - 1).at(m.endingSquare.row - 1);
+	bool isCapture = (end_ptr != nullptr);
+	bool isPawnMove = (start_ptr != nullptr) && ((start_ptr->symbol() == 'p') || (start_ptr->symbol() == 'P'));
+	// the halfmove clock counts moves since the last capture/pawn move (for the 50-move rule), so it resets on either
+	this->halfmove_clock = (isCapture || isPawnMove) ? 0 : (this->halfmove_clock + 1);
 
-    // TODO: modify `Move` type to include castling as an option
+	// TODO: modify `Move` type to include castling as an option
 
-    processCastling(m, start_ptr);
+	processCastling(m, start_ptr);
 
-    // TODO: update whitePlayerState, blackPlayerState
+	// TODO: update whitePlayerState, blackPlayerState
 
-    PlayerState cur_state = whiteToMove?whitePlayerState:blackPlayerState;
-    
-    // if king moved, both are gone
-    if (toupper(start_ptr -> symbol()) == 'K') cur_state = PlayerState(false, false);
-    
-    // if rook on a file moved, queenside is gone
-    if (toupper(start_ptr->symbol()) == 'R' && m.startingSquare==Square(whiteToMove ? 1 : 8, 1)) cur_state.canQueensideCastle=false;
-    // if rook on h file moved, kingside is gone
-    if (toupper(start_ptr->symbol()) == 'R' && m.startingSquare==Square(whiteToMove ? 1 : 8, 8)) cur_state.canKingsideCastle=false;
+	PlayerState cur_state = whiteToMove ? whitePlayerState : blackPlayerState;
 
-    if (whiteToMove) {
-        whitePlayerState=cur_state;
-    } else {
-        blackPlayerState=cur_state;
-    }
-    //if was an enpassant capture, must remove the pawn it en-passanted
-    
-    if (isPawnMove) {processEnPassantCapture(m, start_ptr, end_ptr);}
-    processEnPassantUpdate(m, start_ptr, end_ptr);
+	// if king moved, both are gone
+	if (toupper(start_ptr->symbol()) == 'K')
+		cur_state = PlayerState(false, false);
 
-    end_ptr = std::move(start_ptr);
-    this->whiteToMove = !this->whiteToMove;
+	// if rook on a file moved, queenside is gone
+	if (toupper(start_ptr->symbol()) == 'R' && m.startingSquare == Square(whiteToMove ? 1 : 8, 1))
+		cur_state.canQueensideCastle = false;
+	// if rook on h file moved, kingside is gone
+	if (toupper(start_ptr->symbol()) == 'R' && m.startingSquare == Square(whiteToMove ? 1 : 8, 8))
+		cur_state.canKingsideCastle = false;
+
+	if (whiteToMove) {
+		whitePlayerState = cur_state;
+	} else {
+		blackPlayerState = cur_state;
+	}
+	//if was an enpassant capture, must remove the pawn it en-passanted
+
+	if (isPawnMove) {
+		processEnPassantCapture(m, start_ptr, end_ptr);
+	}
+	processEnPassantUpdate(m, start_ptr, end_ptr);
+
+	end_ptr = std::move(start_ptr);
+	this->whiteToMove = !this->whiteToMove;
 }
 void ChessBoard::processMove(Move m) {
 	if (this->isMoveLegal(m)) {
-        this->processPsuedoLegalMove(m);
+		this->processPsuedoLegalMove(m);
 	} else {
-        throw IllegalMoveError("You have attempted an illegal move from " + m.startingSquare.toString() + " to " + m.endingSquare.toString() + ".");
-    }
+		throw IllegalMoveError("You have attempted an illegal move from " + m.startingSquare.toString() + " to " + m.endingSquare.toString() + ".");
+	}
 }
 
 // Is there a piece belonging to `attackerIsWhite` on the far end of the
@@ -201,10 +218,7 @@ PiecePtr ChessBoard::getAndAssertPiece(const Square origin, const char pieceType
 		throw WrongPieceType("Wrong piece type at origin");
 	return ptr;
 }
-bool ChessBoard::hasPiece(const Square origin) const {
-    return getPiece(origin) != nullptr;
-
-}
+bool ChessBoard::hasPiece(const Square origin) const { return getPiece(origin) != nullptr; }
 std::set<Square> ChessBoard::whereKingCouldMove(const Square origin) const {
 	// get al neighboring places
 	PiecePtr king = getAndAssertPiece(origin, 'K');
@@ -221,30 +235,34 @@ std::set<Square> ChessBoard::whereKingCouldMove(const Square origin) const {
 		if ((!p) || (p && p->getBelongsToWhite() != attackerIsWhite))
 			places.insert(target);
 	}
-    // check for castling
-    if (whiteToMove && !squareAttackedBy("e1", false)) {
-        // if white can kingside castle, and f1 and g1 are open
-        if (whitePlayerState.canKingsideCastle && !hasPiece("f1") && !hasPiece("g1")) {
-            if (!squareAttackedBy("f1", false)) places.insert(Square("g1"));
-        } 
-    
-        // check queenside castling
-        if (whitePlayerState.canQueensideCastle && !hasPiece("b1")&& !hasPiece("c1") && !hasPiece("d1")) {
-            if (!squareAttackedBy("d1", false)) places.insert(Square("c1"));
-        }
-    }
-    
-    if (!whiteToMove && !squareAttackedBy("e8", true)){ // can black castle
-        // check kingside castling
-        if (blackPlayerState.canKingsideCastle && !hasPiece("f8") && !hasPiece("g8")) {
-            if (!squareAttackedBy("f8", true)) places.insert(Square("g8"));
-        }
-        // check queenside castling
-        if (blackPlayerState.canQueensideCastle && !hasPiece("b8") && !hasPiece("c8") && !hasPiece("d8")) {
-            if (!squareAttackedBy("d8", true)) places.insert(Square("c8"));
-        }
-    }
-    //for (const Square& place : places) cout<<(place.operator()())<<endl;
+	// check for castling
+	if (whiteToMove && !squareAttackedBy("e1", false)) {
+		// if white can kingside castle, and f1 and g1 are open
+		if (whitePlayerState.canKingsideCastle && !hasPiece("f1") && !hasPiece("g1")) {
+			if (!squareAttackedBy("f1", false))
+				places.insert(Square("g1"));
+		}
+
+		// check queenside castling
+		if (whitePlayerState.canQueensideCastle && !hasPiece("b1") && !hasPiece("c1") && !hasPiece("d1")) {
+			if (!squareAttackedBy("d1", false))
+				places.insert(Square("c1"));
+		}
+	}
+
+	if (!whiteToMove && !squareAttackedBy("e8", true)) { // can black castle
+		// check kingside castling
+		if (blackPlayerState.canKingsideCastle && !hasPiece("f8") && !hasPiece("g8")) {
+			if (!squareAttackedBy("f8", true))
+				places.insert(Square("g8"));
+		}
+		// check queenside castling
+		if (blackPlayerState.canQueensideCastle && !hasPiece("b8") && !hasPiece("c8") && !hasPiece("d8")) {
+			if (!squareAttackedBy("d8", true))
+				places.insert(Square("c8"));
+		}
+	}
+	//for (const Square& place : places) cout<<(place.operator()())<<endl;
 	return places;
 }
 
@@ -260,16 +278,13 @@ std::set<Square> ChessBoard::wherePawnCouldMove(const Square origin) const {
 		Square target = origin + off;
 		if (!target.isValid()) {
 			continue;
-        }
+		}
 		// if there is a piece of a different color, then it's okay
 		// else not
 		PiecePtr p = getPiece(target);
-		if (
-            (p && p->getBelongsToWhite() != attackerIsWhite) || 
-            (enPassant_targetSquare && (target == *enPassant_targetSquare))
-        ) {
+		if ((p && p->getBelongsToWhite() != attackerIsWhite) || (enPassant_targetSquare && (target == *enPassant_targetSquare))) {
 			places.insert(target); // it's enPassant!!
-        }
+		}
 	}
 	// consider the spaces it can move
 	for (size_t i = 1; i <= (1 + canMoveTwoSpaces); ++i) {
@@ -548,7 +563,7 @@ std::set<Move> ChessBoard::allLegalMoves(const Square sq) const {
 		// would call right back into allLegalMoves and recurse forever --
 		// then reject the move if it would leave our own king in check.
 		ChessBoard hypothetical = *this;
-        hypothetical.processPsuedoLegalMove(candidate);
+		hypothetical.processPsuedoLegalMove(candidate);
 		if (!hypothetical.isInCheck(moverIsWhite)) {
 			legalMoves.insert(candidate);
 		}
@@ -589,14 +604,14 @@ std::ostream &operator<<(std::ostream &os, const ChessBoard &board) {
 ChessBoard ChessBoard::board_with_move(const Move &move) const {
 	ChessBoard newBoard = (*this);
 
-    //std::cerr << "original: " << this->debug_board() << '\n';
-    //std::cerr << "copy:     " << newBoard.debug_board() << '\n';
+	//std::cerr << "original: " << this->debug_board() << '\n';
+	//std::cerr << "copy:     " << newBoard.debug_board() << '\n';
 
-    newBoard.processMove(move);
+	newBoard.processMove(move);
 
-    //std::cerr << "original: " << this->debug_board() << '\n';
-    //std::cerr << "new:      " << newBoard.debug_board() << '\n';
-    return newBoard;
+	//std::cerr << "original: " << this->debug_board() << '\n';
+	//std::cerr << "new:      " << newBoard.debug_board() << '\n';
+	return newBoard;
 }
 bool ChessBoard::move_ends_game(const Move move) const {
 	ChessBoard newBoard = this->board_with_move(move);
@@ -623,25 +638,30 @@ bool ChessBoard::move_is_zeroing(const Move move) const {
 
 // this function exists for testing purposes
 int ChessBoard::perft(int depth, int divideThreshold) const {
-    if (depth==0) return 1;
-    int perft_res = 0;
-    std::set<Move> moves = this->allLegalMoves();
-    //if (depth==1) return moves.size();
-    for (Move m : moves) {
-        ChessBoard child = this->board_with_move(m);
-        if (depth>1 && depth >= divideThreshold) std::cout<<"BEGINNING PERFT OF CHILD" <<m.operator()()<<"\n\n";
-        int perft_child = child.perft(depth-1, divideThreshold);
-        if (depth >= max(2, divideThreshold) && depth>=1) std::cout<<"\n";
-        if (depth >= divideThreshold) std::cout<<"DEPTH = "<<depth<<" PERFT DIVIDE: m="<<m.operator()()<<" :"<<perft_child<<std::endl;
-        
-        perft_res += perft_child;
-    }
-    return perft_res;
+	if (depth == 0)
+		return 1;
+	int perft_res = 0;
+	std::set<Move> moves = this->allLegalMoves();
+	//if (depth==1) return moves.size();
+	for (Move m : moves) {
+		ChessBoard child = this->board_with_move(m);
+		if (depth > 1 && depth >= divideThreshold)
+			std::cout << "BEGINNING PERFT OF CHILD" << m.operator()() << "\n\n";
+		int perft_child = child.perft(depth - 1, divideThreshold);
+		if (depth >= max(2, divideThreshold) && depth >= 1)
+			std::cout << "\n";
+		if (depth >= divideThreshold)
+			std::cout << "DEPTH = " << depth << " PERFT DIVIDE: m=" << m.operator()() << " :" << perft_child << std::endl;
+
+		perft_res += perft_child;
+	}
+	return perft_res;
 }
 // and this function exists for debugging purposes
 std::string ChessBoard::debug_board() const {
-    std::string debugBoard = this->fen();
-    debugBoard += " Moves:";
-    for (const Move& move : previousMoves) debugBoard+=(" " + move.operator()());
-    return debugBoard;
+	std::string debugBoard = this->fen();
+	debugBoard += " Moves:";
+	for (const Move &move : previousMoves)
+		debugBoard += (" " + move.operator()());
+	return debugBoard;
 }

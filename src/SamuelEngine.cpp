@@ -185,14 +185,13 @@ std::vector<Move> SamuelEngine::orderMoves(const ChessBoard &board) const {
 }
 
 std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_depth(const ChessBoard &board, int depth, double alpha, double beta) {
-    try {
-        board.findKing(false);
-    } catch (const std::logic_error&) {
+	try {
+		board.findKing(false);
+	} catch (const std::logic_error &) {
 
-        std::cerr << "ERROR: BLACK KING MISSING!!!!! DEBUG BOARD:"
-                  << board.debug_board() << '\n';
-        throw;
-    }
+		std::cerr << "ERROR: BLACK KING MISSING!!!!! DEBUG BOARD:" << board.debug_board() << '\n';
+		throw;
+	}
 	if ((numBoardsVisited & 127) == 0 && shouldStop()) {
 		throw OutOfTime();
 	}
