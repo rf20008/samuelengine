@@ -82,9 +82,9 @@ class TestBoard : public CxxTest::TestSuite {
 			TS_ASSERT_EQUALS(myBoard.perft(3), 2812);
 		}
 
-        void testPerftPositionFour() {
-            ChessBoard myBoard("8/P6k/8/8/8/8/8/7K w - - 0 1");
-            TS_ASSERT_EQUALS(myBoard.perft(1), 7);
+		void testPerftPositionFour() {
+			ChessBoard myBoard("8/P6k/8/8/8/8/8/7K w - - 0 1");
+			TS_ASSERT_EQUALS(myBoard.perft(1), 7);
 			TS_ASSERT_EQUALS(myBoard.perft(2), 31);
 			TS_ASSERT_EQUALS(myBoard.perft(3), 340);
             TS_ASSERT_EQUALS(myBoard.perft(4), 1864);
