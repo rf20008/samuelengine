@@ -305,18 +305,22 @@ std::set<Move> ChessBoard::wherePawnCouldMove(const Square origin) const {
     std::set<Move> newPlaces;
     for (Move place : places) {
         if (attackerIsWhite && place.endingSquare.col == 8) {
+            //cout<<"PROMOTION FOR WHITE!\n";
             // add 4 more
-            for (char toPromote : "BNRQ") {
+            for (char toPromote : {'B', 'R', 'N', 'Q'}) {
                 newPlaces.insert(Move{place.startingSquare, place.endingSquare, toPromote});
             }
+            continue;
         }
-        if (!attackerIsWhite && place.endingSquare.col == 1) {
-            for (char toPromote : "brnq") {
+        else if (!attackerIsWhite && place.endingSquare.col == 1) {
+            for (char toPromote : {'B', 'R', 'N', 'Q'}) {
                 newPlaces.insert(Move{place.startingSquare, place.endingSquare, toPromote});
             }
-        }
+            continue;
+        } 
+        newPlaces.insert(place);
     }
-	return places;
+	return newPlaces;
 }
 static const Square knightOffsets[] = {{1, 2}, {2, 1}, {-1, 2}, {-2, 1}, {1, -2}, {2, -1}, {-1, -2}, {-2, -1}};
 
