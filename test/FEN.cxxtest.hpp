@@ -12,11 +12,29 @@ class TestFEN : public CxxTest::TestSuite {
 			// generated using http://bernd.bplaced.net/fengenerator/fengenerator.html; feel free to change this
 			const std::string myPiecePart =
 				"5r2/nK6/6Pk/1b2p3/N2p1pP1/3p2Pp/3B4/1Q6";
+			// TODO: investigate why parsedPieces returns an upside down board
+			const std::vector<std::string> groundTruth = {
+				" Q      ", "   B    ", "   p  Pp", "N  p pP ",
+				" b  p   ", "      Pk", "nK      ", "     r  ",
+			};
+
 			const std::vector<std::vector<PiecePtr>> parsedPieces =
 				parsePiecePart(myPiecePart);
 			TS_ASSERT_EQUALS(parsedPieces.size(), 8);
-			for (const std::vector<PiecePtr> &row : parsedPieces) {
-				TS_ASSERT_EQUALS(row.size(), 8);
+
+			for (size_t i = 0; i < 8; i++) {
+				const std::vector<PiecePtr> &parsedRow = parsedPieces.at(i);
+				TS_ASSERT_EQUALS(parsedRow.size(), 8);
+				for (size_t j = 0; j < 8; j++) {
+					const PiecePtr &parsedCell = parsedRow.at(j);
+					const char &groundTruthCell = groundTruth.at(i).at(j);
+					if (groundTruthCell == ' ') {
+						TS_ASSERT_EQUALS(parsedCell, nullptr);
+					} else {
+						TS_ASSERT_DIFFERS(parsedCell, nullptr);
+						TS_ASSERT_EQUALS(parsedCell->symbol(), groundTruthCell);
+					}
+				}
 			}
 		}
 		void testParsePlayerPart() {
