@@ -304,10 +304,15 @@ std::set<Move> ChessBoard::wherePawnCouldMove(const Square origin) const {
 	}
     std::set<Move> newPlaces;
     for (Move place : places) {
-        if (place.endingSquare.col == 8) {
+        if (attackerIsWhite && place.endingSquare.col == 8) {
             // add 4 more
-            for (char toPromote : "bnrq") {
-                newPlaces.insert(Move{place.startingSquare, place.endingSquare, static_cast<char>(pawn->getBelongsToWhite() ? toupper(toPromote) : toPromote)});
+            for (char toPromote : "BNRQ") {
+                newPlaces.insert(Move{place.startingSquare, place.endingSquare, toPromote});
+            }
+        }
+        if (!attackerIsWhite && place.endingSquare.col == 1) {
+            for (char toPromote : "brnq") {
+                newPlaces.insert(Move{place.startingSquare, place.endingSquare, toPromote});
             }
         }
     }
