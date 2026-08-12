@@ -235,7 +235,9 @@ class TestBoard : public CxxTest::TestSuite {
 			board.processMove({"h2", "h3"});
 			board.processMove({"b7", "a8"});
 			board.processMove({"h1", "h2"});
+            TS_ASSERT(!board.getWhitePlayerState().canKingsideCastle);
 			board.processMove({"c6", "a5"});
-			board.processMove({"e1", "g1"});
+			TS_ASSERT_THROWS_ANYTHING(board.processMove({"e1", "g1"}));
+
         }
 };

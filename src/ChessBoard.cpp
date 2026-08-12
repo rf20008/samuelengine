@@ -147,7 +147,7 @@ void ChessBoard::processPsuedoLegalMove(Move m) {
 
 	// TODO: modify `Move` type to include castling as an option
 
-	processCastling(m, start_ptr);
+	
 
 	// TODO: update whitePlayerState, blackPlayerState
 
@@ -158,17 +158,22 @@ void ChessBoard::processPsuedoLegalMove(Move m) {
 		cur_state = PlayerState(false, false);
 
 	// if rook on a file moved, queenside is gone
-	if (toupper(start_ptr->symbol()) == 'R' && m.startingSquare == Square(whiteToMove ? 1 : 8, 1))
+    Square queensideRookSquare=Square(1, whiteToMove ? 1 : 8);
+    Square KingsideRookSquare = Square(8, whiteToMove ? 1 : 8);
+    
+	if (toupper(start_ptr->symbol()) == 'R' && m.startingSquare == queensideRookSquare) {
 		cur_state.canQueensideCastle = false;
+    }
 	// if rook on h file moved, kingside is gone
-	if (toupper(start_ptr->symbol()) == 'R' && m.startingSquare == Square(whiteToMove ? 1 : 8, 8))
+	if (toupper(start_ptr->symbol()) == 'R' && m.startingSquare == KingsideRookSquare) {
 		cur_state.canKingsideCastle = false;
-
+    }
 	if (whiteToMove) {
 		whitePlayerState = cur_state;
 	} else {
 		blackPlayerState = cur_state;
 	}
+    processCastling(m, start_ptr);
 	//if was an enpassant capture, must remove the pawn it en-passanted
     // if it's a promotion
     if (m.promotion) {
