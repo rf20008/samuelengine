@@ -32,4 +32,9 @@ class OutOfTime : public std::exception {
 		OutOfTime(const std::string &err = "Search stopped") : message(err) {}
 		virtual const char *what() const noexcept override { return message.c_str(); }
 };
+
+class IllegalMoveError : public std::runtime_error {
+    public:
+        IllegalMoveError(const std::string& message = "You have attempted an illegal move.") : std::runtime_error(message) {}
+};
 #endif
