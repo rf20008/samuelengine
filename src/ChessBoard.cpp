@@ -226,13 +226,14 @@ std::set<Square> ChessBoard::whereKingCouldMove(const Square origin) const {
             if (!squareAttackedBy("d1", false)) places.insert(Square("c1"));
         }
     }
-    else if (!squareAttackedBy("e8", true)){ // can black castle
+    
+    if (!whiteToMove && !squareAttackedBy("e8", true)){ // can black castle
         // check kingside castling
         if (blackPlayerState.canKingsideCastle && !hasPiece("f8") && !hasPiece("g8")) {
             if (!squareAttackedBy("f8", true)) places.insert(Square("g8"));
         }
         // check queenside castling
-        if (blackPlayerState.canKingsideCastle && !hasPiece("c8") && !hasPiece("d8")) {
+        if (blackPlayerState.canQueensideCastle && !hasPiece("c8") && !hasPiece("d8")) {
             if (!squareAttackedBy("d8", true)) places.insert(Square("c8"));
         }
     }

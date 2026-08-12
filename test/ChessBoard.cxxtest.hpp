@@ -87,6 +87,7 @@ class TestBoard : public CxxTest::TestSuite {
         }
         void testWhiteKingsideCastling() {
             ChessBoard myBoard ("6k1/8/8/8/8/8/8/4K2R w K - 0 1");
+            TS_ASSERT(myBoard.getWhitePlayerState().canKingsideCastle);
             TS_ASSERT_EQUALS(myBoard.findKing(true), "e1");
             TS_ASSERT(myBoard.isMoveLegal(Move("e1", "g1")));
             try {
@@ -109,6 +110,7 @@ class TestBoard : public CxxTest::TestSuite {
         }
         void testWhiteQueensideCastling() {
             ChessBoard myBoard ("6k1/8/8/8/8/8/8/R3K3 w Q - 0 1");
+            TS_ASSERT(myBoard.getWhitePlayerState().canQueensideCastle);
             TS_ASSERT(myBoard.isMoveLegal(Move("e1", "c1")));
             try {
                 myBoard.processMove(Move("e1", "c1"));
@@ -129,7 +131,8 @@ class TestBoard : public CxxTest::TestSuite {
             TS_ASSERT(!myBoard.hasPiece("a1"));
         }
         void testBlackKingsideCastling() {
-            ChessBoard myBoard ("4k2R/8/8/8/8/8/8/6K1 b k - 0 1");
+            ChessBoard myBoard ("4k2r/8/8/8/8/8/8/6K1 b k - 0 1");
+            TS_ASSERT(myBoard.getBlackPlayerState().canKingsideCastle);
             TS_ASSERT_EQUALS(myBoard.findKing(false), "e8");
             TS_ASSERT(myBoard.isMoveLegal(Move("e8", "g8")));
             try {
@@ -152,6 +155,7 @@ class TestBoard : public CxxTest::TestSuite {
         }
         void testBlackQueensideCastling() {
             ChessBoard myBoard ("r3k3/8/8/8/8/8/8/6K1 b q - 0 1");
+            TS_ASSERT(myBoard.getBlackPlayerState().canQueensideCastle);
             TS_ASSERT(myBoard.isMoveLegal(Move("e8", "c8")));
             try {
                 myBoard.processMove(Move("e8", "c8"));
