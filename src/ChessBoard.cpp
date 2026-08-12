@@ -560,3 +560,15 @@ bool ChessBoard::move_is_zeroing(const Move move) const {
 	PiecePtr pieceAtBeginning = this->getPiece(move.startingSquare);
 	return (static_cast<bool>(pieceAtBeginning) && toupper(pieceAtBeginning->symbol()) == 'P');
 }
+
+// this function exists for testing purposes
+int ChessBoard::perft(int depth) const {
+    if (depth==0) return 1;
+    int perft_res = 0;
+    std::set<Move> moves = this->allLegalMoves();
+    if (depth==1) return moves.size();
+    for (Move m : moves) {
+        perft_res += this->board_with_move(m).perft(depth-1);
+    }
+    return perft_res;
+}

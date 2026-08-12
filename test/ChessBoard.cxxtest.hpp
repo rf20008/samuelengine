@@ -49,6 +49,7 @@ class TestBoard : public CxxTest::TestSuite {
             TS_ASSERT_EQUALS(myBoard.getPiece(Square("e5"))->symbol(), 'P');
             TS_ASSERT(myBoard.isMoveLegal(Move(Square("e5"), Square("f6"))))
             myBoard.processMove(Move(Square("e5"), Square("f6")));
+            TS_ASSERT(myBoard.getPiece(Square("f6")));
             TS_ASSERT_EQUALS(myBoard.getPiece(Square("f6"))->symbol(), 'P');
             TS_ASSERT(!myBoard.getPiece(Square("f5")));
         }
@@ -58,9 +59,13 @@ class TestBoard : public CxxTest::TestSuite {
             TS_ASSERT_EQUALS(*myBoard.getEnPassantTargetSquare(), Square("f3"));
             TS_ASSERT_EQUALS(myBoard.getPiece(Square("e4"))->symbol(), 'p');
             TS_ASSERT(myBoard.isMoveLegal(Move(Square("e4"), Square("f3"))));
-            myBoard.processMove(Move(Square("e5"), Square("f6")));
-
-            TS_ASSERT_EQUALS(myBoard.getPiece(Square("f6"))->symbol(), 'p');
-            TS_ASSERT_EQUALS(myBoard.getPiece(Square("f5")), nullptr);
+            myBoard.processMove(Move(Square("e4"), Square("f3")));
+            TS_ASSERT_EQUALS(myBoard.getPiece(Square("f3"))->symbol(), 'p');
+            TS_ASSERT_EQUALS(myBoard.getPiece(Square("f4")), nullptr);
+        }
+        void testStartingPosNotCheckmate() {
+            ChessBoard myBoard = ChessBoard();
+            TS_ASSERT(!myBoard.isInCheckmate());
+            TS_ASSERT(!isGameOver(myBoard.getStatus()));
         }
 };
