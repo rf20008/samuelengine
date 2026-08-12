@@ -22,8 +22,7 @@ std::unique_ptr<AbstractPlayer> makePlayer(const std::string &colorName) {
 		std::cout << "Who plays " << colorName << "? [h]uman or [e]ngine: ";
 		std::string choice;
 		if (!std::getline(std::cin, choice)) {
-			throw std::runtime_error(
-				"main: no more input available while choosing players");
+			throw std::runtime_error("main: no more input available while choosing players");
 		}
 		if (choice.empty()) {
 			continue;
@@ -77,8 +76,7 @@ int main(int argc, char **argv) {
 
 		bool whiteToMove = board.get_whiteToMove();
 		AbstractPlayer &toMove = whiteToMove ? *whitePlayer : *blackPlayer;
-		std::cout << (whiteToMove ? "White" : "Black") << " to move."
-				  << std::endl;
+		std::cout << (whiteToMove ? "White" : "Black") << " to move." << std::endl;
 
 		Move move = toMove.getMove(board);
 		board.processMove(move);
