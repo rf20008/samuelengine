@@ -16,7 +16,10 @@ namespace ParsePieces {
         for (size_t ranknum = 0; ranknum<BOARD_SIZE; ++ranknum) {
             getline(RankReader, Ranks.at(BOARD_SIZE-ranknum-1), '/'); // FEN reads from rank 8 to rank 1
         }
-        std::vector<std::vector<PiecePtr>> board;
+	if (!RankReader.eof()){
+		throw InvalidFEN("Board has more than 8 ranks");
+	}
+	std::vector<std::vector<PiecePtr>> board;
         for (size_t ranknum = 0; ranknum<Ranks.size(); ranknum++) {
             std::string Rank = Ranks.at(ranknum);
             board.push_back(std::vector<PiecePtr>());
@@ -39,7 +42,7 @@ namespace ParsePieces {
             }
         }
         if (board.size() != BOARD_SIZE) {
-            throw InvalidFEN("Board does not have 8 ranks");
+            throw InvalidFEN("Board has fewer than 8 ranks");
         }
         return board;
     }
