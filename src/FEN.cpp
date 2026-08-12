@@ -92,6 +92,7 @@ std::optional<Square> parseEnPassantPart(std::string EnPassantPart) {
 }
 std::string getPiecePart(const std::vector<std::vector<PiecePtr>> &pieces) {
 	std::string PiecePart = "";
+	// TODO: figure out why the output string is wrong
 	for (std::vector<std::vector<PiecePtr>>::const_reverse_iterator it = pieces.crbegin(); it != pieces.crend(); ++it) { // because FEN stores from rank 8 to rank 1
 		// if it's a piece, increment it
 		int numWOPiece = 0;
@@ -112,7 +113,7 @@ std::string getPiecePart(const std::vector<std::vector<PiecePtr>> &pieces) {
 		if ((it + 1) != pieces.crend())
 			PiecePart.push_back('/');
 	}
-	throw NotImplementedError("std::string getPiecePart(const std::vector<std::vector<PiecePtr>>& pieces) is not implemented yet");
+	return PiecePart;
 }
 std::string getCastlingPart(const PlayerState &whiteState, const PlayerState &blackState) {
 	std::string castlingPart = "";
