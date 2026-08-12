@@ -35,6 +35,7 @@ template <typename T> inline std::set<T> &mergeSets(std::set<T> &A, const std::s
 
 class ChessBoard {
 	protected:
+        
 		std::vector<std::vector<PiecePtr>> pieces;
 		bool whiteToMove;
 		PlayerState whitePlayerState;
@@ -42,13 +43,13 @@ class ChessBoard {
 		int halfmove_clock;
 		int fullmove_clock;
 		std::optional<Square> enPassant_targetSquare;
-
+        std::vector<Move> previousMoves;
 	public:
 		// constructors
 
 		ChessBoard();						// create a chess board with starting position
 		ChessBoard(const std::string &fen); // create chess board from given FEN
-		ChessBoard(const std::vector<std::vector<PiecePtr>> &pieces, const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare);
+		ChessBoard(const std::vector<std::vector<PiecePtr>> &pieces, const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare, const std::vector<Move> moves);
 
 		// rule of 5
 		~ChessBoard() = default;

@@ -26,6 +26,7 @@ ChessBoard::ChessBoard(const std::string &fen) {
 	std::string PlayerPart;
 	std::string CastlingPart;
 	std::string EnPassantPart;
+    previousMoves = {};
 	int Halfmove_Part;
 	int Fullmove_part;
 	fenSS >> PiecePart >> PlayerPart >> CastlingPart >> EnPassantPart >> Halfmove_Part >> Fullmove_part;
@@ -49,7 +50,7 @@ ChessBoard::ChessBoard(const std::string &fen) {
 	}
 }
 
-ChessBoard::ChessBoard(const std::vector<std::vector<std::shared_ptr<const Piece>>> &pieces, const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare) : pieces(pieces), whiteToMove(whiteToMove), whitePlayerState(whitePlayerState), blackPlayerState(blackPlayerState), halfmove_clock(halfmove_clock), fullmove_clock(fullmove_clock), enPassant_targetSquare(enPassant_targetSquare) {}
+ChessBoard::ChessBoard(const std::vector<std::vector<std::shared_ptr<const Piece>>> &pieces, const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare, const std::vector<Move> moves = {}) : pieces(pieces), whiteToMove(whiteToMove), whitePlayerState(whitePlayerState), blackPlayerState(blackPlayerState), halfmove_clock(halfmove_clock), fullmove_clock(fullmove_clock), enPassant_targetSquare(enPassant_targetSquare), previousMoves(moves) {}
 
 std::shared_ptr<const Piece> ChessBoard::getPiece(Square sq) const {
 	// bounds check: an out-of-board square simply has no piece on it
@@ -115,6 +116,7 @@ void ChessBoard::processCastling(Move m, const PiecePtr& start_ptr) {
 }
 void ChessBoard::processMove(Move m) {
 	if (this->isMoveLegal(m)) {
+        this.previousMoves.push_back(m);
 		// update fullmove_clock (increments once Black's move completes a full move pair)
 		this->fullmove_clock += (!this->whiteToMove);
 
@@ -433,7 +435,7 @@ Square ChessBoard::findKing(bool belongsToWhite) const {
 			}
 		}
 	}
-	throw std::logic_error("findKing: no king found for the requested player");
+	throw std::logic_error(std::string("findKing: no king found for ") + (belongsToWhite ? "White" : "Black") + " in the board with FEN " + this->fen());
 }
 
 bool ChessBoard::isInCheck(bool player) const {
