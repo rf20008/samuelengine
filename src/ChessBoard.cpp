@@ -151,10 +151,10 @@ void ChessBoard::processMove(Move m) {
 // could capture along that ray -- i.e. a rook/queen on a rank/file ray,
 // or a bishop/queen on a diagonal ray? The ray stops at the first
 // occupied square either way (that piece blocks anything behind it).
-bool isSlidingAttacker(const ChessBoard &board, Square from, Square dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) {
+bool ChessBoard::isSlidingAttacker(Square from, Square dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) const {
 	Square cur = from + dir;
 	while (cur.isValid()) {
-		std::shared_ptr<const Piece> p = board.getPiece(cur);
+		std::shared_ptr<const Piece> p = getPiece(cur);
 		if (p) {
 			if (p->getBelongsToWhite() == attackerIsWhite) {
 				char sym = static_cast<char>(std::toupper(p->symbol()));
@@ -178,6 +178,10 @@ PiecePtr ChessBoard::getAndAssertPiece(const Square origin, const char pieceType
 		throw WrongPieceType("Wrong piece type at origin");
 	return ptr;
 }
+bool ChessBoard::hasPiece(const Square origin) const {
+    return !getPiece(origin);
+
+}
 std::set<Square> ChessBoard::whereKingCouldMove(const Square origin) const {
 	// get al neighboring places
 	PiecePtr king = getAndAssertPiece(origin, 'K');
@@ -194,6 +198,13 @@ std::set<Square> ChessBoard::whereKingCouldMove(const Square origin) const {
 		if ((!p) || (p && p->getBelongsToWhite() != attackerIsWhite))
 			places.insert(target);
 	}
+    // check for castling
+    if (whiteToMove) {
+        // if white can kingside castle, and f1 and g1 are open
+        if (whitePlayerState.canKingsideCastle && !hasPiece("f1") && !hasPiece("g1")) {
+
+        }
+    }
 	return places;
 }
 
@@ -324,7 +335,7 @@ std::set<Square> ChessBoard::allPseudoLegalDestinations(const Square origin) con
 // This is a raw-attack check (used to detect check): it only asks
 // "could this piece capture on `target` right now", not whether doing
 // so would be a legal move for the attacker.
-bool squareAttackedBy(const ChessBoard &board, Square target, bool attackerIsWhite) {
+bool ChessBoard::squareAttackedBy(Square target, bool attackerIsWhite) const {
 	// get all the psuedo-legal moves
 	// and check if they would end on the target
 
@@ -333,7 +344,7 @@ bool squareAttackedBy(const ChessBoard &board, Square target, bool attackerIsWhi
 		Square sq = target + off;
 		if (!sq.isValid())
 			continue;
-		std::shared_ptr<const Piece> p = board.getPiece(sq);
+		std::shared_ptr<const Piece> p = getPiece(sq);
 		if (p && p->getBelongsToWhite() == attackerIsWhite && std::toupper(p->symbol()) == 'N') {
 			return true;
 		}
@@ -346,7 +357,7 @@ bool squareAttackedBy(const ChessBoard &board, Square target, bool attackerIsWhi
 			Square sq = target + Square(dr, dc);
 			if (!sq.isValid())
 				continue;
-			std::shared_ptr<const Piece> p = board.getPiece(sq);
+			std::shared_ptr<const Piece> p = getPiece(sq);
 			if (p && p->getBelongsToWhite() == attackerIsWhite && std::toupper(p->symbol()) == 'K') {
 				return true;
 			}
@@ -362,7 +373,7 @@ bool squareAttackedBy(const ChessBoard &board, Square target, bool attackerIsWhi
 		Square sq = target + Square(dc, behind);
 		if (!sq.isValid())
 			continue;
-		std::shared_ptr<const Piece> p = board.getPiece(sq);
+		std::shared_ptr<const Piece> p = getPiece(sq);
 		if (p && p->getBelongsToWhite() == attackerIsWhite && std::toupper(p->symbol()) == 'P') {
 			return true;
 		}
@@ -370,14 +381,14 @@ bool squareAttackedBy(const ChessBoard &board, Square target, bool attackerIsWhi
 
 	static const Square rookDirs[] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
 	for (const Square &dir : rookDirs) {
-		if (isSlidingAttacker(board, target, dir, attackerIsWhite, 'R', 'Q')) {
+		if (isSlidingAttacker(target, dir, attackerIsWhite, 'R', 'Q')) {
 			return true;
 		}
 	}
 
 	static const Square bishopDirs[] = {{1, 1}, {1, -1}, {-1, 1}, {-1, -1}};
 	for (const Square &dir : bishopDirs) {
-		if (isSlidingAttacker(board, target, dir, attackerIsWhite, 'B', 'Q')) {
+		if (isSlidingAttacker(target, dir, attackerIsWhite, 'B', 'Q')) {
 			return true;
 		}
 	}
@@ -400,7 +411,7 @@ Square ChessBoard::findKing(bool belongsToWhite) const {
 bool ChessBoard::isInCheck(bool player) const {
 	// can the player whose turn it is, capture the king who is owned by Player?
 	Square kingSquare = this->findKing(player);
-	return squareAttackedBy(*this, kingSquare, !player);
+	return this->squareAttackedBy(kingSquare, !player);
 }
 
 bool ChessBoard::isInCheckmate() const {

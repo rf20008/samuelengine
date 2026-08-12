@@ -80,6 +80,9 @@ class ChessBoard {
 		std::string fen() const;
 
 		PiecePtr getAndAssertPiece(const Square origin, const char pieceType) const;
+        bool hasPiece(const Square origin) const;
+        bool squareAttackedBy(Square target, bool attackerIsWhite) const;
+        bool isSlidingAttacker(Square from, Square dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) const;
 
 		std::set<Square> whereKingCouldMove(const Square origin) const;
 		std::set<Square> wherePawnCouldMove(const Square origin) const;
