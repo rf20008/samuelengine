@@ -36,6 +36,14 @@ class TestFEN : public CxxTest::TestSuite {
 					}
 				}
 			}
+
+			// test invalid piece parts
+			TS_ASSERT_THROWS_ANYTHING(parsePiecePart(""));
+			TS_ASSERT_THROWS_ANYTHING(parsePiecePart("\42"));
+			TS_ASSERT_THROWS_ANYTHING(parsePiecePart("9/8/7/6/5/4/3/2/1"));
+			TS_ASSERT_THROWS_ANYTHING(parsePiecePart("8/8/8/8/8/8/8"));
+			TS_ASSERT_THROWS_ANYTHING(parsePiecePart("6r1/1R1Q4/7N/4pP2/2K1Pn1k/3p2pp/2p1P3/7B/2N5/1P3Kpp/pp6"));
+
 		}
 		void testParsePlayerPart() {
 			TS_ASSERT_EQUALS(true, parsePlayerPart("w"));
