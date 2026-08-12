@@ -45,4 +45,19 @@ class TestMove : public CxxTest::TestSuite {
 			TS_ASSERT_EQUALS(m40 < m0, false);
 			TS_ASSERT_EQUALS(m0 < m0, false);
 		};
+		void testMoveEquality() {
+			Move m = {{1, 2}, {3, 4}, '5'};
+			Move m1 = {{3, 2}, {3, 4}, '5'};
+			Move m2 = {{1, 4}, {3, 4}, '5'};
+			Move m3 = {{1, 2}, {5, 4}, '5'};
+			Move m4 = {{1, 2}, {3, 6}, '5'};
+			Move m5 = {{1, 2}, {3, 4}, '7'};
+
+			TS_ASSERT(m != m1);
+			TS_ASSERT(m != m2);
+			TS_ASSERT(m != m3);
+			TS_ASSERT(m != m4);
+			TS_ASSERT(m != m5);
+			TS_ASSERT(m == m);
+		};
 };
