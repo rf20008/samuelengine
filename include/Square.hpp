@@ -9,6 +9,7 @@ struct Square {
 	public:
 		Square() : Square(0, 0) {}
 		Square(int r, int c) : row(r), col(c) {}
+        Square(const char* sq) : Square(std::string(sq)) {}
 		Square(const std::string& sq) {
 			if (sq.size() != 2) {
 				throw std::invalid_argument("Square Constructor must contain exactly 2 characters");
