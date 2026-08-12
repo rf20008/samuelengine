@@ -48,6 +48,9 @@ class TestBoard : public CxxTest::TestSuite {
             TS_ASSERT_EQUALS(*myBoard.getEnPassantTargetSquare(), Square("f6"));
             TS_ASSERT_EQUALS(myBoard.getPiece(Square("e5"))->symbol(), 'P');
             TS_ASSERT(myBoard.isMoveLegal(Move(Square("e5"), Square("f6"))))
+            myBoard.processMove(Move(Square("e5"), Square("f6")));
+            TS_ASSERT_EQUALS(myBoard.getPiece(Square("f6"))->symbol(), 'P');
+            TS_ASSERT(!myBoard.getPiece(Square("f5")));
         }
         void testEnPassantBlack() {
             std::string myFen = "rnbqkbnr/pppp1ppp/8/8/P3pP2/8/1PPPP1PP/RNBQKBNR b KQkq f3 0 4";
@@ -55,6 +58,9 @@ class TestBoard : public CxxTest::TestSuite {
             TS_ASSERT_EQUALS(*myBoard.getEnPassantTargetSquare(), Square("f3"));
             TS_ASSERT_EQUALS(myBoard.getPiece(Square("e4"))->symbol(), 'p');
             TS_ASSERT(myBoard.isMoveLegal(Move(Square("e4"), Square("f3"))));
-            
+            myBoard.processMove(Move(Square("e5"), Square("f6")));
+
+            TS_ASSERT_EQUALS(myBoard.getPiece(Square("f6"))->symbol(), 'p');
+            TS_ASSERT_EQUALS(myBoard.getPiece(Square("f5")), nullptr);
         }
 };

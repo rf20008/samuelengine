@@ -2,13 +2,14 @@
 #define CS3520_MINI_PROJECT_SQUARE
 #include <string>
 #include <stdexcept>
+
 const int BOARD_SIZE = 8;
 struct Square {
     int row, col;
 public:
     Square() : Square(0, 0) {}
     Square(int r, int c) : row(r), col(c) {} 
-    Square(std::string sq) {
+    Square(const std::string& sq) {
         if (sq.size() != 2) {
             throw std::invalid_argument("Square Constructor must contain exactly 2 characters");
         }
