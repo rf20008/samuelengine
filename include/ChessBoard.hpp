@@ -69,6 +69,8 @@ class ChessBoard {
 		// chess engine methods
 		bool isMoveLegal(Move m) const; // return whether a move is legal
 		void processMove(Move m);
+        void processEnPassant(Move m, const PiecePtr& start_ptr, const PiecePtr& end_ptr);
+        void processCastling(Move m, const PiecePtr& start_ptr);
 		bool isInCheck(bool player) const;
 		bool isInCheckmate() const;
 		bool isInStalemate() const;
@@ -92,6 +94,7 @@ class ChessBoard {
 		std::set<Square> whereRookCouldMove(const Square origin) const;
 		std::set<Square> whereQueenCouldMove(const Square origin) const;
 		std::set<Square> allPseudoLegalDestinations(const Square origin) const;
+
 
 		std::set<Move> allLegalMoves(const Square sq) const;
 		std::set<Move> allLegalMoves() const;

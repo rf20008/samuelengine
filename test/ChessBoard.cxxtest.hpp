@@ -87,6 +87,7 @@ class TestBoard : public CxxTest::TestSuite {
         }
         void testKingsideCastling() {
             ChessBoard myBoard ("6k1/8/8/8/8/8/8/4K2R w K - 0 1");
+            TS_ASSERT_EQUALS(myBoard.findKing(true), "e1");
             TS_ASSERT(myBoard.isMoveLegal(Move("e1", "g1")));
             myBoard.processMove(Move("e1", "g1"));
             try {

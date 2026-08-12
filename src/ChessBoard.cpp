@@ -72,6 +72,47 @@ bool ChessBoard::isMoveLegal(Move m) const {
 	return legalMovesFromStart.count(m) > 0;
 } // return whether a move is legal
 
+void ChessBoard::processEnPassant(Move m, const PiecePtr& start_ptr, const PiecePtr& end_ptr) {
+    if (m.endingSquare == enPassant_targetSquare && toupper(start_ptr->symbol()) == 'P' && !end_ptr) {
+        Square squareCaptured = m.endingSquare + ((start_ptr->symbol() == 'P') ? Square(0, -1) : Square(0, 1));
+        //cout<<"removing piece at"<<(squareCaptured.toString())<<endl;
+        this->pieces.at(squareCaptured.col - 1).at(squareCaptured.row - 1) = PiecePtr();
+    }
+    // update enPassantTargetSquare
+    //cout<<"isPawnMove: "<<isPawnMove<<endl;
+    //if (enPassant_targetSquare) cout<<"enPassant target Square: "<< (enPassant_targetSquare->toString())<<endl;
+    if (maxNorm(m.endingSquare - m.startingSquare) > 1) {
+        //cout<<"a Pawn moved 2 squares\n";
+        enPassant_targetSquare = std::optional<Square>(m.startingSquare + ((start_ptr->symbol() == 'P') ? Square(0, 1) : Square(0, -1)));
+    } else {
+        enPassant_targetSquare = std::optional<Square>();
+    }
+}
+void ChessBoard::processCastling(Move m, const PiecePtr& start_ptr) {
+    // check it's a king move, else do nothing
+    if (!start_ptr || toupper(start_ptr->symbol()) != 'K') return;
+    // need to move rook to appropriate location
+    if (maxNorm(m.endingSquare-m.startingSquare)<=1) return; // this was a normal king move, not castling
+    Square oldRookPos;
+    Square newRookPos;
+    if (m == Move("e1", "g1")) {oldRookPos="h1"; newRookPos="f1";} // white kingside castling
+    if (m == Move("e1", "c1")) {oldRookPos="a1"; newRookPos="d1";} // white queenside castling
+    if (m == Move("e8", "g8")) {oldRookPos="h8"; newRookPos="f8";} // black kingside castling
+    if (m == Move("e8", "c8")) {oldRookPos="a8"; newRookPos="d8";} // black queenside castling
+    // sanity check
+    // assert a rook at oldRookPos, and newRookPOs is empty
+    PiecePtr& oldRook = pieces.at(oldRookPos.col-1).at(oldRookPos.row-1);
+    PiecePtr& newRook = pieces.at(newRookPos.col-1).at(newRookPos.row-1);
+    if (!oldRook || toupper(oldRook->symbol()) != 'R') {
+        throw WrongPieceType("Expected a rook at " + oldRookPos.toString() + " that was not found");
+    } 
+    if (newRook) {
+        throw WrongPieceType("Expected newRookPos to be empty, but found " + std::string(1, newRook->symbol()) + " instead");
+    }
+    newRook = std::move(oldRook);
+    return;
+
+}
 void ChessBoard::processMove(Move m) {
 	if (this->isMoveLegal(m)) {
 		// update fullmove_clock (increments once Black's move completes a full move pair)
@@ -87,25 +128,7 @@ void ChessBoard::processMove(Move m) {
 
 		// TODO: modify `Move` type to include castling as an option
 
-		/*if (this->move_is_castling(m)) {
-            // we need to move the rook
-            Square rookOldLoc;
-            Square rookNewLoc;
-            // was it kingside?
-            bool kingside = m.endingSquare.col > m.startingSquare.col;
-            if (kingside) {
-                rookOldLoc = Square(8, whiteToMove ? 1 : 8);
-                rookNewLoc = Square(6, whiteToMove ? 1 : 8);
-            } else {
-                rookOldLoc = Square(8, whiteToMove ? 1 : 8);
-                rookNewLoc = Square(4, whiteToMove ? 1 : 8);
-            }
-            // move the rook
-            std::shared_ptr<const Piece>& rookOldPtr = pieces.at(rookOldLoc.col-1).at(rookOldLoc.row-1);
-            std::shared_ptr<const Piece>& rookNewPtr = pieces.at(rookNewLoc.col-1).at(rookNewLoc.row-1);
-            rookNewPtr=std::move(rookOldPtr);
-
-        }
+		processCastling(m, start_ptr);
 
 		// TODO: update whitePlayerState, blackPlayerState
 
@@ -113,7 +136,7 @@ void ChessBoard::processMove(Move m) {
         
         // if king moved, both are gone
         if (toupper(start_ptr -> symbol()) == 'K') cur_state = PlayerState(false, false);
-
+        
         // if rook on a file moved, queenside is gone
         if (toupper(start_ptr->symbol()) == 'R' && m.startingSquare==Square(whiteToMove ? 1 : 8, 1)) cur_state.canQueensideCastle=false;
         // if rook on h file moved, kingside is gone
@@ -124,23 +147,9 @@ void ChessBoard::processMove(Move m) {
         } else {
             blackPlayerState=cur_state;
         }
-         if was an enpassant capture, must remove the pawn it en-passanted*/
-		if (m.endingSquare == enPassant_targetSquare && toupper(start_ptr->symbol()) == 'P' && !end_ptr) {
-			Square squareCaptured = m.endingSquare + ((start_ptr->symbol() == 'P') ? Square(0, -1) : Square(0, 1));
-			//cout<<"removing piece at"<<(squareCaptured.toString())<<endl;
-			this->pieces.at(squareCaptured.col - 1).at(squareCaptured.row - 1) = PiecePtr();
-		}
-		// update enPassantTargetSquare
-		//cout<<"isPawnMove: "<<isPawnMove<<endl;
-		//if (enPassant_targetSquare) cout<<"enPassant target Square: "<< (enPassant_targetSquare->toString())<<endl;
-		if (isPawnMove && maxNorm(m.endingSquare - m.startingSquare) > 1) {
-			//cout<<"a Pawn moved 2 squares\n";
-			enPassant_targetSquare = std::optional<Square>(m.startingSquare + ((start_ptr->symbol() == 'P') ? Square(0, 1) : Square(0, -1)));
-		} else {
-			enPassant_targetSquare = std::optional<Square>();
-		}
-		//if (enPassant_targetSquare) cout<<"enPassant target Square: "<< (enPassant_targetSquare->toString())<<endl;
-		// move the piece!
+        //if was an enpassant capture, must remove the pawn it en-passanted
+		
+        if (isPawnMove) processEnPassant(m, start_ptr, end_ptr);
 		end_ptr = std::move(start_ptr);
 		this->whiteToMove = !this->whiteToMove;
 	}
