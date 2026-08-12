@@ -6,6 +6,6 @@ struct Move {
 		Square endingSquare;
 		bool operator<(const Move &other) const;
 		bool operator==(const Move &other) const { return startingSquare == other.startingSquare && endingSquare == other.endingSquare; }
-        std::string operator() const {return static_cast<std::string>(startingSquare) + static_cast<std::string>(endingSquare);}
+        std::string operator()() const {return startingSquare.operator()() + endingSquare.operator()();}
 };
 #endif
