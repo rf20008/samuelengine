@@ -629,8 +629,10 @@ int ChessBoard::perft(int depth, bool divide) const {
     //if (depth==1) return moves.size();
     for (Move m : moves) {
         ChessBoard child = this->board_with_move(m);
-        int perft_child = child.perft(depth-1);
-        if (divide) std::cout<<"PERFT DIVIDE: m="<<m.operator()()<<" :"<<perft_child<<std::endl;
+        if (divide && depth > 1) std::cout<<"BEGINNING PERFT OF CHILD\n\n";
+        int perft_child = child.perft(depth-1, divide);
+        if (divide) std::cout<<"\nPERFT DIVIDE: m="<<m.operator()()<<" :"<<perft_child<<std::endl;
+        
         perft_res += perft_child;
     }
     return perft_res;
