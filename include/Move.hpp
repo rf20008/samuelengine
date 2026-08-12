@@ -4,6 +4,7 @@
 struct Move {
 		Square startingSquare;
 		Square endingSquare;
+		char promotion = '\0';
 		bool operator<(const Move &other) const;
 		bool operator==(const Move &other) const { return startingSquare == other.startingSquare && endingSquare == other.endingSquare; }
 		std::string operator()() const { return startingSquare.operator()() + endingSquare.operator()(); }
