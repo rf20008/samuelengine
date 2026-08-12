@@ -4,3 +4,4 @@ TabWidth: 4
 IndentAccessModifiers: true
 AccessModifierOffset: 1
 ReflowComments: false
+ColumnLimit: 10000

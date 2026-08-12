@@ -5,14 +5,11 @@
 
 #include "Piece.hpp"
 
-
 class Pawn : public Piece {
-    public:
-        Pawn(bool ownedbyWhite) : Piece(ownedbyWhite) {}
-        virtual char symbol() const {
-            return (belongsToWhite?'P':'p');
-        }
-	virtual ~Pawn() {}
+	public:
+		Pawn(bool ownedbyWhite) : Piece(ownedbyWhite) {}
+		virtual char symbol() const { return (belongsToWhite ? 'P' : 'p'); }
+		virtual ~Pawn() {}
 };
 
 #endif
