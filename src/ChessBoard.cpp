@@ -160,12 +160,15 @@ void ChessBoard::processPsuedoLegalMove(Move m) {
 	// if rook on a file moved, queenside is gone
     Square queensideRookSquare=Square(1, whiteToMove ? 1 : 8);
     Square KingsideRookSquare = Square(8, whiteToMove ? 1 : 8);
-    
-	if (toupper(start_ptr->symbol()) == 'R' && m.startingSquare == queensideRookSquare) {
+    if (m.endingSquare == Square("a1")) whitePlayerState.canQueensideCastle=false;
+    if (m.endingSquare == Square("h1")) whitePlayerState.canKingsideCastle=false;
+    if (m.endingSquare == Square("a8")) blackPlayerState.canQueensideCastle=false;
+    if (m.endingSquare == Square("h8")) blackPlayerState.canKingsideCastle=false;
+	if ((toupper(start_ptr->symbol()) == 'R' && m.startingSquare == queensideRookSquare )|| m.endingSquare == queensideRookSquare) {
 		cur_state.canQueensideCastle = false;
     }
 	// if rook on h file moved, kingside is gone
-	if (toupper(start_ptr->symbol()) == 'R' && m.startingSquare == KingsideRookSquare) {
+	if ((toupper(start_ptr->symbol()) == 'R' && m.startingSquare == KingsideRookSquare ) || m.endingSquare == KingsideRookSquare) {
 		cur_state.canKingsideCastle = false;
     }
 	if (whiteToMove) {
