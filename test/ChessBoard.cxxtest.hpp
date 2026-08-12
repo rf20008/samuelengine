@@ -71,4 +71,18 @@ class TestBoard : public CxxTest::TestSuite {
             TS_ASSERT_EQUALS(myBoard.perft(2), 400);
             TS_ASSERT_EQUALS(myBoard.perft(3), 8902);
         }
+        void testPerfPosition2() {
+            // credit to https://chessprogramming.org/Perft_Results for providing the position and correct perft results
+            ChessBoard myBoard = ChessBoard("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+            // will only work when castling is implemented
+            TS_ASSERT_EQUALS(myBoard.perft(1), 48);
+            TS_ASSERT_EQUALS(myBoard.perft(2), 2039);
+        }
+        void testPerftPositionThree() {
+            // also from PerftResults
+            ChessBoard myBoard("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1");
+            TS_ASSERT_EQUALS(myBoard.perft(1), 14);
+            TS_ASSERT_EQUALS(myBoard.perft(2), 191);
+            TS_ASSERT_EQUALS(myBoard.perft(3), 2039);
+        }
 };
