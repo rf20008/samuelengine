@@ -7,6 +7,14 @@ using namespace ParsePieces;
 
 class TestFEN : public CxxTest::TestSuite {
 	public:
+		void testParsePiecePart() {
+			// generated using http://bernd.bplaced.net/fengenerator/fengenerator.html; feel free to change this
+			const std::string myPiecePart =
+				"5r2/nK6/6Pk/1b2p3/N2p1pP1/3p2Pp/3B4/1Q6";
+			const std::vector<std::vector<PiecePtr>> parsedPieces =
+				parsePiecePart(myPiecePart);
+			(void)parsedPieces;
+		}
 		void testParsePlayerPart() {
 			TS_ASSERT_EQUALS(true, parsePlayerPart("w"));
 			TS_ASSERT_EQUALS(false, parsePlayerPart("b"));
