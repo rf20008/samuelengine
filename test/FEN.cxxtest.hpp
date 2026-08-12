@@ -1,6 +1,7 @@
 #ifndef CS3520_FEN_CXXTEST_HPP
 #define CS3520_FEN_CXXTEST_HPP
 #include "FEN.hpp"
+#include <ranges>
 
 #include "cxxtest/TestSuite.h"
 using namespace ParsePieces;
@@ -13,7 +14,10 @@ class TestFEN : public CxxTest::TestSuite {
 				"5r2/nK6/6Pk/1b2p3/N2p1pP1/3p2Pp/3B4/1Q6";
 			const std::vector<std::vector<PiecePtr>> parsedPieces =
 				parsePiecePart(myPiecePart);
-			(void)parsedPieces;
+			TS_ASSERT_EQUALS(parsedPieces.size(), 8);
+			for (const std::vector<PiecePtr> &row : parsedPieces) {
+				TS_ASSERT_EQUALS(row.size(), 8);
+			}
 		}
 		void testParsePlayerPart() {
 			TS_ASSERT_EQUALS(true, parsePlayerPart("w"));
