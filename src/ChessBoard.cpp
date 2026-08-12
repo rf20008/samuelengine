@@ -1,6 +1,7 @@
 #include "ChessBoard.hpp"
 #include "Errors.hpp"
 #include "FEN.hpp"
+#include "GetPiece.hpp"
 
 #include <cctype>
 #include <iostream>
@@ -169,7 +170,10 @@ void ChessBoard::processPsuedoLegalMove(Move m) {
 		blackPlayerState = cur_state;
 	}
 	//if was an enpassant capture, must remove the pawn it en-passanted
-
+    // if it's a promotion
+    if (m.promotion) {
+        start_ptr = getPieceC(m.promotion);
+    }
 	if (isPawnMove) {
 		processEnPassantCapture(m, start_ptr, end_ptr);
 	}
