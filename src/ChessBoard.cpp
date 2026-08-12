@@ -75,16 +75,19 @@ bool ChessBoard::isMoveLegal(Move m) const {
 	return legalMovesFromStart.count(m) > 0;
 } // return whether a move is legal
 
-void ChessBoard::processEnPassant(Move m, const PiecePtr& start_ptr, const PiecePtr& end_ptr) {
-    if (m.endingSquare == enPassant_targetSquare && toupper(start_ptr->symbol()) == 'P' && !end_ptr) {
+void ChessBoard::processEnPassantCapture(Move m, const PiecePtr& start_ptr, const PiecePtr& end_ptr) {
+    if (enPassant_targetSquare && (m.endingSquare == *enPassant_targetSquare) && toupper(start_ptr->symbol()) == 'P' && !end_ptr) {
         Square squareCaptured = m.endingSquare + ((start_ptr->symbol() == 'P') ? Square(0, -1) : Square(0, 1));
         //cout<<"removing piece at"<<(squareCaptured.toString())<<endl;
         this->pieces.at(squareCaptured.col - 1).at(squareCaptured.row - 1) = PiecePtr();
     }
+    
+}
+void ChessBoard::processEnPassantUpdate(Move m, const PiecePtr& start_ptr, const PiecePtr& end_ptr) {
     // update enPassantTargetSquare
     //cout<<"isPawnMove: "<<isPawnMove<<endl;
     //if (enPassant_targetSquare) cout<<"enPassant target Square: "<< (enPassant_targetSquare->toString())<<endl;
-    if (maxNorm(m.endingSquare - m.startingSquare) > 1) {
+    if (toupper(start_ptr->symbol()) == 'P' && maxNorm(m.endingSquare - m.startingSquare) > 1) {
         //cout<<"a Pawn moved 2 squares\n";
         enPassant_targetSquare = std::optional<Square>(m.startingSquare + ((start_ptr->symbol() == 'P') ? Square(0, 1) : Square(0, -1)));
     } else {
@@ -153,7 +156,9 @@ void ChessBoard::processMove(Move m) {
         }
         //if was an enpassant capture, must remove the pawn it en-passanted
 		
-        if (isPawnMove) processEnPassant(m, start_ptr, end_ptr);
+        if (isPawnMove) {processEnPassantCapture(m, start_ptr, end_ptr);}
+        processEnPassantUpdate(m, start_ptr, end_ptr);
+
 		end_ptr = std::move(start_ptr);
 		this->whiteToMove = !this->whiteToMove;
 	} else {
@@ -250,13 +255,18 @@ std::set<Square> ChessBoard::wherePawnCouldMove(const Square origin) const {
 	std::set<Square> places;
 	for (const Square &off : getPawnDirs(direction)) {
 		Square target = origin + off;
-		if (!target.isValid())
+		if (!target.isValid()) {
 			continue;
+        }
 		// if there is a piece of a different color, then it's okay
 		// else not
 		PiecePtr p = getPiece(target);
-		if ((p && p->getBelongsToWhite() != attackerIsWhite) || (enPassant_targetSquare && target == *enPassant_targetSquare))
+		if (
+            (p && p->getBelongsToWhite() != attackerIsWhite) || 
+            (enPassant_targetSquare && (target == *enPassant_targetSquare))
+        ) {
 			places.insert(target); // it's enPassant!!
+        }
 	}
 	// consider the spaces it can move
 	for (size_t i = 1; i <= (1 + canMoveTwoSpaces); ++i) {

@@ -50,7 +50,7 @@ class ChessBoard {
 		ChessBoard();						// create a chess board with starting position
 		ChessBoard(const std::string &fen); // create chess board from given FEN
 		ChessBoard(const std::vector<std::vector<PiecePtr>> &pieces, const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare, const std::vector<Move>& moves);
-        
+
         ChessBoard(const std::vector<std::vector<PiecePtr>> &pieces, const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare);
 		// rule of 5
 		~ChessBoard() = default;
@@ -72,7 +72,8 @@ class ChessBoard {
 		// chess engine methods
 		bool isMoveLegal(Move m) const; // return whether a move is legal
 		void processMove(Move m);
-        void processEnPassant(Move m, const PiecePtr& start_ptr, const PiecePtr& end_ptr);
+        void processEnPassantCapture(Move m, const PiecePtr& start_ptr, const PiecePtr& end_ptr);
+        void processEnPassantUpdate(Move m, const PiecePtr& start_ptr, const PiecePtr& end_ptr);
         void processCastling(Move m, const PiecePtr& start_ptr);
 		bool isInCheck(bool player) const;
 		bool isInCheckmate() const;

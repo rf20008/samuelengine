@@ -181,11 +181,11 @@ class TestBoard : public CxxTest::TestSuite {
             board.processMove(Move("b1","c3"));
             board.processMove(Move("d7","d5"));
             board.processMove(Move("c3", "a4"));
+            TS_ASSERT(!board.getEnPassantTargetSquare());
             board.processMove(Move("e8", "d7"));
-            //std::cout<<board.debug_board()<<std::endl;
             board.processMove(Move("a4", "c3"));
-            //std::cout<<board.debug_board()<<std::endl;
-            board.processMove(Move("e7", "d6"));
+            TS_ASSERT(!board.isMoveLegal(Move("e7", "d6")));
+            TS_ASSERT_THROWS_ANYTHING(board.processMove(Move("e7", "d6")));
             //std::cout<<board.debug_board()<<std::endl;
             TS_ASSERT_EQUALS(board.findKing(false), Square("d7"));
         }   
