@@ -7,6 +7,6 @@ struct Move {
 		char promotion = '\0';
 		bool operator<(const Move &other) const;
 		bool operator==(const Move &other) const;
-		std::string operator()() const { return startingSquare.operator()() + endingSquare.operator()(); }
+		std::string operator()() const; 
 };
 #endif
