@@ -112,7 +112,7 @@ class ChessBoard {
 		bool move_is_check(const Move move) const;
 		bool move_is_capture(const Move m) const;
 		bool move_is_zeroing(const Move m) const;
-        int perft(int depth) const;
+        int perft(int depth, bool divide=false) const;
         std::string debug_board() const;
 };
 #endif

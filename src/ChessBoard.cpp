@@ -226,7 +226,7 @@ std::set<Square> ChessBoard::whereKingCouldMove(const Square origin) const {
         } 
     
         // check queenside castling
-        else if (whitePlayerState.canQueensideCastle && !hasPiece("b1")&& !hasPiece("c1") && !hasPiece("d1")) {
+        if (whitePlayerState.canQueensideCastle && !hasPiece("b1")&& !hasPiece("c1") && !hasPiece("d1")) {
             if (!squareAttackedBy("d1", false)) places.insert(Square("c1"));
         }
     }
@@ -622,13 +622,16 @@ bool ChessBoard::move_is_zeroing(const Move move) const {
 }
 
 // this function exists for testing purposes
-int ChessBoard::perft(int depth) const {
+int ChessBoard::perft(int depth, bool divide) const {
     if (depth==0) return 1;
     int perft_res = 0;
     std::set<Move> moves = this->allLegalMoves();
-    if (depth==1) return moves.size();
+    //if (depth==1) return moves.size();
     for (Move m : moves) {
-        perft_res += this->board_with_move(m).perft(depth-1);
+        ChessBoard child = this->board_with_move(m);
+        int perft_child = child.perft(depth-1);
+        if (divide) std::cout<<"PERFT DIVIDE: m="<<m.operator()()<<" :"<<perft_child<<std::endl;
+        perft_res += perft_child;
     }
     return perft_res;
 }
