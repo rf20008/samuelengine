@@ -200,4 +200,42 @@ class TestBoard : public CxxTest::TestSuite {
 			} catch (std::logic_error &error) {
 			}
 		}
+        void testCastlingPossibleWeirdRegressionTest() {
+            ChessBoard board;
+            board.processMove({"b1", "c3"});
+			board.processMove({"d7", "d6"});
+			board.processMove({"g1", "f3"});
+			board.processMove({"e8", "d7"});
+			board.processMove({"c3", "d5"});
+			board.processMove({"a7", "a5"});
+			board.processMove({"b2", "b4"});
+			board.processMove({"a5", "b4"});
+			board.processMove({"f3", "e5"});
+			board.processMove({"d6", "e5"});
+			board.processMove({"c1", "a3"});
+			board.processMove({"a8", "a3"});
+			board.processMove({"c2", "c3"});
+			board.processMove({"a3", "a2"});
+			board.processMove({"a1", "a2"});
+			board.processMove({"c7", "c5"});
+			board.processMove({"d1", "a4"});
+			board.processMove({"d7", "d6"});
+			board.processMove({"a4", "b4"});
+			board.processMove({"d8", "b6"});
+			board.processMove({"b4", "b6"});
+			board.processMove({"d6", "d5"});
+			board.processMove({"a2", "a1"});
+			board.processMove({"b8", "c6"});
+			board.processMove({"b6", "b7"});
+			board.processMove({"c8", "b7"});
+			board.processMove({"e2", "e4"});
+			board.processMove({"d5", "e4"});
+			board.processMove({"f1", "d3"});
+			board.processMove({"e4", "d5"});
+			board.processMove({"h2", "h3"});
+			board.processMove({"b7", "a8"});
+			board.processMove({"h1", "h2"});
+			board.processMove({"c6", "a5"});
+			board.processMove({"e1", "g1"});
+        }
 };

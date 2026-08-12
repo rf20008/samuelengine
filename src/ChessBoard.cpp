@@ -124,7 +124,7 @@ void ChessBoard::processCastling(Move m, const PiecePtr &start_ptr) {
 	PiecePtr &oldRook = pieces.at(oldRookPos.col - 1).at(oldRookPos.row - 1);
 	PiecePtr &newRook = pieces.at(newRookPos.col - 1).at(newRookPos.row - 1);
 	if (!oldRook || toupper(oldRook->symbol()) != 'R') {
-		throw WrongPieceType("Expected a rook at " + oldRookPos.toString() + " that was not found");
+		throw WrongPieceType("Expected a rook at " + oldRookPos.toString() + " that was not found. debug board: " + this->debug_board());
 	}
 	if (newRook) {
 		throw WrongPieceType("Expected newRookPos to be empty, but found " + std::string(1, newRook->symbol()) + " instead");
