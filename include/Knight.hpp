@@ -5,15 +5,14 @@
 
 #include "Piece.hpp"
 
-
 class Knight : public Piece {
-    public:
-        Knight(bool ownedbyWhite) : Piece(ownedbyWhite) {}
-        virtual char symbol() const {
-            return (belongsToWhite?'N':'n'); // k is already used for king, 
-            // //so we adopt Forsyth-Edwards Notaton's convention of using N to denote knight
-        }
-	virtual ~Knight() {}
+	public:
+		Knight(bool ownedbyWhite) : Piece(ownedbyWhite) {}
+		virtual char symbol() const {
+			return (belongsToWhite ? 'N' : 'n'); // k is already used for king,
+			// //so we adopt Forsyth-Edwards Notaton's convention of using N to denote knight
+		}
+		virtual ~Knight() {}
 };
 
 #endif
