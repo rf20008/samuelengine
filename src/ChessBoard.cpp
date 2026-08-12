@@ -202,7 +202,21 @@ std::set<Square> ChessBoard::whereKingCouldMove(const Square origin) const {
     if (whiteToMove) {
         // if white can kingside castle, and f1 and g1 are open
         if (whitePlayerState.canKingsideCastle && !hasPiece("f1") && !hasPiece("g1")) {
-
+            if (!squareAttackedBy("f1", false)) places.insert(Square("g1"));
+        } 
+        // check queenside castling
+        else if (whitePlayerState.canQueensideCastle && !hasPiece("c1") && !hasPiece("d1")) {
+            if (!squareAttackedBy("g1", false)) places.insert(Square("c1"));
+        }
+    }
+    else { // can black castle
+        // check kingside castling
+        if (blackPlayerState.canKingsideCastle && !hasPiece("f8") && !hasPiece("g8")) {
+            if (!squareAttackedBy("f8", true)) places.insert(Square("g8"));
+        }
+        // check queenside castling
+        if (blackPlayerState.canKingsideCastle && !hasPiece("c8") && !hasPiece("d8")) {
+            if (!squareAttackedBy("d8", true)) places.insert(Square("c8"));
         }
     }
 	return places;

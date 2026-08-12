@@ -115,4 +115,5 @@ class TestBoard : public CxxTest::TestSuite {
                 TS_FAIL("f1 does not contain rook");
             }
         }
+
 };
