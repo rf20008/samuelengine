@@ -87,6 +87,7 @@ class TestBoard : public CxxTest::TestSuite {
             TS_ASSERT_EQUALS(myBoard.perft(1), 7);
 			TS_ASSERT_EQUALS(myBoard.perft(2), 31);
 			TS_ASSERT_EQUALS(myBoard.perft(3), 340);
+            TS_ASSERT_EQUALS(myBoard.perft(4), 1864);
         }
 		void testWhiteKingsideCastling() {
 			ChessBoard myBoard("6k1/8/8/8/8/8/8/4K2R w K - 0 1");
