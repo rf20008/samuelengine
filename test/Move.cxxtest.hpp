@@ -22,6 +22,7 @@ class TestMove : public CxxTest::TestSuite {
 			Move m21 = {{8, 9}, {6, 2}};
 			Move m30 = {{8, 9}, {0, 0}};
 			Move m31 = {{8, 9}, {0, 6}};
+			Move m40 = {{8, 9}, {0, 5}, 'a'};
 
 			// row of startingSquare
 			TS_ASSERT_EQUALS(m0 < m00, false);
@@ -38,6 +39,25 @@ class TestMove : public CxxTest::TestSuite {
 			// col of endingSquare
 			TS_ASSERT_EQUALS(m0 < m30, false);
 			TS_ASSERT_EQUALS(m0 < m31, true);
+
+			// promotion
+			TS_ASSERT_EQUALS(m0 < m40, true);
+			TS_ASSERT_EQUALS(m40 < m0, false);
 			TS_ASSERT_EQUALS(m0 < m0, false);
+		};
+		void testMoveEquality() {
+			Move m = {{1, 2}, {3, 4}, '5'};
+			Move m1 = {{3, 2}, {3, 4}, '5'};
+			Move m2 = {{1, 4}, {3, 4}, '5'};
+			Move m3 = {{1, 2}, {5, 4}, '5'};
+			Move m4 = {{1, 2}, {3, 6}, '5'};
+			Move m5 = {{1, 2}, {3, 4}, '7'};
+
+			TS_ASSERT(m != m1);
+			TS_ASSERT(m != m2);
+			TS_ASSERT(m != m3);
+			TS_ASSERT(m != m4);
+			TS_ASSERT(m != m5);
+			TS_ASSERT(m == m);
 		};
 };
