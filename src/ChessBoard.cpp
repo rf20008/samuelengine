@@ -119,48 +119,51 @@ void ChessBoard::processCastling(Move m, const PiecePtr& start_ptr) {
     return;
 
 }
+void ChessBoard::processPsuedoLegalMove(Move m) {
+    this->previousMoves.push_back(m);
+    // update fullmove_clock (increments once Black's move completes a full move pair)
+    this->fullmove_clock += (!this->whiteToMove);
+
+    // Square rows/cols are 1-indexed, pieces is 0-indexed and rank-major (see getPiece)
+    shared_ptr<const Piece> &start_ptr = this->pieces.at(m.startingSquare.col - 1).at(m.startingSquare.row - 1);
+    shared_ptr<const Piece> &end_ptr = this->pieces.at(m.endingSquare.col - 1).at(m.endingSquare.row - 1);
+    bool isCapture = (end_ptr != nullptr);
+    bool isPawnMove = (start_ptr != nullptr) && ((start_ptr->symbol() == 'p') || (start_ptr->symbol() == 'P'));
+    // the halfmove clock counts moves since the last capture/pawn move (for the 50-move rule), so it resets on either
+    this->halfmove_clock = (isCapture || isPawnMove) ? 0 : (this->halfmove_clock + 1);
+
+    // TODO: modify `Move` type to include castling as an option
+
+    processCastling(m, start_ptr);
+
+    // TODO: update whitePlayerState, blackPlayerState
+
+    PlayerState cur_state = whiteToMove?whitePlayerState:blackPlayerState;
+    
+    // if king moved, both are gone
+    if (toupper(start_ptr -> symbol()) == 'K') cur_state = PlayerState(false, false);
+    
+    // if rook on a file moved, queenside is gone
+    if (toupper(start_ptr->symbol()) == 'R' && m.startingSquare==Square(whiteToMove ? 1 : 8, 1)) cur_state.canQueensideCastle=false;
+    // if rook on h file moved, kingside is gone
+    if (toupper(start_ptr->symbol()) == 'R' && m.startingSquare==Square(whiteToMove ? 1 : 8, 8)) cur_state.canKingsideCastle=false;
+
+    if (whiteToMove) {
+        whitePlayerState=cur_state;
+    } else {
+        blackPlayerState=cur_state;
+    }
+    //if was an enpassant capture, must remove the pawn it en-passanted
+    
+    if (isPawnMove) {processEnPassantCapture(m, start_ptr, end_ptr);}
+    processEnPassantUpdate(m, start_ptr, end_ptr);
+
+    end_ptr = std::move(start_ptr);
+    this->whiteToMove = !this->whiteToMove;
+}
 void ChessBoard::processMove(Move m) {
 	if (this->isMoveLegal(m)) {
-        this->previousMoves.push_back(m);
-		// update fullmove_clock (increments once Black's move completes a full move pair)
-		this->fullmove_clock += (!this->whiteToMove);
-
-		// Square rows/cols are 1-indexed, pieces is 0-indexed and rank-major (see getPiece)
-		shared_ptr<const Piece> &start_ptr = this->pieces.at(m.startingSquare.col - 1).at(m.startingSquare.row - 1);
-		shared_ptr<const Piece> &end_ptr = this->pieces.at(m.endingSquare.col - 1).at(m.endingSquare.row - 1);
-		bool isCapture = (end_ptr != nullptr);
-		bool isPawnMove = (start_ptr != nullptr) && ((start_ptr->symbol() == 'p') || (start_ptr->symbol() == 'P'));
-		// the halfmove clock counts moves since the last capture/pawn move (for the 50-move rule), so it resets on either
-		this->halfmove_clock = (isCapture || isPawnMove) ? 0 : (this->halfmove_clock + 1);
-
-		// TODO: modify `Move` type to include castling as an option
-
-		processCastling(m, start_ptr);
-
-		// TODO: update whitePlayerState, blackPlayerState
-
-        PlayerState cur_state = whiteToMove?whitePlayerState:blackPlayerState;
-        
-        // if king moved, both are gone
-        if (toupper(start_ptr -> symbol()) == 'K') cur_state = PlayerState(false, false);
-        
-        // if rook on a file moved, queenside is gone
-        if (toupper(start_ptr->symbol()) == 'R' && m.startingSquare==Square(whiteToMove ? 1 : 8, 1)) cur_state.canQueensideCastle=false;
-        // if rook on h file moved, kingside is gone
-        if (toupper(start_ptr->symbol()) == 'R' && m.startingSquare==Square(whiteToMove ? 1 : 8, 8)) cur_state.canKingsideCastle=false;
-
-        if (whiteToMove) {
-            whitePlayerState=cur_state;
-        } else {
-            blackPlayerState=cur_state;
-        }
-        //if was an enpassant capture, must remove the pawn it en-passanted
-		
-        if (isPawnMove) {processEnPassantCapture(m, start_ptr, end_ptr);}
-        processEnPassantUpdate(m, start_ptr, end_ptr);
-
-		end_ptr = std::move(start_ptr);
-		this->whiteToMove = !this->whiteToMove;
+        this->processPsuedoLegalMove(m);
 	} else {
         throw IllegalMoveError("You have attempted an illegal move from " + m.startingSquare.toString() + " to " + m.endingSquare.toString() + ".");
     }
@@ -544,12 +547,9 @@ std::set<Move> ChessBoard::allLegalMoves(const Square sq) const {
 		// *not* going through processMove/isMoveLegal here, since that
 		// would call right back into allLegalMoves and recurse forever --
 		// then reject the move if it would leave our own king in check.
-		std::vector<std::vector<PiecePtr>> hypothetical = pieces;
-		hypothetical[dest.col - 1][dest.row - 1] = hypothetical[sq.col - 1][sq.row - 1];
-		hypothetical[sq.col - 1][sq.row - 1] = nullptr;
-
-		ChessBoard hypotheticalBoard(hypothetical, whiteToMove, whitePlayerState, blackPlayerState, halfmove_clock, fullmove_clock, enPassant_targetSquare.value_or(Square()));
-		if (!hypotheticalBoard.isInCheck(moverIsWhite)) {
+		ChessBoard hypothetical = *this;
+        hypothetical.processPsuedoLegalMove(candidate);
+		if (!hypothetical.isInCheck(moverIsWhite)) {
 			legalMoves.insert(candidate);
 		}
 	}
@@ -622,16 +622,17 @@ bool ChessBoard::move_is_zeroing(const Move move) const {
 }
 
 // this function exists for testing purposes
-int ChessBoard::perft(int depth, bool divide) const {
+int ChessBoard::perft(int depth, int divideThreshold) const {
     if (depth==0) return 1;
     int perft_res = 0;
     std::set<Move> moves = this->allLegalMoves();
     //if (depth==1) return moves.size();
     for (Move m : moves) {
         ChessBoard child = this->board_with_move(m);
-        if (divide && depth > 1) std::cout<<"BEGINNING PERFT OF CHILD\n\n";
-        int perft_child = child.perft(depth-1, divide);
-        if (divide) std::cout<<"\nPERFT DIVIDE: m="<<m.operator()()<<" :"<<perft_child<<std::endl;
+        if (depth>1 && depth >= divideThreshold) std::cout<<"BEGINNING PERFT OF CHILD" <<m.operator()()<<"\n\n";
+        int perft_child = child.perft(depth-1, divideThreshold);
+        if (depth >= max(2, divideThreshold) && depth>=1) std::cout<<"\n";
+        if (depth >= divideThreshold) std::cout<<"DEPTH = "<<depth<<" PERFT DIVIDE: m="<<m.operator()()<<" :"<<perft_child<<std::endl;
         
         perft_res += perft_child;
     }

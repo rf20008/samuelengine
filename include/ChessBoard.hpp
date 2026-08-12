@@ -72,6 +72,7 @@ class ChessBoard {
 		// chess engine methods
 		bool isMoveLegal(Move m) const; // return whether a move is legal
 		void processMove(Move m);
+        void processPsuedoLegalMove(Move m);
         void processEnPassantCapture(Move m, const PiecePtr& start_ptr, const PiecePtr& end_ptr);
         void processEnPassantUpdate(Move m, const PiecePtr& start_ptr, const PiecePtr& end_ptr);
         void processCastling(Move m, const PiecePtr& start_ptr);
@@ -112,7 +113,7 @@ class ChessBoard {
 		bool move_is_check(const Move move) const;
 		bool move_is_capture(const Move m) const;
 		bool move_is_zeroing(const Move m) const;
-        int perft(int depth, bool divide=false) const;
+        int perft(int depth, int divideThreshold = 2147483647) const;
         std::string debug_board() const;
 };
 #endif
