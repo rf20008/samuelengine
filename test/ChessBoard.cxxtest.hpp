@@ -151,7 +151,7 @@ class TestBoard : public CxxTest::TestSuite {
                 TS_FAIL("f8 does not contain rook");
             }
             TS_ASSERT(!myBoard.hasPiece("e8"));
-            TS_ASSERT(!myBoard.hasPiece("g8"));
+            TS_ASSERT(!myBoard.hasPiece("h8"));
         }
         void testBlackQueensideCastling() {
             ChessBoard myBoard ("r3k3/8/8/8/8/8/8/6K1 b q - 0 1");
