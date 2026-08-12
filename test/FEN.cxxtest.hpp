@@ -104,6 +104,9 @@ class TestFEN : public CxxTest::TestSuite {
 											 PlayerState(false, true)),
 							 "Kk");
 		}
-		// TODO: test ParsePieces::getEnPassantPart
+		void testGetEnPassantPart() {
+			TS_ASSERT_EQUALS(getEnPassantPart(std::optional<Square>()), "-");
+			TS_ASSERT_EQUALS(getEnPassantPart(std::optional<Square>(std::in_place, 1, 2)), "a2");
+		}
 };
 #endif
