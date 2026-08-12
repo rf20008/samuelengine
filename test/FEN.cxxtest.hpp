@@ -83,8 +83,6 @@ class TestFEN : public CxxTest::TestSuite {
 			const std::string myPiecePart = "3Kn3/4Pq2/2k5/1N2b1n1/7P/2rPR2b/3pPp2/8";
 			std::vector<std::vector<PiecePtr>> myPieces = parsePiecePart(myPiecePart);
 			TS_ASSERT_EQUALS(getPiecePart(myPieces), myPiecePart);
-
-			// TODO: test invalid inputs for ParsePieces::getPiecePart
 		}
 		void testGetPlayerPart() {
 			TS_ASSERT_EQUALS(getPlayerPart(true), "w");
