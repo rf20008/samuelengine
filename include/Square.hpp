@@ -9,8 +9,8 @@ struct Square {
 	public:
 		Square() : Square(0, 0) {}
 		Square(int r, int c) : row(r), col(c) {}
-        Square(const char* sq) : Square(std::string(sq)) {}
-		Square(const std::string& sq) {
+		Square(const char *sq) : Square(std::string(sq)) {}
+		Square(const std::string &sq) {
 			if (sq.size() != 2) {
 				throw std::invalid_argument("Square Constructor must contain exactly 2 characters");
 			}
@@ -33,7 +33,7 @@ struct Square {
 			return std::string(1, 'a' + this->row - 1) + std::string(1, '1' + this->col - 1);
 		}
 		Square operator-(const Square &other) const { return Square(row - other.row, col - other.col); }
-        std::string operator()() const {return toString();}
+		std::string operator()() const { return toString(); }
 };
 inline int maxNorm(Square sq) { return std::max(std::abs(sq.row), std::abs(sq.col)); }
 #endif

@@ -34,7 +34,7 @@ class OutOfTime : public std::exception {
 };
 
 class IllegalMoveError : public std::runtime_error {
-    public:
-        IllegalMoveError(const std::string& message = "You have attempted an illegal move.") : std::runtime_error(message) {}
+	public:
+		IllegalMoveError(const std::string &message = "You have attempted an illegal move.") : std::runtime_error(message) {}
 };
 #endif
