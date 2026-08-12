@@ -152,7 +152,9 @@ void ChessBoard::processMove(Move m) {
         if (isPawnMove) processEnPassant(m, start_ptr, end_ptr);
 		end_ptr = std::move(start_ptr);
 		this->whiteToMove = !this->whiteToMove;
-	}
+	} else {
+        throw IllegalMoveError("You have attempted an illegal move from " + m.startingSquare.toString() + " to " + m.endingSquare.toString() + ".");
+    }
 }
 
 // Is there a piece belonging to `attackerIsWhite` on the far end of the
