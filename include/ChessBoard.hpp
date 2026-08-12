@@ -66,6 +66,7 @@ class ChessBoard {
 		PlayerState getWhitePlayerState() const { return whitePlayerState; }
 		PlayerState getBlackPlayerState() const { return blackPlayerState; }
 		std::optional<Square> getEnPassantTargetSquare() const { return enPassant_targetSquare; }
+        std::vector<Move> getPreviousMoves() const {return previousMoves;}
 
 		// chess engine methods
 		bool isMoveLegal(Move m) const; // return whether a move is legal
@@ -96,7 +97,7 @@ class ChessBoard {
 		std::set<Square> whereQueenCouldMove(const Square origin) const;
 		std::set<Square> allPseudoLegalDestinations(const Square origin) const;
 
-
+        
 		std::set<Move> allLegalMoves(const Square sq) const;
 		std::set<Move> allLegalMoves() const;
 
@@ -110,5 +111,6 @@ class ChessBoard {
 		bool move_is_capture(const Move m) const;
 		bool move_is_zeroing(const Move m) const;
         int perft(int depth) const;
+        std::string debug_board() const;
 };
 #endif

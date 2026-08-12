@@ -77,7 +77,6 @@ int main(int argc, char **argv) {
 		bool whiteToMove = board.get_whiteToMove();
 		AbstractPlayer &toMove = whiteToMove ? *whitePlayer : *blackPlayer;
 		std::cout << (whiteToMove ? "White" : "Black") << " to move." << std::endl;
-
 		Move move = toMove.getMove(board);
 		board.processMove(move);
 	}

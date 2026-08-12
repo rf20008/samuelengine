@@ -1,6 +1,7 @@
 #include "ChessBoard.hpp"
 #include <cxxtest/TestSuite.h>
 #include <iostream>
+#include "SamuelEngine.hpp"
 class TestBoard : public CxxTest::TestSuite {
 	public:
 		void testChessBoardMemberConstructor() {
@@ -175,5 +176,13 @@ class TestBoard : public CxxTest::TestSuite {
             TS_ASSERT(!myBoard.hasPiece("e8"));
             TS_ASSERT(!myBoard.hasPiece("a8"));
         }
-
+        void testEngineFoundPosition() {
+ChessBoard myBoard ("rnbqkbnr/ppp1pppp/8/3p4/8/2N5/PPPPPPPP/R1BQKB1R w KQkq - 0 3");
+            SamuelEngine engine (5.0, true);
+            engine.getMove(myBoard);
+        }
+        void testNoKingFound() {
+            ChessBoard myBoard("rnbq1bnr/pp2pppp/3p4/3p4/N7/8/PPPPPPPP/R1BQKBNR b KQ d6 5 4")
+            TS_ASSERT_THROWS_ANYTHING(myBoard.findKing(false));
+        }
 };

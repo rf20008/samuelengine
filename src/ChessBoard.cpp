@@ -116,7 +116,7 @@ void ChessBoard::processCastling(Move m, const PiecePtr& start_ptr) {
 }
 void ChessBoard::processMove(Move m) {
 	if (this->isMoveLegal(m)) {
-        this.previousMoves.push_back(m);
+        this->previousMoves.push_back(m);
 		// update fullmove_clock (increments once Black's move completes a full move pair)
 		this->fullmove_clock += (!this->whiteToMove);
 
@@ -435,7 +435,7 @@ Square ChessBoard::findKing(bool belongsToWhite) const {
 			}
 		}
 	}
-	throw std::logic_error(std::string("findKing: no king found for ") + (belongsToWhite ? "White" : "Black") + " in the board with FEN " + this->fen());
+	throw std::logic_error(std::string("findKing: no king found for ") + (belongsToWhite ? "White" : "Black") + " in the board with FEN " + this->debug_board());
 }
 
 bool ChessBoard::isInCheck(bool player) const {
@@ -576,8 +576,15 @@ std::ostream &operator<<(std::ostream &os, const ChessBoard &board) {
 
 ChessBoard ChessBoard::board_with_move(const Move &move) const {
 	ChessBoard newBoard = (*this);
-	newBoard.processMove(move);
-	return newBoard;
+
+    //std::cerr << "original: " << this->debug_board() << '\n';
+    //std::cerr << "copy:     " << newBoard.debug_board() << '\n';
+
+    newBoard.processMove(move);
+
+    //std::cerr << "original: " << this->debug_board() << '\n';
+    //std::cerr << "new:      " << newBoard.debug_board() << '\n';
+    return newBoard;
 }
 bool ChessBoard::move_ends_game(const Move move) const {
 	ChessBoard newBoard = this->board_with_move(move);
@@ -612,4 +619,11 @@ int ChessBoard::perft(int depth) const {
         perft_res += this->board_with_move(m).perft(depth-1);
     }
     return perft_res;
+}
+// and this function exists for debugging purposes
+std::string ChessBoard::debug_board() const {
+    std::string debugBoard = this->fen();
+    debugBoard += " Moves:";
+    for (const Move& move : previousMoves) debugBoard+=(" " + move.operator()());
+    return debugBoard;
 }
