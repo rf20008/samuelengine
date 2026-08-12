@@ -14,8 +14,14 @@ class TestFEN : public CxxTest::TestSuite {
 				"5r2/nK6/6Pk/1b2p3/N2p1pP1/3p2Pp/3B4/1Q6";
 			// TODO: investigate why parsedPieces returns an upside down board
 			const std::vector<std::string> groundTruth = {
-				" Q      ", "   B    ", "   p  Pp", "N  p pP ",
-				" b  p   ", "      Pk", "nK      ", "     r  ",
+				" Q      ",
+				"   B    ",
+				"   p  Pp",
+				"N  p pP ",
+				" b  p   ",
+				"      Pk",
+				"nK      ",
+				"     r  ",
 			};
 
 			const std::vector<std::vector<PiecePtr>> parsedPieces =
@@ -43,7 +49,6 @@ class TestFEN : public CxxTest::TestSuite {
 			TS_ASSERT_THROWS_ANYTHING(parsePiecePart("9/8/7/6/5/4/3/2/1"));
 			TS_ASSERT_THROWS_ANYTHING(parsePiecePart("8/8/8/8/8/8/8"));
 			TS_ASSERT_THROWS_ANYTHING(parsePiecePart("6r1/1R1Q4/7N/4pP2/2K1Pn1k/3p2pp/2p1P3/7B/2N5/1P3Kpp/pp6"));
-
 		}
 		void testParsePlayerPart() {
 			TS_ASSERT_EQUALS(true, parsePlayerPart("w"));
