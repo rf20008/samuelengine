@@ -102,9 +102,10 @@ std::string getPiecePart(const std::vector<std::vector<PiecePtr>> &pieces) {
 				++numWOPiece;
 				continue;
 			} else {
-				PiecePart.push_back(piece->symbol());
-				if (numWOPiece != 0)
+				if (numWOPiece != 0) {
 					PiecePart.push_back('0' + numWOPiece);
+				}
+				PiecePart.push_back(piece->symbol());
 				numWOPiece = 0;
 			}
 		}
