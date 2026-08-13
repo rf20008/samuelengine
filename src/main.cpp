@@ -15,7 +15,7 @@
 #include <string>
 
 namespace {
-const double ENGINE_TIME_LIMIT_SECONDS = 1.0;
+const double ENGINE_TIME_LIMIT_SECONDS = 0.1;
 
 std::unique_ptr<AbstractPlayer> makePlayer(const std::string &colorName) {
 	while (true) {
@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
 
 		bool whiteToMove = board.get_whiteToMove();
 		AbstractPlayer &toMove = whiteToMove ? *whitePlayer : *blackPlayer;
-		std::cout << (whiteToMove ? "White" : "Black") << " to move." << std::endl;
+		std::cout << "Move #"<<board.get_fullmove_clock()<<": "<<(whiteToMove ? "White" : "Black") << " to move." << std::endl;
 		Move move = toMove.getMove(board);
 		board.processMove(move);
 	}
