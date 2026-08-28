@@ -327,4 +327,21 @@ class TestBoard : public CxxTest::TestSuite {
 						count++;
 			TS_ASSERT_EQUALS(count, 32);
 		}
+        
+        void testBlackPawnPromotionColor() {
+            // Set up a board where a Black pawn is on rank 1 (index 1) about to promote to rank 0.
+            // Replace with your engine's FEN initialization and move generation syntax:
+            ChessBoard board("8/8/8/8/8/4k3/4p1K1/8 b - - 0 1"); 
+        
+
+            TS_ASSERT(board.isMoveLegal(Move("e2", "e1", 'q')));
+            TS_ASSERT(board.isMoveLegal(Move("e2", "e1", 'r')));
+            TS_ASSERT(board.isMoveLegal(Move("e2", "e1", 'n')));
+            TS_ASSERT(board.isMoveLegal(Move("e2", "e1", 'b')));
+            TS_ASSERT(!board.isMoveLegal(Move("e2", "e1", 'Q')));
+            TS_ASSERT(!board.isMoveLegal(Move("e2", "e1", 'R')));
+            TS_ASSERT(!board.isMoveLegal(Move("e2", "e1", 'N')));
+            TS_ASSERT(!board.isMoveLegal(Move("e2", "e1", 'B')));
+        }
+        
 };
