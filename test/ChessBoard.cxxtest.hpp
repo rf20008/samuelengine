@@ -74,6 +74,16 @@ class TestBoard : public CxxTest::TestSuite {
 			TS_ASSERT_EQUALS(myBoard.perft(1), 48);
 			TS_ASSERT_EQUALS(myBoard.perft(2), 2039);
 		}
+        void testKiwinetesA2A4ThenB4A3Legal() {
+            ChessBoard myBoard = ChessBoard("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+            myBoard.processMove(Move(Square("a2"), Square("a4")));
+            TS_ASSERT_EQUALS(myBoard.fen(), "r3k2r/p1ppqpb1/bn2pnp1/3PN3/Pp2P3/2N2Q1p/1PPBBPPP/R3K2R b KQkq a3 0 1");
+
+			// will only work when castling is implemented
+            TS_ASSERT(myBoard.isMoveLegal(Move("b4", "a3")));
+            myBoard.processMove(Move("b4", "a3"));
+            TS_ASSERT_EQUALS(myBoard.fen(), "r3k2r/p1ppqpb1/bn2pnp1/3PN3/4P3/p1N2Q1p/1PPBBPPP/R3K2R w KQkq - 0 2");
+        }
 		void testPerftPositionThree() {
 			// also from PerftResults
 			ChessBoard myBoard("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1");

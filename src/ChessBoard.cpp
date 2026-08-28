@@ -110,7 +110,7 @@ void ChessBoard::processEnPassantUpdate(Move m, const PiecePtr &start_ptr, const
 	//if (enPassant_targetSquare) cout<<"enPassant target Square: "<< (enPassant_targetSquare->toString())<<endl;
 	if (toupper(start_ptr->symbol()) == 'P' && maxNorm(m.endingSquare, m.startingSquare) > 1) {
 		//cout<<"a Pawn moved 2 squares\n";
-		enPassant_targetSquare = std::optional<Square>(m.startingSquare + ((start_ptr->symbol() == 'P') ? Offset(0, 1) : Offset(0, -1)));
+		enPassant_targetSquare = std::optional<Square>(m.startingSquare + ((start_ptr->symbol() == 'P') ? NORTH : SOUTH));
 	} else {
 		enPassant_targetSquare = std::optional<Square>();
 	}
@@ -624,7 +624,7 @@ std::set<Move> ChessBoard::allLegalMoves() const {
 	std::set<Move> legalMoves;
 	for (size_t row = 0; row < BOARD_SIZE; ++row) {
 		for (size_t col = 0; col < BOARD_SIZE; ++col) {
-			std::set<Move> movesFromSquare = allLegalMoves(Square(row + 1, col + 1));
+			std::set<Move> movesFromSquare = allLegalMoves(Square(row, col));
 			for (Move move : movesFromSquare) {
 				legalMoves.insert(move);
 			}
@@ -637,7 +637,7 @@ std::ostream &operator<<(std::ostream &os, const ChessBoard &board) {
 	for (int ranknum = 0; ranknum < 8; ++ranknum) {
 
 		for (int filenum = 0; filenum < 8; ++filenum) {
-			auto piece_ptr = board.pieces[Square(ranknum, filenum).idx];
+			auto piece_ptr = board.pieces[Square(filenum, ranknum).idx];
 			if (piece_ptr == nullptr) {
 				os << ' ';
 			} else {
@@ -692,13 +692,10 @@ int ChessBoard::perft(int depth, int divideThreshold) const {
 	//if (depth==1) return moves.size();
 	for (Move m : moves) {
 		ChessBoard child = this->board_with_move(m);
-		if (depth > 1 && depth >= divideThreshold)
-			std::cout << "BEGINNING PERFT OF CHILD" << m.operator()() << "\n\n";
+
 		int perft_child = child.perft(depth - 1, divideThreshold);
-		if (depth >= max(2, divideThreshold) && depth >= 1)
-			std::cout << "\n";
-		if (depth >= divideThreshold)
-			std::cout << "DEPTH = " << depth << " PERFT DIVIDE: m=" << m.operator()() << " :" << perft_child << std::endl;
+		if (depth == divideThreshold)
+			std::cout /*<< "DEPTH = " << depth << " PERFT DIVIDE: m="*/ << m.operator()() << " " << perft_child << std::endl;
 
 		perft_res += perft_child;
 	}

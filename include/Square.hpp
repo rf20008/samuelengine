@@ -14,9 +14,9 @@ constexpr int Offset(int drank, int dfile) {return 16*drank + dfile;}
 
 struct Square {
     public:
-        uint8_t idx;
+        int idx;
         constexpr explicit Square(): idx(0) {}
-        constexpr explicit Square(int idx_) : idx(static_cast<uint8_t>(idx_)) {}
+        constexpr explicit Square(int idx_) : idx(idx_) {}
         // FILE, RANK order - your preference
         constexpr Square(int file, int rank) : idx(rank*16 + file){}
         constexpr Square(const std::string_view& s) : Square(s[0]-'a', s[1]-'1') {}
@@ -27,10 +27,13 @@ struct Square {
         }
         constexpr bool isValid() const {return (idx & 0x88) == 0;}
         constexpr bool operator==(const Square& other) const {return idx==other.idx;}
-        constexpr std::strong_ordering operator<=>(const Square& other) const {return idx<=>other.idx;}
+        constexpr std::strong_ordering operator<=>(const Square& o) const {
+            if (file() != o.file()) return file() <=> o.file();
+            return rank() <=> o.rank();
+        }
         constexpr Square operator+(int other) const {return Square(idx + other);}
         constexpr Square& operator+=(int off) {
-            idx = static_cast<uint8_t>(int(idx) + off);
+            idx += off;
             return *this;
         }
         constexpr int file() const { return idx & 7; } // %8
