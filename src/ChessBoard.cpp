@@ -26,7 +26,8 @@ ChessBoard::ChessBoard(const std::string &fen) {
 	std::string PlayerPart;
 	std::string CastlingPart;
 	std::string EnPassantPart;
-    for (int i = 0; i<128; i++) this->pieces[i] = nullptr;
+	for (int i = 0; i < 128; i++)
+		this->pieces[i] = nullptr;
 	int Halfmove_Part;
 	int Fullmove_part;
 	fenSS >> PiecePart >> PlayerPart >> CastlingPart >> EnPassantPart >> Halfmove_Part >> Fullmove_part;
@@ -62,9 +63,9 @@ ChessBoard::ChessBoard(PiecePtr pieces[128], const bool &whiteToMove, const Play
 
 PiecePtr ChessBoard::getPiece(Square sq) const {
 	// bounds check: an out-of-board square simply has no piece on it
-    if (!sq.isValid()) {
-        throw std::logic_error("Invalid square position");
-    }
+	if (!sq.isValid()) {
+		throw std::logic_error("Invalid square position");
+	}
 	return pieces[sq.idx];
 }
 
