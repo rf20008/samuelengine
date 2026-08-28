@@ -41,6 +41,7 @@ namespace ParsePieces {
                     }
                     Square sq((int)ranknum, file);
                     board[sq.idx] = getPiece(pieceChar);
+
                     file++;
                 }
             }

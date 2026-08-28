@@ -27,7 +27,7 @@ ChessBoard::ChessBoard(const std::string &fen) {
 	std::string PlayerPart;
 	std::string CastlingPart;
 	std::string EnPassantPart;
-	previousMoves = {};
+    for (int i = 0; i<128; i++) this->pieces[i] = nullptr;
 	int Halfmove_Part;
 	int Fullmove_part;
 	fenSS >> PiecePart >> PlayerPart >> CastlingPart >> EnPassantPart >> Halfmove_Part >> Fullmove_part;

@@ -9,7 +9,7 @@
 #include <vector>
 
 namespace ParsePieces {
-std::vector<std::vector<PiecePtr>> parsePiecePart(const std::string &PiecePart, PiecePtr out[128]);
+void parsePiecePart(const std::string &PiecePart, PiecePtr out[128]);
 bool parsePlayerPart(const std::string &PlayerPart);
 std::pair<PlayerState, PlayerState> parseCastlingPart(const std::string &CastlingPart);
 std::optional<Square> parseEnPassantPart(std::string EnPassantPart);

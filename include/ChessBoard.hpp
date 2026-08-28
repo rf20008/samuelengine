@@ -35,7 +35,7 @@ template <typename T> inline std::set<T> &mergeSets(std::set<T> &A, const std::s
 
 class ChessBoard {
 	protected:
-		PiecePtr pieces[128];
+		PiecePtr pieces[128] {};
 		bool whiteToMove;
 		PlayerState whitePlayerState;
 		PlayerState blackPlayerState;
