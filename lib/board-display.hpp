@@ -42,7 +42,7 @@ inline std::string squareGlyph(const ChessBoard &board, Square sq) {
 inline std::string renderBoard(const ChessBoard &board) {
 	std::ostringstream out;
 	for (int rank = BOARD_SIZE-1; rank >= 0; --rank) {
-		out << rank << ' ';
+		out << (rank+1) << ' ';
 		for (int file = 0; file < BOARD_SIZE; ++file) {
 			out << squareGlyph(board, Square(file, rank));
 			if (file != BOARD_SIZE-1) {
