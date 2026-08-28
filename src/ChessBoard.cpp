@@ -62,7 +62,9 @@ ChessBoard::ChessBoard(PiecePtr pieces[128], const bool &whiteToMove, const Play
 
 PiecePtr ChessBoard::getPiece(Square sq) const {
 	// bounds check: an out-of-board square simply has no piece on it
-	assert(sq.isValid());
+    if (!sq.isValid()) {
+        throw std::logic_error("Invalid square position");
+    }
 	return pieces[sq.idx];
 }
 
