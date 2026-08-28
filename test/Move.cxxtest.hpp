@@ -13,15 +13,16 @@ class TestMove : public CxxTest::TestSuite {
 
 		void testMoveComparison() {
 			// chosen with the help of an RNG (you can change this if you wish)
-			Move m0 = {{8, 9}, {0, 5}};
-			Move m00 = {{0, 5}, {4, 2}};
-			Move m01 = {{9, 6}, {4, 7}};
-			Move m10 = {{8, 7}, {9, 0}};
-			Move m11 = {{8, 12}, {7, 3}};
-			Move m20 = {{8, 9}, {-1, 6}};
-			Move m21 = {{8, 9}, {6, 2}};
-			Move m30 = {{8, 9}, {0, 0}};
-			Move m31 = {{8, 9}, {0, 6}};
+			// note: this *must* be in bounds due to how Square (which Move relies on) is implemented
+			Move m0 = {{6, 5}, {4, 5}};
+			Move m00 = {{1, 1}, {1, 6}};
+			Move m01 = {{7, 3}, {4, 7}};
+			Move m10 = {{6, 3}, {4, 7}};
+			Move m11 = {{6, 7}, {1, 4}};
+			Move m20 = {{6, 5}, {3, 4}};
+			Move m21 = {{6, 5}, {5, 4}};
+			Move m30 = {{6, 5}, {4, 0}};
+			Move m31 = {{6, 5}, {4, 6}};
 			Move m40 = {{8, 9}, {0, 5}, 'a'};
 
 			// row of startingSquare
