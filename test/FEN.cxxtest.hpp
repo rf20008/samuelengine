@@ -16,15 +16,16 @@ class TestFEN : public CxxTest::TestSuite {
 			const std::vector<std::string> groundTruth = {
 				" Q      ", "   B    ", "   p  Pp", "N  p pP ", " b  p   ", "      Pk", "nK      ", "     r  ",
 			};
-
-			const std::vector<std::vector<PiecePtr>> parsedPieces = parsePiecePart(myPiecePart);
-			TS_ASSERT_EQUALS(parsedPieces.size(), 8);
+            PiecePtr parsedPieces[128];
+			parsePiecePart(myPiecePart, parsedPieces);
+			//TS_ASSERT_EQUALS(parsedPieces.size(), 8);
 
 			for (size_t i = 0; i < 8; i++) {
-				const std::vector<PiecePtr> &parsedRow = parsedPieces.at(i);
-				TS_ASSERT_EQUALS(parsedRow.size(), 8);
+
+				//const std::vector<PiecePtr> &parsedRow = parsedPieces.at(i);
+				//TS_ASSERT_EQUALS(parsedRow.size(), 8);
 				for (size_t j = 0; j < 8; j++) {
-					const PiecePtr &parsedCell = parsedRow.at(j);
+					const PiecePtr &parsedCell =  parsedPieces[Square(i, j).idx];
 					const char &groundTruthCell = groundTruth.at(i).at(j);
 					if (groundTruthCell == ' ') {
 						TS_ASSERT_EQUALS(parsedCell, nullptr);
@@ -34,13 +35,15 @@ class TestFEN : public CxxTest::TestSuite {
 					}
 				}
 			}
-
+        }
+        void testInvalidPieceParts() {
+            PiecePtr piece[128];
 			// test invalid piece parts
-			TS_ASSERT_THROWS_ANYTHING(parsePiecePart(""));
-			TS_ASSERT_THROWS_ANYTHING(parsePiecePart("\42"));
-			TS_ASSERT_THROWS_ANYTHING(parsePiecePart("9/8/7/6/5/4/3/2/1"));
-			TS_ASSERT_THROWS_ANYTHING(parsePiecePart("8/8/8/8/8/8/8"));
-			TS_ASSERT_THROWS_ANYTHING(parsePiecePart("6r1/1R1Q4/7N/4pP2/2K1Pn1k/3p2pp/2p1P3/7B/2N5/1P3Kpp/pp6"));
+			TS_ASSERT_THROWS_ANYTHING(parsePiecePart("", piece));
+			TS_ASSERT_THROWS_ANYTHING(parsePiecePart("\42", piece));
+			TS_ASSERT_THROWS_ANYTHING(parsePiecePart("9/8/7/6/5/4/3/2/1", piece));
+			TS_ASSERT_THROWS_ANYTHING(parsePiecePart("8/8/8/8/8/8/8", piece));
+			TS_ASSERT_THROWS_ANYTHING(parsePiecePart("6r1/1R1Q4/7N/4pP2/2K1Pn1k/3p2pp/2p1P3/7B/2N5/1P3Kpp/pp6", piece));
 		}
 		void testParsePlayerPart() {
 			TS_ASSERT_EQUALS(true, parsePlayerPart("w"));
@@ -63,9 +66,10 @@ class TestFEN : public CxxTest::TestSuite {
 			TS_ASSERT_THROWS_ANYTHING(parseEnPassantPart(""));
 		}
 		void testGetPiecePart() {
+            PiecePtr pieces[128];
 			const std::string myPiecePart = "3Kn3/4Pq2/2k5/1N2b1n1/7P/2rPR2b/3pPp2/8";
-			std::vector<std::vector<PiecePtr>> myPieces = parsePiecePart(myPiecePart);
-			TS_ASSERT_EQUALS(getPiecePart(myPieces), myPiecePart);
+			parsePiecePart(myPiecePart, pieces);
+			TS_ASSERT_EQUALS(getPiecePart(pieces), myPiecePart);
 		}
 		void testGetPlayerPart() {
 			TS_ASSERT_EQUALS(getPlayerPart(true), "w");

@@ -5,7 +5,7 @@
 class TestBoard : public CxxTest::TestSuite {
 	public:
 		void testChessBoardMemberConstructor() {
-			std::vector<std::vector<PiecePtr>> pieces = {};
+			PiecePtr pieces[128]{nullptr};
 			bool whiteToMove = true;
 			PlayerState whitePlayerState = {true, true};
 			PlayerState blackPlayerState = {true, true};
@@ -18,7 +18,7 @@ class TestBoard : public CxxTest::TestSuite {
 		}
 
 		void testChessBoardStreamout() {
-			std::vector<std::vector<PiecePtr>> pieces = {};
+            PiecePtr pieces[128]{nullptr};
 			bool whiteToMove = true;
 			PlayerState whitePlayerState = {true, true};
 			PlayerState blackPlayerState = {true, true};
