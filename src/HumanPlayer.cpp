@@ -6,7 +6,6 @@
 #include <stdexcept>
 #include <string>
 
-namespace {
 // Parses text like "e2e4" or "e2 e4" into a Move. Returns false (leaving
 // `out` untouched) if `raw` isn't a well-formed <file><rank><file><rank>
 // move, e.g. wrong length or a square off the board.
@@ -40,7 +39,6 @@ bool tryParseMove(const std::string &raw, Move &out) {
 	out = Move{start, end};
 	return true;
 }
-} // namespace
 
 HumanPlayer::HumanPlayer() {}
 
