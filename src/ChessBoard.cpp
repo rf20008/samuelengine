@@ -336,7 +336,7 @@ std::set<Move> ChessBoard::wherePawnCouldMove(const Square origin) const {
 		bool isPromoRank = attackerIsWhite ? place.endingSquare.rank() == 7 : place.endingSquare.rank() == 0;
 		if (isPromoRank) {
 			for (char toPromote : {'B', 'R', 'N', 'Q'}) {
-				newPlaces.insert(Move{place.startingSquare, place.endingSquare, toPromote});
+				newPlaces.insert(Move{place.startingSquare, place.endingSquare, attackerIsWhite ? toPromote : static_cast<char>(std::tolower(toPromote))});
 			}
 		} else {
 			newPlaces.insert(place);
