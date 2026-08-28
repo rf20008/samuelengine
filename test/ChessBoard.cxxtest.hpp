@@ -99,6 +99,23 @@ class TestBoard : public CxxTest::TestSuite {
 			TS_ASSERT_EQUALS(myBoard.perft(3), 340);
 			TS_ASSERT_EQUALS(myBoard.perft(4), 1864);
 		}
+        void testPerftPositionFive() {
+            ChessBoard myBoard("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1");
+            TS_ASSERT_EQUALS(myBoard.perft(1), 6);
+            TS_ASSERT_EQUALS(myBoard.perft(2), 264);
+            TS_ASSERT_EQUALS(myBoard.perft(3), 9467);
+        }
+        void testPerftPositionSix() {
+            ChessBoard myBoard("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");
+            TS_ASSERT_EQUALS(myBoard.perft(1), 44);
+            TS_ASSERT_EQUALS(myBoard.perft(2), 1486);
+        }
+        void testPerftPositionSeven() {
+            ChessBoard myBoard("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10");
+            TS_ASSERT_EQUALS(myBoard.perft(1), 1);
+            TS_ASSERT_EQUALS(myBoard.perft(2), 46);
+            TS_ASSERT_EQUALS(myBoard.perft(3), 2079);
+        }
 		void testWhiteKingsideCastling() {
 			ChessBoard myBoard("6k1/8/8/8/8/8/8/4K2R w K - 0 1");
 			TS_ASSERT(myBoard.getWhitePlayerState().canKingsideCastle);
