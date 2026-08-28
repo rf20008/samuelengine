@@ -13,7 +13,7 @@ const double INFINITY = std::numeric_limits<double>::infinity();
 const double NEG_INF = -INFINITY;
 
 // todo: move ordering (is castling=4, check=3, capture=2, pawn move=1, other=0)
-const std::vector<std::vector<double>> pawn_pieceval = {
+constexpr double pawn_pieceval[8][8] = {
 	{7.0, 8.0, 9.0, 10.0, 10.0, 9.0, 8.0, 7.0},			// 8th rank
 	{3.0, 4.0, 5.0, 6.0, 6.0, 5.0, 4.0, 3.0},			// 7th rank
 	{2.0, 2.5, 3.0, 3.5, 3.5, 3.0, 2.5, 2.0},			// 6th rank
@@ -24,7 +24,7 @@ const std::vector<std::vector<double>> pawn_pieceval = {
 	{-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0}	// 1st rank
 };
 
-const std::vector<std::vector<double>> rook_pieceval = {
+constexpr double rook_pieceval[8][8] = {
 	{5.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 5.0},		// 8th rank
 	{4.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 4.0},		// 7th rank
 	{3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 3.0},		// 6th rank
@@ -34,7 +34,7 @@ const std::vector<std::vector<double>> rook_pieceval = {
 	{0.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 0.0}, // 2nd rank
 	{0.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 0.0}	// 1st rank
 };
-const std::vector<std::vector<double>> king_pieceval = {
+constexpr double king_pieceval[8][8] = {
 	{-2.0, -1.5, -1.0, -1.0, -1.0, -1.0, -1.5, -2.0}, // 8th rank
 	{-1.5, -1.0, -0.5, 0.0, 0.0, -0.5, -1.0, -1.5},	  // 7th rank
 	{-1.0, -0.5, 0.0, 0.5, 0.5, 0.0, -0.5, -1.0},	  // 6th rank
@@ -44,7 +44,7 @@ const std::vector<std::vector<double>> king_pieceval = {
 	{-1.5, -1.0, -0.5, 0.0, 0.0, -0.5, -1.0, -1.5},	  // 2nd rank
 	{-2.0, -1.5, -1.0, -1.0, -1.0, -1.0, -1.5, -2.0}  // 1st rank
 };
-const std::vector<std::vector<double>> bishop_pieceval = {
+constexpr double bishop_pieceval[8][8] = {
 	{-4.0, -3.0, -3.0, -3.0, -3.0, -3.0, -3.0, -4.0}, // 8th rank
 	{-3.0, -2.0, -1.5, -1.0, -1.0, -1.5, -2.0, -3.0}, // 7th rank
 	{-2.0, -1.0, 0.0, 0.5, 0.5, 0.0, -1.0, -2.0},	  // 6th rank
@@ -54,7 +54,7 @@ const std::vector<std::vector<double>> bishop_pieceval = {
 	{-3.0, -1.5, -1.0, -1.0, -1.0, -1.0, -1.5, -3.0}, // 2nd rank
 	{-4.0, -3.0, -3.0, -3.0, -3.0, -3.0, -3.0, -4.0}  // 1st rank
 };
-const std::vector<std::vector<double>> knight_pieceval = {
+constexpr double knight_pieceval[8][8] = {
 	{-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0}, // 8th rank
 	{-4.0, -3.0, -2.0, -1.0, -1.0, -2.0, -3.0, -4.0}, // 7th rank
 	{-3.0, -2.0, -1.0, 0.0, 0.0, -1.0, -2.0, -3.0},	  // 6th rank
@@ -64,7 +64,7 @@ const std::vector<std::vector<double>> knight_pieceval = {
 	{-4.0, -3.0, -2.0, -1.0, -1.0, -2.0, -3.0, -4.0}, // 2nd rank
 	{-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0}  // 1st rank
 };
-const std::vector<std::vector<double>> queen_pieceval = {
+constexpr double queen_pieceval[8][8] = {
 	{-2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0}, // 8th rank
 	{-1.0, 0.0, 0.5, 1.0, 1.0, 0.5, 0.0, -1.0},		  // 7th rank
 	{-1.0, 0.5, 1.0, 1.5, 1.5, 1.0, 0.5, -1.0},		  // 6th rank
@@ -91,7 +91,7 @@ int SamuelEngine::MoveOrderer::priorityOfMove(const Move &mov) const {
 }
 bool SamuelEngine::MoveOrderer::operator()(const Move &m1, const Move &m2) const { return priorityOfMove(m1) < priorityOfMove(m2); }
 
-const std::vector<std::vector<double>> &SamuelEngine::getPosVal(const PiecePtr ptr) const {
+const double (*SamuelEngine::getPosVal(const PiecePtr ptr) const)[8]{
 	switch (toupper(ptr->symbol())) {
 	case 'K':
 		return king_pieceval;
@@ -146,7 +146,7 @@ std::optional<double> SamuelEngine::returnStatusIfGameOver(const ChessBoard &boa
 double SamuelEngine::PieceValue(const PiecePtr ptr, const Square sq) const {
 	double rel_intrinsic_val = relative_value(ptr);
 	auto posValTable = getPosVal(ptr);
-	double pos_val = posValTable.at(sq.rank() - 1).at(sq.file() - 1);
+	double pos_val = posValTable[sq.rank()][sq.file()];
 	return rel_intrinsic_val + pos_val;
 }
 
