@@ -36,7 +36,7 @@ struct Square {
         constexpr bool operator==(const Square& other) const {return idx==other.idx;}
         constexpr std::strong_ordering operator<=>(const Square& other) const {return idx<=>other.idx;}
         constexpr Square operator+(const Offset& other) const {return Square(rank() + other.drank, file() + other.dfile);}
-        constexpr int file() const { return idx & 15; }  // same as % 16, but shows you only care 0-7
+        constexpr int file() const { return idx & 0x7; }  // same as % 16, but shows you only care 0-7
         constexpr int rank() const { return idx >> 4; }  // same as / 16
         constexpr Offset operator-(const Square& other) const {return Offset(rank()-other.rank(), file()-other.file());}
         constexpr std::string operator()() const {return this->toString();}
