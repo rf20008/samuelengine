@@ -10,7 +10,7 @@ const int BOARD_SIZE = 8;
 inline constexpr std::array<std::string_view, 128> SQUARE_NAMES = {
 	"a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1", "??", "??", "??", "??", "??", "??", "??", "??", "a2", "b2", "c2", "d2", "e2", "f2", "g2", "h2", "??", "??", "??", "??", "??", "??", "??", "??", "a3", "b3", "c3", "d3", "e3", "f3", "g3", "h3", "??", "??", "??", "??", "??", "??", "??", "??", "a4", "b4", "c4", "d4", "e4", "f4", "g4", "h4", "??", "??", "??", "??", "??", "??", "??", "??", "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5", "??", "??", "??", "??", "??", "??", "??", "??", "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6", "??", "??", "??", "??", "??", "??", "??", "??", "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7", "??", "??", "??", "??", "??", "??", "??", "??", "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8", "??", "??", "??", "??", "??", "??", "??", "??",
 };
-constexpr int Offset(int drank, int dfile) {return 16*drank + dfile;}
+constexpr int Offset(int drank, int dfile) { return 16 * drank + dfile; }
 
 struct Square {
     public:
@@ -42,7 +42,5 @@ struct Square {
         constexpr std::string operator()() const {return this->toString();}
 };
 
-constexpr int maxNorm(const Square& a, const Square& b) {
-    return std::max(std::abs(a.rank()-b.rank()), std::abs(a.file()-b.file()));
-}
+constexpr int maxNorm(const Square &a, const Square &b) { return std::max(std::abs(a.rank() - b.rank()), std::abs(a.file() - b.file())); }
 #endif

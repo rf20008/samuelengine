@@ -249,50 +249,49 @@ class TestBoard : public CxxTest::TestSuite {
 			board.processMove({"c6", "a5"});
 			TS_ASSERT_THROWS_ANYTHING(board.processMove({"e1", "g1"}));
 		}
-        void testDefaultConstructorEverySquare() {
-            ChessBoard board;
-    
-            // expected[rank][file], rank 0 = white's 1st rank
-            const char expected[8][8] = {
-                {'R','N','B','Q','K','B','N','R'}, // a1-h1
-                {'P','P','P','P','P','P','P','P'}, // a2-h2
-                { 0, 0, 0, 0, 0, 0, 0, 0 }, // a3-h3
-                { 0, 0, 0, 0, 0, 0, 0, 0 }, // a4-h4
-                { 0, 0, 0, 0, 0, 0, 0, 0 }, // a5-h5
-                { 0, 0, 0, 0, 0, 0, 0, 0 }, // a6-h6
-                {'p','p','p','p','p','p','p','p'}, // a7-h7
-                {'r','n','b','q','k','b','n','r'}, // a8-h8
-            };
-    
-            
-            for(int rank=0; rank<8; ++rank) {
-                for(int file=0; file<8; ++file) {
-                    Square sq(file, rank);
-                    PiecePtr piece = board.getPiece(sq);
-                    char exp = expected[rank][file];
-        
-                    if(exp == 0) {
-                        std::string msg = "expected empty at " + sq.toString();
-                        TSM_ASSERT(msg.c_str(), piece == nullptr);
-                    } else {
-                        std::string where = sq.toString();
-                        std::string expStr(1, exp);
-                        std::string msg1 = "expected " + expStr + " but got empty at " + where;
-                        TSM_ASSERT(msg1.c_str(), piece!= nullptr);
-                        if(piece) {
-                            std::string msg2 = "at " + where;
-                            TSM_ASSERT_EQUALS(msg2.c_str(), piece->symbol(), exp);
-                        }
-                    }
-                }
-            }
-            
-    
-            // your last bug: only 30 pieces instead of 32 (missing h-file)
-            int count = 0;
-            for(int r=0; r<8; ++r)
-                for(int f=0; f<8; ++f)
-                    if(board.getPiece(Square(f,r))) count++;
-            TS_ASSERT_EQUALS(count, 32);
-        }
+		void testDefaultConstructorEverySquare() {
+			ChessBoard board;
+
+			// expected[rank][file], rank 0 = white's 1st rank
+			const char expected[8][8] = {
+				{'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'}, // a1-h1
+				{'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'}, // a2-h2
+				{0, 0, 0, 0, 0, 0, 0, 0},				  // a3-h3
+				{0, 0, 0, 0, 0, 0, 0, 0},				  // a4-h4
+				{0, 0, 0, 0, 0, 0, 0, 0},				  // a5-h5
+				{0, 0, 0, 0, 0, 0, 0, 0},				  // a6-h6
+				{'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'}, // a7-h7
+				{'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'}, // a8-h8
+			};
+
+			for (int rank = 0; rank < 8; ++rank) {
+				for (int file = 0; file < 8; ++file) {
+					Square sq(file, rank);
+					PiecePtr piece = board.getPiece(sq);
+					char exp = expected[rank][file];
+
+					if (exp == 0) {
+						std::string msg = "expected empty at " + sq.toString();
+						TSM_ASSERT(msg.c_str(), piece == nullptr);
+					} else {
+						std::string where = sq.toString();
+						std::string expStr(1, exp);
+						std::string msg1 = "expected " + expStr + " but got empty at " + where;
+						TSM_ASSERT(msg1.c_str(), piece != nullptr);
+						if (piece) {
+							std::string msg2 = "at " + where;
+							TSM_ASSERT_EQUALS(msg2.c_str(), piece->symbol(), exp);
+						}
+					}
+				}
+			}
+
+			// your last bug: only 30 pieces instead of 32 (missing h-file)
+			int count = 0;
+			for (int r = 0; r < 8; ++r)
+				for (int f = 0; f < 8; ++f)
+					if (board.getPiece(Square(f, r)))
+						count++;
+			TS_ASSERT_EQUALS(count, 32);
+		}
 };
