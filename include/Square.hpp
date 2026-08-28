@@ -2,38 +2,46 @@
 #define CS3520_MINI_PROJECT_SQUARE
 #include <stdexcept>
 #include <string>
-const int BOARD_SIZE = 8;
-struct Square {
-		int row, col;
+#include <string_view>
+#include <cstdint>
+#include <array>
 
-	public:
-		Square() : Square(0, 0) {}
-		Square(int r, int c) : row(r), col(c) {}
-		Square(const char *sq) : Square(std::string(sq)) {}
-		Square(const std::string &sq) {
-			if (sq.size() != 2) {
-				throw std::invalid_argument("Square Constructor must contain exactly 2 characters");
-			}
-			this->row = (sq[0] - 'a' + 1); // number of characters after a, plus 1
-			this->col = (sq[1] - '1' + 1); // number of characters after '1', plus 1
-		}
-		bool isValid() { return (row >= 1 && col >= 1 && row <= BOARD_SIZE && col <= BOARD_SIZE); }
-		Square operator+(const Square &other) const { return Square(row + other.row, col + other.col); }
-		bool operator==(const Square &other) const { return row == other.row && col == other.col; }
-		bool operator<(const Square &other) const {
-			if (row != other.row) {
-				return row < other.row;
-			} else {
-				return col < other.col;
-			}
-		}
-		bool operator!=(const Square &other) const { return !(this->operator==(other)); }
-		std::string toString() const {
-			// note: number has to go first because the second argument is of type char, not char*
-			return std::string(1, 'a' + this->row - 1) + std::string(1, '1' + this->col - 1);
-		}
-		Square operator-(const Square &other) const { return Square(row - other.row, col - other.col); }
-		std::string operator()() const { return toString(); }
+const int BOARD_SIZE = 8;
+inline constexpr std::array<std::string_view, 128> SQUARE_NAMES = {
+    "a1","b1","c1","d1","e1","f1","g1","h1", "??","??","??","??","??","??","??","??",
+    "a2","b2","c2","d2","e2","f2","g2","h2", "??","??","??","??","??","??","??","??",
+    "a3","b3","c3","d3","e3","f3","g3","h3", "??","??","??","??","??","??","??","??",
+    "a4","b4","c4","d4","e4","f4","g4","h4", "??","??","??","??","??","??","??","??",
+    "a5","b5","c5","d5","e5","f5","g5","h5", "??","??","??","??","??","??","??","??",
+    "a6","b6","c6","d6","e6","f6","g6","h6", "??","??","??","??","??","??","??","??",
+    "a7","b7","c7","d7","e7","f7","g7","h7", "??","??","??","??","??","??","??","??",
+    "a8","b8","c8","d8","e8","f8","g8","h8", "??","??","??","??","??","??","??","??",
 };
-inline int maxNorm(Square sq) { return std::max(std::abs(sq.row), std::abs(sq.col)); }
+struct Offset {
+    int drank, dfile;
+    constexpr bool operator==(const Offset& other) const {return drank==other.drank && dfile == other.dfile;}
+};
+
+
+struct Square {
+    public:
+        uint8_t idx;
+        constexpr explicit Square(): idx(0) {}
+        constexpr explicit Square(int idx) : idx(idx) {}
+        constexpr Square(int rank, int file) : idx(rank*16 + file){}
+        constexpr Square(const std::string_view& s) : Square(s[1]-'1', s[0]-'a') {}
+        constexpr Square(const char* s) : Square(s[1]-'1', s[0]-'a') {}
+        constexpr std::string toString() const {return std::string(SQUARE_NAMES[idx]);}
+        constexpr bool isValid() const {return (idx & 0x88) == 0;}
+        constexpr bool operator==(const Square& other) const {return idx==other.idx;}
+        constexpr std::strong_ordering operator<=>(const Square& other) const {return idx<=>other.idx;}
+        constexpr Square operator+(const Offset& other) const {return Square(rank() + other.drank, file() + other.dfile);}
+        constexpr int file() const { return idx & 15; }  // same as % 16, but shows you only care 0-7
+        constexpr int rank() const { return idx >> 4; }  // same as / 16
+        constexpr Offset operator-(const Square& other) const {return Offset(rank()-other.rank(), file()-other.file());}
+        constexpr std::string operator()() const {return this->toString();}
+};
+
+
+constexpr int maxNorm(const Offset& of) {return std::max(std::abs(of.drank), std::abs(of.dfile));}
 #endif

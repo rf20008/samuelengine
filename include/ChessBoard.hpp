@@ -35,7 +35,7 @@ template <typename T> inline std::set<T> &mergeSets(std::set<T> &A, const std::s
 
 class ChessBoard {
 	protected:
-		std::vector<std::vector<PiecePtr>> pieces;
+		PiecePtr pieces[128];
 		bool whiteToMove;
 		PlayerState whitePlayerState;
 		PlayerState blackPlayerState;
@@ -89,12 +89,12 @@ class ChessBoard {
 		PiecePtr getAndAssertPiece(const Square origin, const char pieceType) const;
 		bool hasPiece(const Square origin) const;
 		bool squareAttackedBy(Square target, bool attackerIsWhite) const;
-		bool isSlidingAttacker(Square from, Square dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) const;
+		bool isSlidingAttacker(Square from, Offset dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) const;
 
 		std::set<Move> whereKingCouldMove(const Square origin) const;
 		std::set<Move> wherePawnCouldMove(const Square origin) const;
 		std::set<Move> whereKnightCouldMove(const Square origin) const;
-		std::set<Move> isSlidingAttacker(const Square from, const Square dir, bool attackerIsWhite) const;
+		std::set<Move> isSlidingAttacker(const Square from, const Offset dir, bool attackerIsWhite) const;
 		std::set<Move> whereBishopCouldMove(const Square origin) const;
 		std::set<Move> whereRookCouldMove(const Square origin) const;
 		std::set<Move> whereQueenCouldMove(const Square origin) const;
