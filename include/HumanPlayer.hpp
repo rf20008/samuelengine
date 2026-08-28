@@ -2,6 +2,8 @@
 #define CS3520_MINIPROJECT_HUMANPLAYER
 #include "AbstractPlayer.hpp"
 
+bool tryParseMove(const std::string &raw, Move &out);
+
 class HumanPlayer : public AbstractPlayer {
 	public:
 		HumanPlayer();
