@@ -14,7 +14,7 @@ class SamuelEngine : public AbstractPlayer {
 	private:
 		bool debug;
 
-	protected:
+    public:
 		struct MoveOrderer {
 			public:
 				const ChessBoard m_board;
