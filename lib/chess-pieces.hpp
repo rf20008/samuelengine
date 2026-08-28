@@ -82,15 +82,11 @@ inline PieceType piece_type_from_symbol(char symbol) {
 	case 'k':
 		return PieceType::BKING;
 	default:
-		throw std::invalid_argument(
-			"piece_type_from_symbol: unknown piece symbol '" +
-			std::string(1, symbol) + "'");
+		throw std::invalid_argument("piece_type_from_symbol: unknown piece symbol '" + std::string(1, symbol) + "'");
 	}
 };
 
 // Convenience: go straight from an engine piece symbol to its display glyph.
-inline std::string display_piece_symbol(char symbol) {
-	return display_piece(piece_type_from_symbol(symbol));
-}
+inline std::string display_piece_symbol(char symbol) { return display_piece(piece_type_from_symbol(symbol)); }
 
 #endif
