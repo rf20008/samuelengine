@@ -18,7 +18,7 @@ class TestBoard : public CxxTest::TestSuite {
 		}
 
 		void testChessBoardStreamout() {
-            PiecePtr pieces[128]{nullptr};
+			PiecePtr pieces[128]{nullptr};
 			bool whiteToMove = true;
 			PlayerState whitePlayerState = {true, true};
 			PlayerState blackPlayerState = {true, true};
@@ -87,8 +87,8 @@ class TestBoard : public CxxTest::TestSuite {
 			TS_ASSERT_EQUALS(myBoard.perft(1), 7);
 			TS_ASSERT_EQUALS(myBoard.perft(2), 31);
 			TS_ASSERT_EQUALS(myBoard.perft(3), 340);
-            TS_ASSERT_EQUALS(myBoard.perft(4), 1864);
-        }
+			TS_ASSERT_EQUALS(myBoard.perft(4), 1864);
+		}
 		void testWhiteKingsideCastling() {
 			ChessBoard myBoard("6k1/8/8/8/8/8/8/4K2R w K - 0 1");
 			TS_ASSERT(myBoard.getWhitePlayerState().canKingsideCastle);
@@ -200,9 +200,9 @@ class TestBoard : public CxxTest::TestSuite {
 			} catch (std::logic_error &error) {
 			}
 		}
-        void testCastlingPossibleWeirdRegressionTest() {
-            ChessBoard board;
-            board.processMove({"b1", "c3"});
+		void testCastlingPossibleWeirdRegressionTest() {
+			ChessBoard board;
+			board.processMove({"b1", "c3"});
 			board.processMove({"d7", "d6"});
 			board.processMove({"g1", "f3"});
 			board.processMove({"e8", "d7"});
@@ -235,9 +235,8 @@ class TestBoard : public CxxTest::TestSuite {
 			board.processMove({"h2", "h3"});
 			board.processMove({"b7", "a8"});
 			board.processMove({"h1", "h2"});
-            TS_ASSERT(!board.getWhitePlayerState().canKingsideCastle);
+			TS_ASSERT(!board.getWhitePlayerState().canKingsideCastle);
 			board.processMove({"c6", "a5"});
 			TS_ASSERT_THROWS_ANYTHING(board.processMove({"e1", "g1"}));
-
-        }
+		}
 };
