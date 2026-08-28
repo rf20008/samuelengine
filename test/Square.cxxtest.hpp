@@ -10,11 +10,12 @@ class TestSquare : public CxxTest::TestSuite {
 		}
 		void testConstructor() {
 			Square sq3 = Square(3, 8);
-			TS_ASSERT_EQUALS(sq3.rank(), 3);
-			TS_ASSERT_EQUALS(sq3.file(), 8);
+            TS_ASSERT_EQUALS(sq3.file(), 3);
+			TS_ASSERT_EQUALS(sq3.rank(), 8);
+			
 		}
 		void testAdd() {
-			Square sq3 = Square(3, 8) + Offset(-1, 2);
+			Square sq3 = Square(3, 8) + Offset(2, -1);
 			TS_ASSERT_EQUALS(sq3, Square(3 + (-1), 8 + 2));
 		}
 		void testEquals() {
@@ -34,11 +35,11 @@ class TestSquare : public CxxTest::TestSuite {
 			TS_ASSERT(!(Square(4, 8) < Square(3, 1)));
 		}
 		void testToString() {
-			Square s = Square(4, 6);
+			Square s = Square(3, 5);
 			TS_ASSERT_EQUALS(s.toString(), "d6");
 		}
 		void testSubtract() {
-			Offset s = Square(1, 2) - Square(1, 2);
+			int s =  Square(1, 2) - Square(1, 2);
 			TS_ASSERT_EQUALS(s, Offset(1 - 1, 2 - 2));
 		}
 };

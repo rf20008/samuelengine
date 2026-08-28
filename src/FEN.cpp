@@ -40,7 +40,7 @@ void parsePiecePart(const std::string &PiecePart, PiecePtr board[128]) {
 				if (file >= BOARD_SIZE) {
 					throw InvalidFEN("Too many squares on rank " + std::to_string(ranknum));
 				}
-				Square sq((int)ranknum, file);
+				Square sq(file, (int) ranknum);
 				board[sq.idx] = getPiece(pieceChar);
 				file++;
 			}
