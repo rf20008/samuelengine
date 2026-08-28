@@ -112,6 +112,7 @@ class TestBoard : public CxxTest::TestSuite {
         }
         void testPerftPositionSeven() {
             ChessBoard myBoard("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10");
+            TS_ASSERT_EQUALS(myBoard.get_whiteToMove(), true);
             TS_ASSERT_EQUALS(myBoard.perft(1), 1);
             TS_ASSERT_EQUALS(myBoard.perft(2), 46);
             TS_ASSERT_EQUALS(myBoard.perft(3), 2079);
