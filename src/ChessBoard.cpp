@@ -12,8 +12,6 @@
 #include <sstream>
 using namespace std;
 
-
-
 constexpr int NORTH = 16;
 constexpr int SOUTH = -16;
 constexpr int EAST = 1;
@@ -24,8 +22,8 @@ constexpr int SE = -15;
 constexpr int SW = -17;
 
 inline constexpr int PAWN_CAPTURE_DIRS[2][2] = {
-	{NW, NE},	// White: rank+1, file+-1
-	{SW, SE} // Black: rank-1, file+-1
+	{NW, NE}, // White: rank+1, file+-1
+	{SW, SE}  // Black: rank-1, file+-1
 };
 
 constexpr int kingOffsets[] = {NORTH, SOUTH, EAST, WEST, NE, NW, SE, SW};
@@ -244,8 +242,6 @@ bool ChessBoard::isSlidingAttacker(Square from, int dir, bool attackerIsWhite, c
 	return false;
 }
 
-
-
 PiecePtr ChessBoard::getAndAssertPiece(const Square origin, const char pieceType) const {
 	// get the piece at origin, and assert it is of tpe pieceTzype
 	PiecePtr ptr = getPiece(origin);
@@ -302,50 +298,51 @@ std::set<Move> ChessBoard::whereKingCouldMove(const Square origin) const {
 }
 
 std::set<Move> ChessBoard::wherePawnCouldMove(const Square origin) const {
-    PiecePtr pawn = getAndAssertPiece(origin, 'P');
-    bool attackerIsWhite = pawn->getBelongsToWhite();
-    int dir = attackerIsWhite? 1 : -1; // rank direction
+	PiecePtr pawn = getAndAssertPiece(origin, 'P');
+	bool attackerIsWhite = pawn->getBelongsToWhite();
+	int dir = attackerIsWhite ? 1 : -1; // rank direction
 
-    bool canMoveTwoSpaces = attackerIsWhite? (origin.rank() == 1) : (origin.rank() == 6);
-    std::set<Move> places;
+	bool canMoveTwoSpaces = attackerIsWhite ? (origin.rank() == 1) : (origin.rank() == 6);
+	std::set<Move> places;
 
-    // captures: dr=dir, df= +/-1
-    // Offset(dir, 1) = dir*16 + 1
-    const int caps[2] = { dir*16 + 1, dir*16 - 1 };
+	// captures: dr=dir, df= +/-1
+	// Offset(dir, 1) = dir*16 + 1
+	const int caps[2] = {dir * 16 + 1, dir * 16 - 1};
 
-    for (int cap : caps) {
-        Square target = origin + cap;
-        if (!target.isValid()) continue;
-        PiecePtr p = getPiece(target);
-        if ((p && p->getBelongsToWhite()!= attackerIsWhite) ||
-            (enPassant_targetSquare && target == *enPassant_targetSquare)) {
-            places.insert({origin, target});
-        }
-    }
+	for (int cap : caps) {
+		Square target = origin + cap;
+		if (!target.isValid())
+			continue;
+		PiecePtr p = getPiece(target);
+		if ((p && p->getBelongsToWhite() != attackerIsWhite) || (enPassant_targetSquare && target == *enPassant_targetSquare)) {
+			places.insert({origin, target});
+		}
+	}
 
-    // forward moves
-    for (int i = 1; i <= (canMoveTwoSpaces? 2 : 1); ++i) {
-        int off = i * dir * 16; // Offset(i*dir, 0)
-        Square target = origin + off;
-        if (!target.isValid()) break;
-        if (getPiece(target)) break; // blocked
-        places.insert({origin, target});
-    }
+	// forward moves
+	for (int i = 1; i <= (canMoveTwoSpaces ? 2 : 1); ++i) {
+		int off = i * dir * 16; // Offset(i*dir, 0)
+		Square target = origin + off;
+		if (!target.isValid())
+			break;
+		if (getPiece(target))
+			break; // blocked
+		places.insert({origin, target});
+	}
 
-    // promotion
-    std::set<Move> newPlaces;
-    for (Move place : places) {
-        bool isPromoRank = attackerIsWhite? place.endingSquare.rank() == 7
-                                           : place.endingSquare.rank() == 0;
-        if (isPromoRank) {
-            for (char toPromote : {'B', 'R', 'N', 'Q'}) {
-                newPlaces.insert(Move{place.startingSquare, place.endingSquare, toPromote});
-            }
-        } else {
-            newPlaces.insert(place);
-        }
-    }
-    return newPlaces;
+	// promotion
+	std::set<Move> newPlaces;
+	for (Move place : places) {
+		bool isPromoRank = attackerIsWhite ? place.endingSquare.rank() == 7 : place.endingSquare.rank() == 0;
+		if (isPromoRank) {
+			for (char toPromote : {'B', 'R', 'N', 'Q'}) {
+				newPlaces.insert(Move{place.startingSquare, place.endingSquare, toPromote});
+			}
+		} else {
+			newPlaces.insert(place);
+		}
+	}
+	return newPlaces;
 }
 
 std::set<Move> ChessBoard::whereKnightCouldMove(const Square origin) const {
@@ -388,7 +385,7 @@ std::set<Move> ChessBoard::whereBishopCouldMove(const Square origin) const {
 	PiecePtr bishop = getAndAssertPiece(origin, 'B');
 	bool attackerIsWhite = bishop->getBelongsToWhite();
 	std::set<Move> places;
-	for (int dir : bishopOffsets ) {
+	for (int dir : bishopOffsets) {
 		mergeSets(places, isSlidingAttacker(origin, dir, attackerIsWhite));
 	}
 	return places;
@@ -486,7 +483,6 @@ bool ChessBoard::squareAttackedBy(Square target, bool attackerIsWhite) const {
 			return true;
 		}
 	}
-
 
 	for (const int dir : rookOffsets) {
 		if (isSlidingAttacker(target, dir, attackerIsWhite, 'R', 'Q')) {
