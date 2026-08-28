@@ -23,6 +23,7 @@ struct Square {
 		constexpr Square(int rank, int file) : idx(rank * 16 + file) {}
 		constexpr Square(const std::string_view &s) : Square(s[1] - '1', s[0] - 'a') {}
 		constexpr Square(const char *s) : Square(s[1] - '1', s[0] - 'a') {}
+		constexpr uint8_t index() const { return this->idx; } // for debugging
 		constexpr std::string toString() const { return std::string(SQUARE_NAMES[idx]); }
 		constexpr bool isValid() const { return (idx & 0x88) == 0; }
 		constexpr bool operator==(const Square &other) const { return idx == other.idx; }
