@@ -3,20 +3,19 @@
 #include "FEN.hpp"
 #include "GetPiece.hpp"
 
+#include <cassert>
 #include <cctype>
 #include <iostream>
 #include <map>
 #include <optional>
 #include <set>
-#include <cassert>
 #include <sstream>
 using namespace std;
 
 inline constexpr Offset PAWN_CAPTURE_DIRS[2][2] = {
-    { {1, -1}, {1, 1} }, // White: rank+1, file+-1
-    { {-1, -1}, {-1, 1} } // Black: rank-1, file+-1
+	{{1, -1}, {1, 1}},	// White: rank+1, file+-1
+	{{-1, -1}, {-1, 1}} // Black: rank-1, file+-1
 };
-
 
 ChessBoard::ChessBoard() : ChessBoard::ChessBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {}
 
@@ -52,18 +51,19 @@ ChessBoard::ChessBoard(const std::string &fen) {
 }
 
 ChessBoard::ChessBoard(PiecePtr pieces[128], const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare, const std::vector<Move> &moves) : whiteToMove(whiteToMove), whitePlayerState(whitePlayerState), blackPlayerState(blackPlayerState), halfmove_clock(halfmove_clock), fullmove_clock(fullmove_clock), enPassant_targetSquare(enPassant_targetSquare), previousMoves(moves) {
-    for (int i = 0; i<128; ++i) this->pieces[i]=pieces[i];
+	for (int i = 0; i < 128; ++i)
+		this->pieces[i] = pieces[i];
 }
 
 ChessBoard::ChessBoard(PiecePtr pieces[128], const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare) : whiteToMove(whiteToMove), whitePlayerState(whitePlayerState), blackPlayerState(blackPlayerState), halfmove_clock(halfmove_clock), fullmove_clock(fullmove_clock), enPassant_targetSquare(enPassant_targetSquare), previousMoves({}) {
-    for (int i = 0; i<128; ++i) this->pieces[i]=pieces[i];
+	for (int i = 0; i < 128; ++i)
+		this->pieces[i] = pieces[i];
 }
 
 PiecePtr ChessBoard::getPiece(Square sq) const {
 	// bounds check: an out-of-board square simply has no piece on it
 	assert(sq.isValid());
-    return pieces[sq.idx];
-
+	return pieces[sq.idx];
 }
 
 bool ChessBoard::isMoveLegal(Move m) const {
@@ -88,16 +88,16 @@ void ChessBoard::processEnPassantUpdate(Move m, const PiecePtr &start_ptr, const
 	//if (enPassant_targetSquare) cout<<"enPassant target Square: "<< (enPassant_targetSquare->toString())<<endl;
 	if (toupper(start_ptr->symbol()) == 'P' && maxNorm(m.endingSquare - m.startingSquare) > 1) {
 		//cout<<"a Pawn moved 2 squares\n";
-		enPassant_targetSquare = std::optional<Square>(m.startingSquare + ((start_ptr->symbol() == 'P') ? Offset(0, 1) :Offset(0, -1)));
+		enPassant_targetSquare = std::optional<Square>(m.startingSquare + ((start_ptr->symbol() == 'P') ? Offset(0, 1) : Offset(0, -1)));
 	} else {
 		enPassant_targetSquare = std::optional<Square>();
 	}
 }
 void ChessBoard::processCastling(Move m, const PiecePtr &start_ptr) {
 	// check it's a king move, else do nothing
-    
-        if (!start_ptr || toupper(start_ptr->symbol()) != 'K')
-            return;
+
+	if (!start_ptr || toupper(start_ptr->symbol()) != 'K')
+		return;
 	// need to move rook to appropriate location
 	if (maxNorm(m.endingSquare - m.startingSquare) <= 1)
 		return; // this was a normal king move, not castling
@@ -147,42 +147,42 @@ void ChessBoard::processPsuedoLegalMove(Move m) {
 
 	// TODO: modify `Move` type to include castling as an option
 
-	
-
 	// TODO: update whitePlayerState, blackPlayerState
 
-	
-
 	// if rook on a file moved, queenside is gone
-    Square queensideRookSquare=whiteToMove ? "a1" : "a8";
-    Square KingsideRookSquare = whiteToMove ? "h1" : "h8";
-    if (m.endingSquare == Square("a1")) whitePlayerState.canQueensideCastle=false;
-    if (m.endingSquare == Square("h1")) whitePlayerState.canKingsideCastle=false;
-    if (m.endingSquare == Square("a8")) blackPlayerState.canQueensideCastle=false;
-    if (m.endingSquare == Square("h8")) blackPlayerState.canKingsideCastle=false;
-    PlayerState cur_state = whiteToMove ? whitePlayerState : blackPlayerState;
+	Square queensideRookSquare = whiteToMove ? "a1" : "a8";
+	Square KingsideRookSquare = whiteToMove ? "h1" : "h8";
+	if (m.endingSquare == Square("a1"))
+		whitePlayerState.canQueensideCastle = false;
+	if (m.endingSquare == Square("h1"))
+		whitePlayerState.canKingsideCastle = false;
+	if (m.endingSquare == Square("a8"))
+		blackPlayerState.canQueensideCastle = false;
+	if (m.endingSquare == Square("h8"))
+		blackPlayerState.canKingsideCastle = false;
+	PlayerState cur_state = whiteToMove ? whitePlayerState : blackPlayerState;
 
 	// if king moved, both are gone
 	if (toupper(start_ptr->symbol()) == 'K')
 		cur_state = PlayerState(false, false);
-	if ((toupper(start_ptr->symbol()) == 'R' && m.startingSquare == queensideRookSquare )|| m.endingSquare == queensideRookSquare) {
+	if ((toupper(start_ptr->symbol()) == 'R' && m.startingSquare == queensideRookSquare) || m.endingSquare == queensideRookSquare) {
 		cur_state.canQueensideCastle = false;
-    }
+	}
 	// if rook on h file moved, kingside is gone
-	if ((toupper(start_ptr->symbol()) == 'R' && m.startingSquare == KingsideRookSquare ) || m.endingSquare == KingsideRookSquare) {
+	if ((toupper(start_ptr->symbol()) == 'R' && m.startingSquare == KingsideRookSquare) || m.endingSquare == KingsideRookSquare) {
 		cur_state.canKingsideCastle = false;
-    }
+	}
 	if (whiteToMove) {
 		whitePlayerState = cur_state;
 	} else {
 		blackPlayerState = cur_state;
 	}
-    processCastling(m, start_ptr);
+	processCastling(m, start_ptr);
 	//if was an enpassant capture, must remove the pawn it en-passanted
-    // if it's a promotion
-    if (m.promotion) {
-        start_ptr = getPieceC(m.promotion);
-    }
+	// if it's a promotion
+	if (m.promotion) {
+		start_ptr = getPieceC(m.promotion);
+	}
 	if (isPawnMove) {
 		processEnPassantCapture(m, start_ptr, end_ptr);
 	}
@@ -280,57 +280,58 @@ std::set<Move> ChessBoard::whereKingCouldMove(const Square origin) const {
 }
 
 std::set<Move> ChessBoard::wherePawnCouldMove(const Square origin) const {
-    PiecePtr pawn = getAndAssertPiece(origin, 'P');
-    bool attackerIsWhite = pawn->getBelongsToWhite();
-    int direction = attackerIsWhite? 1 : -1; // rank +1 for white, -1 for black
+	PiecePtr pawn = getAndAssertPiece(origin, 'P');
+	bool attackerIsWhite = pawn->getBelongsToWhite();
+	int direction = attackerIsWhite ? 1 : -1; // rank +1 for white, -1 for black
 
-    // white starts on rank 1 (index 1), black on rank 6
-    // can move 2 if still on starting rank
-    bool canMoveTwoSpaces = attackerIsWhite? (origin.rank() == 1) : (origin.rank() == 6);
+	// white starts on rank 1 (index 1), black on rank 6
+	// can move 2 if still on starting rank
+	bool canMoveTwoSpaces = attackerIsWhite ? (origin.rank() == 1) : (origin.rank() == 6);
 
-    std::set<Move> places;
+	std::set<Move> places;
 
-    // captures - you need Offset, not getPawnDirs() that doesn't exist
-    static const Offset whiteCaps[2] = {{1,1},{1,-1}};
-    static const Offset blackCaps[2] = {{-1,1},{-1,-1}};
-    const Offset* caps = attackerIsWhite? whiteCaps : blackCaps;
+	// captures - you need Offset, not getPawnDirs() that doesn't exist
+	static const Offset whiteCaps[2] = {{1, 1}, {1, -1}};
+	static const Offset blackCaps[2] = {{-1, 1}, {-1, -1}};
+	const Offset *caps = attackerIsWhite ? whiteCaps : blackCaps;
 
-    for (int k=0;k<2;++k) {
-        Square target = origin + caps[k];
-        if (!target.isValid()) continue;
-        PiecePtr p = getPiece(target);
-        if ((p && p->getBelongsToWhite()!= attackerIsWhite) ||
-            (enPassant_targetSquare && (target == *enPassant_targetSquare))) {
-            places.insert({origin,target});
-        }
-    }
+	for (int k = 0; k < 2; ++k) {
+		Square target = origin + caps[k];
+		if (!target.isValid())
+			continue;
+		PiecePtr p = getPiece(target);
+		if ((p && p->getBelongsToWhite() != attackerIsWhite) || (enPassant_targetSquare && (target == *enPassant_targetSquare))) {
+			places.insert({origin, target});
+		}
+	}
 
-    // forward moves
-    for (int i=1; i <= (canMoveTwoSpaces? 2 : 1); ++i) {
-        Square target = origin + Offset{i * direction, 0};
-        if (!target.isValid()) break;
-        PiecePtr p = getPiece(target);
-        if (p) break; // blocked
-        places.insert({origin, target});
-    }
+	// forward moves
+	for (int i = 1; i <= (canMoveTwoSpaces ? 2 : 1); ++i) {
+		Square target = origin + Offset{i * direction, 0};
+		if (!target.isValid())
+			break;
+		PiecePtr p = getPiece(target);
+		if (p)
+			break; // blocked
+		places.insert({origin, target});
+	}
 
-    // promotion
-    std::set<Move> newPlaces;
-    for (Move place : places) {
-        if (attackerIsWhite && place.endingSquare.rank() == 7) {
-            for (char toPromote : {'B','R','N','Q'}) {
-                newPlaces.insert(Move{place.startingSquare, place.endingSquare, toPromote});
-            }
-        }
-        else if (!attackerIsWhite && place.endingSquare.rank() == 0) {
-            for (char toPromote : {'B','R','N','Q'}) {
-                newPlaces.insert(Move{place.startingSquare, place.endingSquare, toPromote});
-            }
-        } else {
-            newPlaces.insert(place);
-        }
-    }
-    return newPlaces;
+	// promotion
+	std::set<Move> newPlaces;
+	for (Move place : places) {
+		if (attackerIsWhite && place.endingSquare.rank() == 7) {
+			for (char toPromote : {'B', 'R', 'N', 'Q'}) {
+				newPlaces.insert(Move{place.startingSquare, place.endingSquare, toPromote});
+			}
+		} else if (!attackerIsWhite && place.endingSquare.rank() == 0) {
+			for (char toPromote : {'B', 'R', 'N', 'Q'}) {
+				newPlaces.insert(Move{place.startingSquare, place.endingSquare, toPromote});
+			}
+		} else {
+			newPlaces.insert(place);
+		}
+	}
+	return newPlaces;
 }
 const Offset knightOffsets[] = {{1, 2}, {2, 1}, {-1, 2}, {-2, 1}, {1, -2}, {2, -1}, {-1, -2}, {-2, -1}};
 
@@ -431,7 +432,7 @@ bool ChessBoard::squareAttackedBy(Square target, bool attackerIsWhite) const {
 	// get all the psuedo-legal moves
 	// and check if they would end on the target
 
-    // attack by knight
+	// attack by knight
 	static const Offset knightOffsets[] = {{1, 2}, {2, 1}, {-1, 2}, {-2, 1}, {1, -2}, {2, -1}, {-1, -2}, {-2, -1}};
 	for (const Offset &off : knightOffsets) {
 		Square sq = target + off;
@@ -443,7 +444,7 @@ bool ChessBoard::squareAttackedBy(Square target, bool attackerIsWhite) const {
 		}
 	}
 
-    // attack by king
+	// attack by king
 	for (int dr = -1; dr <= 1; ++dr) {
 		for (int dc = -1; dc <= 1; ++dc) {
 			if (dr == 0 && dc == 0)
@@ -492,11 +493,10 @@ bool ChessBoard::squareAttackedBy(Square target, bool attackerIsWhite) const {
 
 Square ChessBoard::findKing(bool belongsToWhite) const {
 	for (int sq_idx = 0; sq_idx < 128; ++sq_idx) {
-        PiecePtr p = pieces[sq_idx];
-        if (p && p->getBelongsToWhite() == belongsToWhite && std::toupper(p->symbol()) == 'K') {
-            return Square(sq_idx);
-        }
-		
+		PiecePtr p = pieces[sq_idx];
+		if (p && p->getBelongsToWhite() == belongsToWhite && std::toupper(p->symbol()) == 'K') {
+			return Square(sq_idx);
+		}
 	}
 	throw std::logic_error(std::string("findKing: no king found for ") + (belongsToWhite ? "White" : "Black") + " in the board with FEN " + this->debug_board());
 }
@@ -532,10 +532,10 @@ bool ChessBoard::hasInsufficientMaterial() const {
 				continue;
 			case 'B':
 				++numBishops;
-                break;
+				break;
 			case 'N':
 				++numKnights;
-                break;
+				break;
 			default:
 				return false;
 			}
@@ -590,7 +590,7 @@ std::set<Move> ChessBoard::allLegalMoves(const Square sq) const {
 
 	bool moverIsWhite = getPiece(sq)->getBelongsToWhite();
 
-	for (const Move& candidate : pseudoLegalDestinations) {
+	for (const Move &candidate : pseudoLegalDestinations) {
 
 		// Simulate the move on a scratch copy of the board -- deliberately
 		// *not* going through processMove/isMoveLegal here, since that
@@ -622,10 +622,10 @@ std::set<Move> ChessBoard::allLegalMoves() const {
 }
 
 std::ostream &operator<<(std::ostream &os, const ChessBoard &board) {
-	for (int ranknum = 0; ranknum<8; ++ranknum) {
-        
-        for (int filenum = 0; filenum<8; ++filenum) {
-            auto piece_ptr = board.pieces[Square(ranknum, filenum).idx];
+	for (int ranknum = 0; ranknum < 8; ++ranknum) {
+
+		for (int filenum = 0; filenum < 8; ++filenum) {
+			auto piece_ptr = board.pieces[Square(ranknum, filenum).idx];
 			if (piece_ptr == nullptr) {
 				os << ' ';
 			} else {
@@ -658,7 +658,7 @@ bool ChessBoard::move_is_castling(const Move move) const {
 	if (!pieceAtBeginning || toupper(pieceAtBeginning->symbol()) != 'K')
 		return false;
 	Offset diff = move.endingSquare - move.startingSquare;
-	return maxNorm(diff)>1;
+	return maxNorm(diff) > 1;
 }
 bool ChessBoard::move_is_check(const Move move) const {
 	ChessBoard newBoard = this->board_with_move(move);

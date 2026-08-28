@@ -9,46 +9,47 @@
 #include <string>
 #include <vector>
 namespace ParsePieces {
-    
-    void parsePiecePart(const std::string &PiecePart, PiecePtr board[128]) {
-        // 1. init all to null
-        for(int i=0;i<128;++i) board[i] = nullptr;
-    
-        std::stringstream RankReader(PiecePart);
-        std::vector<std::string> Ranks;
-        Ranks.reserve(BOARD_SIZE);
-        std::string rankStr;
-        while(std::getline(RankReader, rankStr, '/')) {
-            Ranks.push_back(rankStr);
-        }
-    
-        if (Ranks.size()!= BOARD_SIZE) {
-            throw InvalidFEN("Board has " + std::to_string(Ranks.size()) + " ranks, expected 8");
-        }
-    
-        // FEN goes 8 -> 1, we store 0 -> 7
-        for (size_t i = 0; i < BOARD_SIZE; ++i) {
-            size_t ranknum = BOARD_SIZE - 1 - i; // rank 7,6,5...0
-            const std::string& Rank = Ranks[i];
-            int file = 0;
-    
-            for (char pieceChar : Rank) {
-                if (pieceChar >= '1' && pieceChar <= '8') {
-                    file += pieceChar - '0';
-                } else {
-                    if (file >= BOARD_SIZE) {
-                        throw InvalidFEN("Too many squares on rank " + std::to_string(ranknum));
-                    }
-                    Square sq((int)ranknum, file);
-                    board[sq.idx] = getPiece(pieceChar);
-                    file++;
-                }
-            }
-            if (file!= BOARD_SIZE) {
-                throw InvalidFEN("Rank " + std::to_string(ranknum) + " has " + std::to_string(file) + " squares, expected 8");
-            }
-        }
-    }
+
+void parsePiecePart(const std::string &PiecePart, PiecePtr board[128]) {
+	// 1. init all to null
+	for (int i = 0; i < 128; ++i)
+		board[i] = nullptr;
+
+	std::stringstream RankReader(PiecePart);
+	std::vector<std::string> Ranks;
+	Ranks.reserve(BOARD_SIZE);
+	std::string rankStr;
+	while (std::getline(RankReader, rankStr, '/')) {
+		Ranks.push_back(rankStr);
+	}
+
+	if (Ranks.size() != BOARD_SIZE) {
+		throw InvalidFEN("Board has " + std::to_string(Ranks.size()) + " ranks, expected 8");
+	}
+
+	// FEN goes 8 -> 1, we store 0 -> 7
+	for (size_t i = 0; i < BOARD_SIZE; ++i) {
+		size_t ranknum = BOARD_SIZE - 1 - i; // rank 7,6,5...0
+		const std::string &Rank = Ranks[i];
+		int file = 0;
+
+		for (char pieceChar : Rank) {
+			if (pieceChar >= '1' && pieceChar <= '8') {
+				file += pieceChar - '0';
+			} else {
+				if (file >= BOARD_SIZE) {
+					throw InvalidFEN("Too many squares on rank " + std::to_string(ranknum));
+				}
+				Square sq((int)ranknum, file);
+				board[sq.idx] = getPiece(pieceChar);
+				file++;
+			}
+		}
+		if (file != BOARD_SIZE) {
+			throw InvalidFEN("Rank " + std::to_string(ranknum) + " has " + std::to_string(file) + " squares, expected 8");
+		}
+	}
+}
 bool parsePlayerPart(const std::string &PlayerPart) {
 	if (PlayerPart.size() != 1) {
 		throw InvalidFEN("Error: Player argument must be 1 character");
@@ -94,31 +95,31 @@ std::optional<Square> parseEnPassantPart(std::string EnPassantPart) {
 	return sq;
 }
 std::string getPiecePart(const PiecePtr pieces[128]) {
-    std::string PiecePart;
-    // FEN goes rank 8 -> 1, so loop 7 down to 0
-    for (int rank = 7; rank >= 0; --rank) {
-        int numWOPiece = 0;
-        for (int file = 0; file < 8; ++file) {
-            Square sq(rank, file);
-            PiecePtr piece = pieces[sq.idx];
-            if (!piece) {
-                ++numWOPiece;
-            } else {
-                if (numWOPiece!= 0) {
-                    PiecePart.push_back('0' + numWOPiece);
-                    numWOPiece = 0;
-                }
-                PiecePart.push_back(piece->symbol());
-            }
-        }
-        if (numWOPiece!= 0) {
-            PiecePart.push_back('0' + numWOPiece);
-        }
-        if (rank!= 0) {
-            PiecePart.push_back('/');
-        }
-    }
-    return PiecePart;
+	std::string PiecePart;
+	// FEN goes rank 8 -> 1, so loop 7 down to 0
+	for (int rank = 7; rank >= 0; --rank) {
+		int numWOPiece = 0;
+		for (int file = 0; file < 8; ++file) {
+			Square sq(rank, file);
+			PiecePtr piece = pieces[sq.idx];
+			if (!piece) {
+				++numWOPiece;
+			} else {
+				if (numWOPiece != 0) {
+					PiecePart.push_back('0' + numWOPiece);
+					numWOPiece = 0;
+				}
+				PiecePart.push_back(piece->symbol());
+			}
+		}
+		if (numWOPiece != 0) {
+			PiecePart.push_back('0' + numWOPiece);
+		}
+		if (rank != 0) {
+			PiecePart.push_back('/');
+		}
+	}
+	return PiecePart;
 }
 std::string getCastlingPart(const PlayerState &whiteState, const PlayerState &blackState) {
 	std::string castlingPart = "";
