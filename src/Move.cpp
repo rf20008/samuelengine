@@ -12,8 +12,9 @@ bool Move::operator<(const Move &other) const {
 }
 
 bool Move::operator==(const Move &other) const { return (this->startingSquare == other.startingSquare) && (this->endingSquare == other.endingSquare) && (this->promotion == other.promotion); }
-std::string Move:: operator()() const {
-    std::string startEnd = startingSquare.operator()() + endingSquare.operator()(); 
-    if (promotion) startEnd+=std::string(1, promotion);
-    return startEnd;
+std::string Move::operator()() const {
+	std::string startEnd = startingSquare.operator()() + endingSquare.operator()();
+	if (promotion)
+		startEnd += std::string(1, promotion);
+	return startEnd;
 }

@@ -38,7 +38,7 @@ class TestSquare : public CxxTest::TestSuite {
 			TS_ASSERT_EQUALS(s.toString(), "d6");
 		}
 		void testSubtract() {
-			Offset s = Square(1, 2) - Square(1,2);
-			TS_ASSERT_EQUALS(s, Offset(1-1, 2-2));
+			Offset s = Square(1, 2) - Square(1, 2);
+			TS_ASSERT_EQUALS(s, Offset(1 - 1, 2 - 2));
 		}
 };
