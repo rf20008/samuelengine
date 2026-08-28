@@ -23,7 +23,7 @@ class TestMove : public CxxTest::TestSuite {
 			Move m21 = {{6, 5}, {5, 4}};
 			Move m30 = {{6, 5}, {4, 0}};
 			Move m31 = {{6, 5}, {4, 6}};
-			Move m40 = {{8, 9}, {0, 5}, 'a'};
+			Move m40 = {{6, 5}, {4, 5}, 'a'};
 
 			// row of startingSquare
 			TS_ASSERT_EQUALS(m0 < m00, false);
