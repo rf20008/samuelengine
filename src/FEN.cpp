@@ -100,7 +100,7 @@ std::string getPiecePart(const PiecePtr pieces[128]) {
 	for (int rank = 7; rank >= 0; --rank) {
 		int numWOPiece = 0;
 		for (int file = 0; file < 8; ++file) {
-			Square sq(rank, file);
+			Square sq(file, rank);
 			PiecePtr piece = pieces[sq.idx];
 			if (!piece) {
 				++numWOPiece;

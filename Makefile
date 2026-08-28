@@ -276,3 +276,6 @@ bin/test_%: build/test/%.cxxtest.o build/test/runner_single.o $(OBJECT_FILES_REL
 
 run-test_%: bin/test_%
 	./bin/test_$*
+
+.PRECIOUS: bin/test_%
+.SECONDARY:

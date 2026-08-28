@@ -25,7 +25,7 @@ class TestFEN : public CxxTest::TestSuite {
 				//const std::vector<PiecePtr> &parsedRow = parsedPieces.at(i);
 				//TS_ASSERT_EQUALS(parsedRow.size(), 8);
 				for (size_t j = 0; j < 8; j++) {
-					const PiecePtr &parsedCell = parsedPieces[Square(i, j).idx];
+					const PiecePtr &parsedCell = parsedPieces[Square(j, i).idx];
 					const char &groundTruthCell = groundTruth.at(i).at(j);
 					if (groundTruthCell == ' ') {
 						TS_ASSERT_EQUALS(parsedCell, nullptr);
@@ -83,7 +83,7 @@ class TestFEN : public CxxTest::TestSuite {
 		}
 		void testGetEnPassantPart() {
 			TS_ASSERT_EQUALS(getEnPassantPart(std::optional<Square>()), "-");
-			TS_ASSERT_EQUALS(getEnPassantPart(std::optional<Square>(std::in_place, 1, 2)), "a2");
+			TS_ASSERT_EQUALS(getEnPassantPart(std::optional<Square>(std::in_place, 0, 1)), "a2");
 		}
 };
 #endif
