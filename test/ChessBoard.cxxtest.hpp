@@ -105,6 +105,20 @@ class TestBoard : public CxxTest::TestSuite {
             TS_ASSERT_EQUALS(myBoard.perft(2), 264);
             TS_ASSERT_EQUALS(myBoard.perft(3), 9467);
         }
+        void testPerftPosFiveAfterB4C5() {
+            ChessBoard myBoard("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1");
+            myBoard.processMove(Move("b4", "c5"));
+            TS_ASSERT_EQUALS(myBoard.fen(), "r3k2r/Pppp1ppp/1b3nbN/nPB5/B1P1P3/q4N2/Pp1P2PP/R2Q1RK1 b kq - 1 1");
+
+            TS_ASSERT_EQUALS(myBoard.perft(1), 42);
+            TS_ASSERT_EQUALS(myBoard.perft(2), 1352);
+            TS_ASSERT(!myBoard.isMoveLegal(Move("b2", "a1", 'B'))); // only promote to black pieces
+            TS_ASSERT(myBoard.isMoveLegal(Move("b2", "a1", 'b')));
+            myBoard.processMove(Move("b2", "a1", 'b'));
+            
+            TS_ASSERT_EQUALS(myBoard.perft(1), 33);
+            TS_ASSERT(myBoard.isMoveLegal(Move("d1", "a1")));
+        }
         void testPerftPositionSix() {
             ChessBoard myBoard("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");
             TS_ASSERT_EQUALS(myBoard.perft(1), 44);
