@@ -9,8 +9,7 @@
 #include <vector>
 
 using namespace std;
-const double INFINITY = std::numeric_limits<double>::infinity();
-const double NEG_INF = -INFINITY;
+const double INF = std::numeric_limits<double>::infinity();
 
 // todo: move ordering (is castling=4, check=3, capture=2, pawn move=1, other=0)
 constexpr double pawn_pieceval[8][8] = {
@@ -133,9 +132,9 @@ std::optional<double> SamuelEngine::returnStatusIfGameOver(const ChessBoard &boa
 	if (isGameOver(status)) {
 		switch (status) {
 		case GameStatus::WHITE_WON:
-			return std::optional<double>(INFINITY);
+			return std::optional<double>(INF);
 		case GameStatus::BLACK_WON:
-			return std::optional<double>(-INFINITY);
+			return std::optional<double>(-INF);
 		default:
 			return std::optional<double>(0);
 		}
@@ -210,7 +209,7 @@ std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_depth(const ChessB
 
 	Move bestMove = *moves.begin();
 	if (board.get_whiteToMove()) {
-		double value = NEG_INF;
+		double value = -INF;
 
 		for (Move move : moves) {
 			ChessBoard newBoard = board;
@@ -227,7 +226,7 @@ std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_depth(const ChessB
 		}
 		return {value, bestMove};
 	} else {
-		double value = INFINITY;
+		double value = INF;
 		for (Move move : moves) {
 			ChessBoard newBoard = board;
 			newBoard.processMove(move);
@@ -250,7 +249,7 @@ std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_tl(const ChessBoar
 	Move bestMove = *(board.allLegalMoves().begin());
 	try {
 		for (int depth = 1; !shouldStop(); ++depth) {
-			auto [newValue, newMove] = evaluate_chess_pos_with_depth(board, depth, NEG_INF, INFINITY);
+			auto [newValue, newMove] = evaluate_chess_pos_with_depth(board, depth, -INF, +INF);
 			bestValue = newValue;
 			bestMove = newMove;
 		}

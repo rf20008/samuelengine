@@ -2,6 +2,7 @@
 #define CS3520_MINI_PROJECT_GETPIECE
 #include "Piece.hpp"
 #include <memory>
+#include <cassert>
 PiecePtr getPiece(char c);
 inline PiecePtr getPieceC(char c) { return getPiece(c); }
 constexpr int pieceNum(char c) {

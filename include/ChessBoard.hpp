@@ -132,6 +132,6 @@ class ChessBoard {
             return bit;
         }   
     
-        ll zobristFromScratch() const;
+        uint64_t zobristFromScratch() const;
 };
 #endif

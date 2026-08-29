@@ -159,8 +159,8 @@ void ChessBoard::processCastling(Move m, const PiecePtr &start_ptr) {
 	// sanity check
 	// assert a rook at oldRookPos, and newRookPOs is empty
 	PiecePtr &oldRook = pieces[oldRookPos.idx];
-    zobrist_hash ^= ZOBRIST.pieces[whiteToMove][rPt][oldRookPos.idx];
-    zobrist_hash ^= ZOBRIST.pieces[whiteToMove][rPt][newRookPos.idx];
+    zobrist_hash ^= ZOBRIST.pieces[whiteToMove][rPr][oldRookPos.idx];
+    zobrist_hash ^= ZOBRIST.pieces[whiteToMove][rPr][newRookPos.idx];
 	PiecePtr &newRook = pieces[newRookPos.idx];
 	if (!oldRook || toupper(oldRook->symbol()) != 'R') {
 		throw WrongPieceType("Expected a rook at " + oldRookPos.toString() + " that was not found. debug board: " + this->debug_board());
@@ -172,21 +172,24 @@ void ChessBoard::processCastling(Move m, const PiecePtr &start_ptr) {
 	return;
 }
 void ChessBoard::processPsuedoLegalMove(Move m) {
-    zobrist_hash ^= ZOBRIST.pieces[color][pt][m.startingSquare]; // remove from from-square
 	this->previousMoves.push_back(m);
+    
+    // Square rows/cols are 1-indexed, pieces is 0-indexed and rank-major (see getPiece)
+	PiecePtr &start_ptr = this->pieces[m.startingSquare.idx];
+	PiecePtr &end_ptr = this->pieces[m.endingSquare.idx];
+    assert((start_ptr->getBelongsToWhite()) == whiteToMove);
+    zobrist_hash ^= ZOBRIST.pieces[whiteToMove][pieceNum(start_ptr->symbol())][m.startingSquare.to64()]; // add to to-square
 	// update fullmove_clock (increments once Black's move completes a full move pair)
 	this->fullmove_clock += (!this->whiteToMove);
 
-	// Square rows/cols are 1-indexed, pieces is 0-indexed and rank-major (see getPiece)
-	PiecePtr &start_ptr = this->pieces[m.startingSquare.idx];
-	PiecePtr &end_ptr = this->pieces[m.endingSquare.idx];
+	
 	bool isCapture = (end_ptr != nullptr);
 	bool isPawnMove = (start_ptr != nullptr) && ((start_ptr->symbol() == 'p') || (start_ptr->symbol() == 'P'));
 	// the halfmove clock counts moves since the last capture/pawn move (for the 50-move rule), so it resets on either
 	this->halfmove_clock = (isCapture || isPawnMove) ? 0 : (this->halfmove_clock + 1);
 
 	// remove old castling rights
-    zobrist_hash ^= ZOBRIST.castlingBits[this->castlingBits()];
+    zobrist_hash ^= ZOBRIST.castling[this->castlingBits()];
 
 	// update whitePlayerState, blackPlayerState
 
@@ -219,8 +222,8 @@ void ChessBoard::processPsuedoLegalMove(Move m) {
 		blackPlayerState = cur_state;
 	}
     // and add new ones
-    zobrist_hash ^= ZOBRIST.castlingBits[this->castlingBits()];
-    zobrist_hash ^= ZOBRIST.pieces[start_ptr->getBelongsToWhite()][pieceNum(start_ptr->symbol())][to]; // add to to-square
+    zobrist_hash ^= ZOBRIST.castling[this->castlingBits()];
+    
 	processCastling(m, start_ptr);
 	//if was an enpassant capture, must remove the pawn it en-passanted
 	// if it's a promotion
@@ -235,7 +238,7 @@ void ChessBoard::processPsuedoLegalMove(Move m) {
 	end_ptr = std::move(start_ptr);
 	this->whiteToMove = !this->whiteToMove;
     
-    zobrist_hash ^= ZOBRIST.pieces[end_ptr->getBelongsToWhite()][pieceNum(end_ptr->symbol())][to]; // add to to-square
+    zobrist_hash ^= ZOBRIST.pieces[end_ptr->getBelongsToWhite()][pieceNum(end_ptr->symbol())][m.endingSquare.to64()]; // add to to-square
     zobrist_hash ^= ZOBRIST.sideToMove;
     assert(zobrist_hash == this->zobristFromScratch());
 }
@@ -739,18 +742,18 @@ std::string ChessBoard::debug_board() const {
 	return debugBoard;
 }
 
-uint64_t zobristFromScratch() const {
-    uint64_t hash = ZOBRIST.castlingBits[this->castlingBits()];
+uint64_t ChessBoard::zobristFromScratch() const {
+    uint64_t hash = ZOBRIST.castling[this->castlingBits()];
     if (!whiteToMove) hash^=ZOBRIST.sideToMove;
     for (int sqnum = 0; sqnum<64; ++sqnum) {
-        Square square = Square.from64(sqnum);
+        Square square = Square::from64(sqnum);
         PiecePtr piece = this->getPiece(square);
         if (piece) {
-            hash ^= ZOBRIST[piece->getBelongsToWhite()][pieceNum(piece->symbol())][sqnum];
+            hash ^= ZOBRIST.pieces[piece->getBelongsToWhite()][pieceNum(piece->symbol())][sqnum];
         }
     }
-    if (enPassantSquare) {
-        hash ^= ZOBRIST.enPassant[enPassantSquare.file()];
+    if (enPassant_targetSquare) {
+        hash ^= ZOBRIST.enPassantFile[enPassant_targetSquare->file()];
     }
     return hash;
     
