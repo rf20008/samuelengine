@@ -345,7 +345,7 @@ class TestBoard : public CxxTest::TestSuite {
 		}
         void testSixtyQueensCheckmate() {
             ChessBoard board("knQQQQQQ/QnQQQQQQ/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ/KQQQQQQQ b - - 0 1");
-            TS_ASSERT(board.isInCheck());
+            TS_ASSERT(board.isInCheck(false));
             TS_ASSERT(board.allLegalMoves().empty());
             TS_ASSERT(board.isInCheckmate());
         }
