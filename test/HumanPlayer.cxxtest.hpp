@@ -21,19 +21,43 @@ class TestHumanPlayer : public CxxTest::TestSuite {
 			TS_ASSERT_EQUALS(m, myMove);
 
 			// fileFrom too low
+			m = myMove;
+			TS_ASSERT_EQUALS(tryParseMove("`2e4", m), false);
+			TS_ASSERT_EQUALS(m, myMove);
 
 			// fileFrom too high
+			m = myMove;
+			TS_ASSERT_EQUALS(tryParseMove("{2e4", m), false);
+			TS_ASSERT_EQUALS(m, myMove);
 
 			// fileTo too low
+			m = myMove;
+			TS_ASSERT_EQUALS(tryParseMove("e2`4", m), false);
+			TS_ASSERT_EQUALS(m, myMove);
 
 			// fileTo too high
+			m = myMove;
+			TS_ASSERT_EQUALS(tryParseMove("e2{4", m), false);
+			TS_ASSERT_EQUALS(m, myMove);
 
 			// rankFrom too low
+			m = myMove;
+			TS_ASSERT_EQUALS(tryParseMove("e/e4", m), false);
+			TS_ASSERT_EQUALS(m, myMove);
 
 			// rankFrom too high
+			m = myMove;
+			TS_ASSERT_EQUALS(tryParseMove("e:e4", m), false);
+			TS_ASSERT_EQUALS(m, myMove);
 
 			// rankTo too low
+			m = myMove;
+			TS_ASSERT_EQUALS(tryParseMove("e2e/", m), false);
+			TS_ASSERT_EQUALS(m, myMove);
 
 			// rankTo too high
+			m = myMove;
+			TS_ASSERT_EQUALS(tryParseMove("e2e:", m), false);
+			TS_ASSERT_EQUALS(m, myMove);
 		}
 };
