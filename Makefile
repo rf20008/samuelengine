@@ -261,3 +261,21 @@ endif
 
 clean:
 	rm -rf bin/ build/ doc/ *.gcda *.gcno *.gcov gmon.out
+
+build/test/runner_single.cpp:
+	mkdir -p $(dir $@)
+	python3 -W ignore $(CXXTEST_GEN) --root --error-printer -o $@
+
+build/test/runner_single.o: build/test/runner_single.cpp $(HEADER_FILES) Makefile
+	mkdir -p $(dir $@)
+	g++ -c $< $(CXXFLAGS_REL) -o $@
+
+bin/test_%: build/test/%.cxxtest.o build/test/runner_single.o $(OBJECT_FILES_REL)
+	mkdir -p $(dir $@)
+	g++ $^ $(LDFLAGS_REL) -o $@
+
+run-test_%: bin/test_%
+	./bin/test_$*
+
+.PRECIOUS: bin/test_%
+.SECONDARY:

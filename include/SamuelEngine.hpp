@@ -14,7 +14,7 @@ class SamuelEngine : public AbstractPlayer {
 	private:
 		bool debug;
 
-	protected:
+	public:
 		struct MoveOrderer {
 			public:
 				const ChessBoard m_board;
@@ -27,7 +27,7 @@ class SamuelEngine : public AbstractPlayer {
 		double default_tl;
 		std::chrono::steady_clock::time_point deadline;
 
-		const std::vector<std::vector<double>> &getPosVal(const PiecePtr ptr) const;
+		const double (*getPosVal(const PiecePtr ptr) const)[8];
 		double relative_value(const PiecePtr ptr) const;
 		std::optional<double> returnStatusIfGameOver(const ChessBoard &board) const;
 		double PieceValue(const PiecePtr ptr, const Square sq) const;

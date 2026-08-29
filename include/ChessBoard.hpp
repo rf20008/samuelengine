@@ -35,7 +35,7 @@ template <typename T> inline std::set<T> &mergeSets(std::set<T> &A, const std::s
 
 class ChessBoard {
 	protected:
-		std::vector<std::vector<PiecePtr>> pieces;
+		PiecePtr pieces[128]{};
 		bool whiteToMove;
 		PlayerState whitePlayerState;
 		PlayerState blackPlayerState;
@@ -49,9 +49,9 @@ class ChessBoard {
 
 		ChessBoard();						// create a chess board with starting position
 		ChessBoard(const std::string &fen); // create chess board from given FEN
-		ChessBoard(const std::vector<std::vector<PiecePtr>> &pieces, const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare, const std::vector<Move> &moves);
+		ChessBoard(PiecePtr pieces[128], const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare, const std::vector<Move> &moves);
 
-		ChessBoard(const std::vector<std::vector<PiecePtr>> &pieces, const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare);
+		ChessBoard(PiecePtr pieces[128], const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare);
 		// rule of 5
 		~ChessBoard() = default;
 		ChessBoard(const ChessBoard &other) = default;
@@ -89,12 +89,12 @@ class ChessBoard {
 		PiecePtr getAndAssertPiece(const Square origin, const char pieceType) const;
 		bool hasPiece(const Square origin) const;
 		bool squareAttackedBy(Square target, bool attackerIsWhite) const;
-		bool isSlidingAttacker(Square from, Square dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) const;
+		bool isSlidingAttacker(Square from, int dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) const;
 
 		std::set<Move> whereKingCouldMove(const Square origin) const;
 		std::set<Move> wherePawnCouldMove(const Square origin) const;
 		std::set<Move> whereKnightCouldMove(const Square origin) const;
-		std::set<Move> isSlidingAttacker(const Square from, const Square dir, bool attackerIsWhite) const;
+		std::set<Move> isSlidingAttacker(const Square from, const int dir, bool attackerIsWhite) const;
 		std::set<Move> whereBishopCouldMove(const Square origin) const;
 		std::set<Move> whereRookCouldMove(const Square origin) const;
 		std::set<Move> whereQueenCouldMove(const Square origin) const;

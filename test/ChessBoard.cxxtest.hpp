@@ -5,7 +5,7 @@
 class TestBoard : public CxxTest::TestSuite {
 	public:
 		void testChessBoardMemberConstructor() {
-			std::vector<std::vector<PiecePtr>> pieces = {};
+			PiecePtr pieces[128]{nullptr};
 			bool whiteToMove = true;
 			PlayerState whitePlayerState = {true, true};
 			PlayerState blackPlayerState = {true, true};
@@ -18,7 +18,7 @@ class TestBoard : public CxxTest::TestSuite {
 		}
 
 		void testChessBoardStreamout() {
-			std::vector<std::vector<PiecePtr>> pieces = {};
+			PiecePtr pieces[128]{nullptr};
 			bool whiteToMove = true;
 			PlayerState whitePlayerState = {true, true};
 			PlayerState blackPlayerState = {true, true};
@@ -74,6 +74,16 @@ class TestBoard : public CxxTest::TestSuite {
 			TS_ASSERT_EQUALS(myBoard.perft(1), 48);
 			TS_ASSERT_EQUALS(myBoard.perft(2), 2039);
 		}
+		void testKiwinetesA2A4ThenB4A3Legal() {
+			ChessBoard myBoard = ChessBoard("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+			myBoard.processMove(Move(Square("a2"), Square("a4")));
+			TS_ASSERT_EQUALS(myBoard.fen(), "r3k2r/p1ppqpb1/bn2pnp1/3PN3/Pp2P3/2N2Q1p/1PPBBPPP/R3K2R b KQkq a3 0 1");
+
+			// will only work when castling is implemented
+			TS_ASSERT(myBoard.isMoveLegal(Move("b4", "a3")));
+			myBoard.processMove(Move("b4", "a3"));
+			TS_ASSERT_EQUALS(myBoard.fen(), "r3k2r/p1ppqpb1/bn2pnp1/3PN3/4P3/p1N2Q1p/1PPBBPPP/R3K2R w KQkq - 0 2");
+		}
 		void testPerftPositionThree() {
 			// also from PerftResults
 			ChessBoard myBoard("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1");
@@ -87,8 +97,41 @@ class TestBoard : public CxxTest::TestSuite {
 			TS_ASSERT_EQUALS(myBoard.perft(1), 7);
 			TS_ASSERT_EQUALS(myBoard.perft(2), 31);
 			TS_ASSERT_EQUALS(myBoard.perft(3), 340);
-            TS_ASSERT_EQUALS(myBoard.perft(4), 1864);
-        }
+			TS_ASSERT_EQUALS(myBoard.perft(4), 1864);
+		}
+		void testPerftPositionFive() {
+			ChessBoard myBoard("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1");
+			TS_ASSERT_EQUALS(myBoard.perft(1), 6);
+			TS_ASSERT_EQUALS(myBoard.perft(2), 264);
+			TS_ASSERT_EQUALS(myBoard.perft(3), 9467);
+		}
+		void testPerftPosFiveAfterB4C5() {
+			ChessBoard myBoard("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1");
+			myBoard.processMove(Move("b4", "c5"));
+			TS_ASSERT_EQUALS(myBoard.fen(), "r3k2r/Pppp1ppp/1b3nbN/nPB5/B1P1P3/q4N2/Pp1P2PP/R2Q1RK1 b kq - 1 1");
+
+			TS_ASSERT_EQUALS(myBoard.perft(1), 42);
+			TS_ASSERT_EQUALS(myBoard.perft(2), 1352);
+			TS_ASSERT(!myBoard.isMoveLegal(Move("b2", "a1", 'B'))); // only promote to black pieces
+			TS_ASSERT(myBoard.isMoveLegal(Move("b2", "a1", 'b')));
+			myBoard.processMove(Move("b2", "a1", 'b'));
+
+			TS_ASSERT_EQUALS(myBoard.perft(1), 33);
+			TS_ASSERT(myBoard.isMoveLegal(Move("d1", "a1")));
+		}
+		void testPerftPositionSix() {
+			ChessBoard myBoard("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");
+			TS_ASSERT_EQUALS(myBoard.perft(1), 44);
+			TS_ASSERT_EQUALS(myBoard.perft(2), 1486);
+		}
+		void testPerftPositionSeven() {
+			ChessBoard myBoard("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10");
+			TS_ASSERT_EQUALS(myBoard.get_whiteToMove(), true);
+			TS_ASSERT_EQUALS(myBoard.perft(0), 1);
+			TS_ASSERT_EQUALS(myBoard.perft(1), 46);
+			TS_ASSERT_EQUALS(myBoard.perft(2), 2079);
+			TS_ASSERT_EQUALS(myBoard.perft(3), 89890);
+		}
 		void testWhiteKingsideCastling() {
 			ChessBoard myBoard("6k1/8/8/8/8/8/8/4K2R w K - 0 1");
 			TS_ASSERT(myBoard.getWhitePlayerState().canKingsideCastle);
@@ -200,9 +243,9 @@ class TestBoard : public CxxTest::TestSuite {
 			} catch (std::logic_error &error) {
 			}
 		}
-        void testCastlingPossibleWeirdRegressionTest() {
-            ChessBoard board;
-            board.processMove({"b1", "c3"});
+		void testCastlingPossibleWeirdRegressionTest() {
+			ChessBoard board;
+			board.processMove({"b1", "c3"});
 			board.processMove({"d7", "d6"});
 			board.processMove({"g1", "f3"});
 			board.processMove({"e8", "d7"});
@@ -235,9 +278,69 @@ class TestBoard : public CxxTest::TestSuite {
 			board.processMove({"h2", "h3"});
 			board.processMove({"b7", "a8"});
 			board.processMove({"h1", "h2"});
-            TS_ASSERT(!board.getWhitePlayerState().canKingsideCastle);
+			TS_ASSERT(!board.getWhitePlayerState().canKingsideCastle);
 			board.processMove({"c6", "a5"});
 			TS_ASSERT_THROWS_ANYTHING(board.processMove({"e1", "g1"}));
+		}
+		void testDefaultConstructorEverySquare() {
+			ChessBoard board;
 
-        }
+			// expected[rank][file], rank 0 = white's 1st rank
+			const char expected[8][8] = {
+				{'R', 'N', 'B', 'Q', 'K', 'B', 'N', 'R'}, // a1-h1
+				{'P', 'P', 'P', 'P', 'P', 'P', 'P', 'P'}, // a2-h2
+				{0, 0, 0, 0, 0, 0, 0, 0},				  // a3-h3
+				{0, 0, 0, 0, 0, 0, 0, 0},				  // a4-h4
+				{0, 0, 0, 0, 0, 0, 0, 0},				  // a5-h5
+				{0, 0, 0, 0, 0, 0, 0, 0},				  // a6-h6
+				{'p', 'p', 'p', 'p', 'p', 'p', 'p', 'p'}, // a7-h7
+				{'r', 'n', 'b', 'q', 'k', 'b', 'n', 'r'}, // a8-h8
+			};
+
+			for (int rank = 0; rank < 8; ++rank) {
+				for (int file = 0; file < 8; ++file) {
+					Square sq(file, rank);
+					PiecePtr piece = board.getPiece(sq);
+					char exp = expected[rank][file];
+
+					if (exp == 0) {
+						std::string msg = "expected empty at " + sq.toString();
+						TSM_ASSERT(msg.c_str(), piece == nullptr);
+					} else {
+						std::string where = sq.toString();
+						std::string expStr(1, exp);
+						std::string msg1 = "expected " + expStr + " but got empty at " + where;
+						TSM_ASSERT(msg1.c_str(), piece != nullptr);
+						if (piece) {
+							std::string msg2 = "at " + where;
+							TSM_ASSERT_EQUALS(msg2.c_str(), piece->symbol(), exp);
+						}
+					}
+				}
+			}
+
+			// your last bug: only 30 pieces instead of 32 (missing h-file)
+			int count = 0;
+			for (int r = 0; r < 8; ++r)
+				for (int f = 0; f < 8; ++f)
+					if (board.getPiece(Square(f, r)))
+						count++;
+			TS_ASSERT_EQUALS(count, 32);
+		}
+
+		void testBlackPawnPromotionColor() {
+			// Set up a board where a Black pawn is on rank 1 (index 1) about to promote to rank 0.
+			// Replace with your engine's FEN initialization and move generation syntax:
+			ChessBoard board("8/8/8/8/8/4k3/4p1K1/8 b - - 0 1");
+
+			TS_ASSERT(!board.isMoveLegal(Move("e2", "e1", '\0')));
+			TS_ASSERT(board.isMoveLegal(Move("e2", "e1", 'q')));
+			TS_ASSERT(board.isMoveLegal(Move("e2", "e1", 'r')));
+			TS_ASSERT(board.isMoveLegal(Move("e2", "e1", 'n')));
+			TS_ASSERT(board.isMoveLegal(Move("e2", "e1", 'b')));
+			TS_ASSERT(!board.isMoveLegal(Move("e2", "e1", 'Q')));
+			TS_ASSERT(!board.isMoveLegal(Move("e2", "e1", 'R')));
+			TS_ASSERT(!board.isMoveLegal(Move("e2", "e1", 'N')));
+			TS_ASSERT(!board.isMoveLegal(Move("e2", "e1", 'B')));
+		}
 };
