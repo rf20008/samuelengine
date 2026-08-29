@@ -67,7 +67,14 @@ class ChessBoard {
 		ChessBoard &operator=(ChessBoard &&other) = default;
 
 		// getters
-		PiecePtr getPiece(Square sq) const;
+		PiecePtr getPiece(Square sq) const {
+            // bounds check: an out-of-board square simply has no piece on it
+            if (!sq.isValid()) {
+                return PiecePtr();
+                //throw std::logic_error("Invalid square position (idx="+std::to_string(sq.idx)+")");
+            }
+            return pieces[sq.idx];
+        }
 		int get_halfmove_clock() const { return halfmove_clock; }
 		int get_fullmove_clock() const { return fullmove_clock; }
 		bool get_whiteToMove() const { return whiteToMove; }
@@ -133,5 +140,15 @@ class ChessBoard {
         }   
     
         uint64_t zobristFromScratch() const;
+        void verifyZobrist() const {
+            uint64_t scratch = this->zobristFromScratch(); 
+            if (this->zobrist_hash != scratch) { 
+                throw std::logic_error( 
+                    "Zobrist mismatch: incremental=" + std::to_string(this->zobrist_hash) + 
+                    " scratch=" + std::to_string(scratch) + 
+                    " fen=" + this->fen()
+                ); 
+            } 
+        }
 };
 #endif

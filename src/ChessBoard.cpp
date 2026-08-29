@@ -80,14 +80,7 @@ ChessBoard::ChessBoard(PiecePtr pieces[128], const bool &whiteToMove, const Play
     this->zobrist_hash = this->zobristFromScratch();
 }
 
-PiecePtr ChessBoard::getPiece(Square sq) const {
-	// bounds check: an out-of-board square simply has no piece on it
-	if (!sq.isValid()) {
-		return PiecePtr();
-		//throw std::logic_error("Invalid square position (idx="+std::to_string(sq.idx)+")");
-	}
-	return pieces[sq.idx];
-}
+
 
 bool ChessBoard::isMoveLegal(Move m) const {
 	// A move is legal exactly when its destination shows up among the legal
@@ -159,8 +152,8 @@ void ChessBoard::processCastling(Move m, const PiecePtr &start_ptr) {
 	// sanity check
 	// assert a rook at oldRookPos, and newRookPOs is empty
 	PiecePtr &oldRook = pieces[oldRookPos.idx];
-    zobrist_hash ^= ZOBRIST.pieces[whiteToMove][rPr][oldRookPos.idx];
-    zobrist_hash ^= ZOBRIST.pieces[whiteToMove][rPr][newRookPos.idx];
+    zobrist_hash ^= ZOBRIST.pieces[whiteToMove][rPr][oldRookPos.to64()];
+    zobrist_hash ^= ZOBRIST.pieces[whiteToMove][rPr][newRookPos.to64()];
 	PiecePtr &newRook = pieces[newRookPos.idx];
 	if (!oldRook || toupper(oldRook->symbol()) != 'R') {
 		throw WrongPieceType("Expected a rook at " + oldRookPos.toString() + " that was not found. debug board: " + this->debug_board());
@@ -178,7 +171,11 @@ void ChessBoard::processPsuedoLegalMove(Move m) {
 	PiecePtr &start_ptr = this->pieces[m.startingSquare.idx];
 	PiecePtr &end_ptr = this->pieces[m.endingSquare.idx];
     assert((start_ptr->getBelongsToWhite()) == whiteToMove);
-    zobrist_hash ^= ZOBRIST.pieces[whiteToMove][pieceNum(start_ptr->symbol())][m.startingSquare.to64()]; // add to to-square
+    zobrist_hash ^= ZOBRIST.pieces[whiteToMove][pieceNum(start_ptr->symbol())][m.startingSquare.to64()]; // remove movers
+    if (end_ptr) {
+        // remove captured piece, if any
+        zobrist_hash ^= ZOBRIST.pieces[end_ptr->getBelongsToWhite()][pieceNum(end_ptr->symbol())][m.endingSquare.to64()];
+    }
 	// update fullmove_clock (increments once Black's move completes a full move pair)
 	this->fullmove_clock += (!this->whiteToMove);
 
@@ -240,7 +237,9 @@ void ChessBoard::processPsuedoLegalMove(Move m) {
     
     zobrist_hash ^= ZOBRIST.pieces[end_ptr->getBelongsToWhite()][pieceNum(end_ptr->symbol())][m.endingSquare.to64()]; // add to to-square
     zobrist_hash ^= ZOBRIST.sideToMove;
-    assert(zobrist_hash == this->zobristFromScratch());
+    //#ifndef NDEBUG
+    this->verifyZobrist();
+    //#endif
 }
 void ChessBoard::processMove(Move m) {
 	if (this->isMoveLegal(m)) {
