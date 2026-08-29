@@ -767,22 +767,30 @@ uint64_t ChessBoard::zobristFromScratch() const {
     
 }
 Square getRookFrom(Square kingTo) {
-    if (kingTo == Square("g1")) return Square("h1");
-    if (kingTo == Square("c1")) return Square("a1");
-    if (kingTo == Square("g8")) return Square("h8");
-    if (kingTo == Square("c8")) return Square("a8");
+    if (kingTo == Square("g1"))
+            return Square("h1");
+    if (kingTo == Square("c1"))
+            return Square("a1");
+    if (kingTo == Square("g8"))
+            return Square("h8");
+    if (kingTo == Square("c8"))
+            return Square("a8");
     return Square(-1); // not a castle
 }
 
 Square getRookTo(Square kingTo) {
-    if (kingTo == Square("g1")) return Square("f1");
-    if (kingTo == Square("c1")) return Square("d1");
-    if (kingTo == Square("g8")) return Square("f8");
-    if (kingTo == Square("c8")) return Square("d8");
+    if (kingTo == Square("g1"))
+            return Square("f1");
+    if (kingTo == Square("c1"))
+            return Square("d1");
+    if (kingTo == Square("g8"))
+            return Square("f8");
+    if (kingTo == Square("c8"))
+            return Square("d8");
     return Square(0);
 }
 // undo move
-UndoMove ChessBoard::buildUndo(const Move& m) const {
+UndoMove ChessBoard::buildUndo(const Move &m) const {
     UndoMove u;
     u.move = m;
     u.zobrist = zobrist_hash;
@@ -796,25 +804,44 @@ UndoMove ChessBoard::buildUndo(const Move& m) const {
 
     // what is captured?
     if (m.type == MoveType::EN_PASSANT) {
-        u.capturedSquare = Square(m.endingSquare);
-        u.capturedPiece = getPiece(u.capturedSquare);
+            u.capturedSquare = Square(m.endingSquare);
+            u.capturedPiece = getPiece(u.capturedSquare);
     } else {
-        u.capturedSquare = m.endingSquare;
-        u.capturedPiece = getPiece(m.endingSquare);
+            u.capturedSquare = m.endingSquare;
+            u.capturedPiece = getPiece(m.endingSquare);
     }
 
     if (m.type == MoveType::CASTLING) {
-        u.rookFrom = getRookFrom(m.endingSquare);
-        u.rookTo = getRookTo(m.startingSquare);
-    }
-    else {
-        u.rookFrom = Square(-1);
-        u.rookTo = Square(-1);
+            u.rookFrom = getRookFrom(m.endingSquare);
+            u.rookTo = getRookTo(m.startingSquare);
+    } else {
+            u.rookFrom = Square(-1);
+            u.rookTo = Square(-1);
     }
 
     return u;
 }
 
-void ChessBoard::undoMove() const {
-    throw NotImplementedError("void ChessBoard::undoMove() const is not implemented yet!");
+void ChessBoard::undoMove(const UndoMove &u) {
+    pieces[u.move.startingSquare] = u.originalPiece;
+    if (u.capturedSquare.isValid()) {
+            pieces[u.move.endingSquare.idx] = nullptr;
+            pieces[u.capturedSquare.idx] = u.captured; // pawn behind
+    } else {
+            pieces[u.move.endingSquare.idx] = u.captured; // nullptr if no capture
+    }
+    if (u.rookFrom.isValid() && u.rookTo.isValid()) {
+            pieces[u.rookFrom.idx] = pieces[u.rookTo.idx];
+            pieces[u.rookTo.idx] = nullptr;
+    }
+    whitePlayerState = u.whiteState;
+    blackPlayerState = u.blackState;
+    enPassant_targetSquare = u.epTarget;
+    halfmove_clock = u.halfmove;
+    fullmove_clock = u.fullmove;
+    whiteToMove = !whiteToMove;
+    zobrist_hash = u.zobrist;
+#ifndef NDEBUG
+    verifyZobrist();
+#endif
 }

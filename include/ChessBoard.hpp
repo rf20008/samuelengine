@@ -156,6 +156,6 @@ class ChessBoard {
 
         // undo move
         UndoMove buildUndo(const Move& m) const;
-        void undoMove() const;
+        void undoMove();
 };
 #endif
