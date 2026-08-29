@@ -553,15 +553,20 @@ bool ChessBoard::hasInsufficientMaterial() const {
 }
 GameStatus ChessBoard::getStatus() const {
 	// return the status of the game (whether white won, black won, it's a draw, or game is still going on)
-	if (isInCheckmate()) { // the game is over, checkmate
-		// is it black's turn? then white won
-		if (whiteToMove) {
-			return GameStatus::BLACK_WON;
-		} else {
-			return GameStatus::WHITE_WON;
-		}
-	} else if (isInStalemate()) {
-		return GameStatus::DRAW;
+    auto legalMoves = this->allLegalMoves();
+    bool inCheck = this->isInCheck(whiteToMove);
+	if (legalMoves.empty()) { // the game is over, checkmate
+        if (inCheck) {
+		    // is it black's turn? then white won
+		    if (whiteToMove) {
+			    return GameStatus::BLACK_WON;
+		    } else {
+			    return GameStatus::WHITE_WON;
+		    }
+        }
+        else {
+            return GameStatus::DRAW;
+        }
 	} else if (halfmove_clock >= 100) {
 		return GameStatus::DRAW;
 	} else if (this->hasInsufficientMaterial()) {
