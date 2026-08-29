@@ -343,4 +343,10 @@ class TestBoard : public CxxTest::TestSuite {
 			TS_ASSERT(!board.isMoveLegal(Move("e2", "e1", 'N')));
 			TS_ASSERT(!board.isMoveLegal(Move("e2", "e1", 'B')));
 		}
+        void testSixtyQueensCheckmate() {
+            ChessBoard board("knQQQQQQ/QnQQQQQQ/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ/KQQQQQQQ b - - 0 1");
+            TS_ASSERT(board.isInCheck(false));
+            TS_ASSERT(board.allLegalMoves().empty());
+            TS_ASSERT(board.isInCheckmate());
+        }
 };

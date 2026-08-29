@@ -20,7 +20,7 @@ constexpr int NE = 17;
 constexpr int NW = 15;
 constexpr int SE = -15;
 constexpr int SW = -17;
-
+constexpr int rPr = pieceNum('R');
 inline constexpr int PAWN_CAPTURE_DIRS[2][2] = {
 	{NW, NE}, // White: rank+1, file+-1
 	{SW, SE}  // Black: rank-1, file+-1
@@ -65,26 +65,22 @@ ChessBoard::ChessBoard(const std::string &fen) {
 	if (fullmove_clock < 1) {
 		throw std::invalid_argument("fullmove clock too low");
 	}
+    this->zobrist_hash = this->zobristFromScratch();
 }
 
 ChessBoard::ChessBoard(PiecePtr pieces[128], const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare, const std::vector<Move> &moves) : whiteToMove(whiteToMove), whitePlayerState(whitePlayerState), blackPlayerState(blackPlayerState), halfmove_clock(halfmove_clock), fullmove_clock(fullmove_clock), enPassant_targetSquare(enPassant_targetSquare), previousMoves(moves) {
 	for (int i = 0; i < 128; ++i)
 		this->pieces[i] = pieces[i];
+    this->zobrist_hash = this->zobristFromScratch();
 }
 
 ChessBoard::ChessBoard(PiecePtr pieces[128], const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare) : whiteToMove(whiteToMove), whitePlayerState(whitePlayerState), blackPlayerState(blackPlayerState), halfmove_clock(halfmove_clock), fullmove_clock(fullmove_clock), enPassant_targetSquare(enPassant_targetSquare), previousMoves({}) {
 	for (int i = 0; i < 128; ++i)
 		this->pieces[i] = pieces[i];
+    this->zobrist_hash = this->zobristFromScratch();
 }
 
-PiecePtr ChessBoard::getPiece(Square sq) const {
-	// bounds check: an out-of-board square simply has no piece on it
-	if (!sq.isValid()) {
-		return PiecePtr();
-		//throw std::logic_error("Invalid square position (idx="+std::to_string(sq.idx)+")");
-	}
-	return pieces[sq.idx];
-}
+
 
 bool ChessBoard::isMoveLegal(Move m) const {
 	// A move is legal exactly when its destination shows up among the legal
@@ -99,19 +95,33 @@ void ChessBoard::processEnPassantCapture(Move m, const PiecePtr &start_ptr, cons
 	if (enPassant_targetSquare && (m.endingSquare == *enPassant_targetSquare) && toupper(start_ptr->symbol()) == 'P' && !end_ptr) {
 		Square squareCaptured = m.endingSquare + ((start_ptr->symbol() == 'P') ? SOUTH : NORTH);
 		//cout<<"removing piece at"<<(squareCaptured.toString())<<endl;
-		this->pieces[squareCaptured.idx] = PiecePtr();
+        // xor out the old piece
+        auto &cap = pieces[squareCaptured.idx];
+        if (cap) {
+            zobrist_hash ^= ZOBRIST.pieces[cap->getBelongsToWhite()][pieceNum(cap->symbol())][squareCaptured.to64()];
+        }
+		cap = PiecePtr();
+        // xor out the captured index
 	}
 }
 void ChessBoard::processEnPassantUpdate(Move m, const PiecePtr &start_ptr, const PiecePtr &end_ptr) {
 	// update enPassantTargetSquare
+    // XOR out OLD zobrist hash
+    if (enPassant_targetSquare) {
+        zobrist_hash ^= ZOBRIST.enPassantFile[enPassant_targetSquare->file()];
+    }
 	//cout<<"isPawnMove: "<<isPawnMove<<endl;
 	//if (enPassant_targetSquare) cout<<"enPassant target Square: "<< (enPassant_targetSquare->toString())<<endl;
 	if (toupper(start_ptr->symbol()) == 'P' && maxNorm(m.endingSquare, m.startingSquare) > 1) {
 		//cout<<"a Pawn moved 2 squares\n";
 		enPassant_targetSquare = std::optional<Square>(m.startingSquare + ((start_ptr->symbol() == 'P') ? NORTH : SOUTH));
 	} else {
-		enPassant_targetSquare = std::optional<Square>();
+		enPassant_targetSquare = std::nullopt;
 	}
+    // 3. XOR IN new en passant
+    if (enPassant_targetSquare) {
+        zobrist_hash ^= ZOBRIST.enPassantFile[enPassant_targetSquare->file()];
+    }
 }
 void ChessBoard::processCastling(Move m, const PiecePtr &start_ptr) {
 	// check it's a king move, else do nothing
@@ -127,21 +137,23 @@ void ChessBoard::processCastling(Move m, const PiecePtr &start_ptr) {
 		oldRookPos = "h1";
 		newRookPos = "f1";
 	} // white kingside castling
-	if (m == Move("e1", "c1")) {
+	else if (m == Move("e1", "c1")) {
 		oldRookPos = "a1";
 		newRookPos = "d1";
 	} // white queenside castling
-	if (m == Move("e8", "g8")) {
+	else if (m == Move("e8", "g8")) {
 		oldRookPos = "h8";
 		newRookPos = "f8";
 	} // black kingside castling
-	if (m == Move("e8", "c8")) {
+	else if (m == Move("e8", "c8")) {
 		oldRookPos = "a8";
 		newRookPos = "d8";
 	} // black queenside castling
 	// sanity check
 	// assert a rook at oldRookPos, and newRookPOs is empty
 	PiecePtr &oldRook = pieces[oldRookPos.idx];
+    zobrist_hash ^= ZOBRIST.pieces[whiteToMove][rPr][oldRookPos.to64()];
+    zobrist_hash ^= ZOBRIST.pieces[whiteToMove][rPr][newRookPos.to64()];
 	PiecePtr &newRook = pieces[newRookPos.idx];
 	if (!oldRook || toupper(oldRook->symbol()) != 'R') {
 		throw WrongPieceType("Expected a rook at " + oldRookPos.toString() + " that was not found. debug board: " + this->debug_board());
@@ -154,34 +166,43 @@ void ChessBoard::processCastling(Move m, const PiecePtr &start_ptr) {
 }
 void ChessBoard::processPsuedoLegalMove(Move m) {
 	this->previousMoves.push_back(m);
+    
+    // Square rows/cols are 1-indexed, pieces is 0-indexed and rank-major (see getPiece)
+	PiecePtr &start_ptr = this->pieces[m.startingSquare.idx];
+	PiecePtr &end_ptr = this->pieces[m.endingSquare.idx];
+    assert((start_ptr->getBelongsToWhite()) == whiteToMove);
+    zobrist_hash ^= ZOBRIST.pieces[whiteToMove][pieceNum(start_ptr->symbol())][m.startingSquare.to64()]; // remove movers
+    if (end_ptr) {
+        // remove captured piece, if any
+        zobrist_hash ^= ZOBRIST.pieces[end_ptr->getBelongsToWhite()][pieceNum(end_ptr->symbol())][m.endingSquare.to64()];
+    }
 	// update fullmove_clock (increments once Black's move completes a full move pair)
 	this->fullmove_clock += (!this->whiteToMove);
 
-	// Square rows/cols are 1-indexed, pieces is 0-indexed and rank-major (see getPiece)
-	PiecePtr &start_ptr = this->pieces[m.startingSquare.idx];
-	PiecePtr &end_ptr = this->pieces[m.endingSquare.idx];
+	
 	bool isCapture = (end_ptr != nullptr);
 	bool isPawnMove = (start_ptr != nullptr) && ((start_ptr->symbol() == 'p') || (start_ptr->symbol() == 'P'));
 	// the halfmove clock counts moves since the last capture/pawn move (for the 50-move rule), so it resets on either
 	this->halfmove_clock = (isCapture || isPawnMove) ? 0 : (this->halfmove_clock + 1);
 
-	// TODO: modify `Move` type to include castling as an option
+	// remove old castling rights
+    zobrist_hash ^= ZOBRIST.castling[this->castlingBits()];
 
-	// TODO: update whitePlayerState, blackPlayerState
+	// update whitePlayerState, blackPlayerState
 
 	// if rook on a file moved, queenside is gone
 	Square queensideRookSquare = whiteToMove ? "a1" : "a8";
 	Square KingsideRookSquare = whiteToMove ? "h1" : "h8";
-	if (m.endingSquare == Square("a1"))
+	if (m.endingSquare == Square("a1")) // a1 rook captured
 		whitePlayerState.canQueensideCastle = false;
-	if (m.endingSquare == Square("h1"))
+	if (m.endingSquare == Square("h1")) //h1 rook captured
 		whitePlayerState.canKingsideCastle = false;
-	if (m.endingSquare == Square("a8"))
+	if (m.endingSquare == Square("a8")) //a8 rook captured
 		blackPlayerState.canQueensideCastle = false;
-	if (m.endingSquare == Square("h8"))
+	if (m.endingSquare == Square("h8")) //h8 rook captured
 		blackPlayerState.canKingsideCastle = false;
 	PlayerState cur_state = whiteToMove ? whitePlayerState : blackPlayerState;
-
+    
 	// if king moved, both are gone
 	if (toupper(start_ptr->symbol()) == 'K')
 		cur_state = PlayerState(false, false);
@@ -197,6 +218,9 @@ void ChessBoard::processPsuedoLegalMove(Move m) {
 	} else {
 		blackPlayerState = cur_state;
 	}
+    // and add new ones
+    zobrist_hash ^= ZOBRIST.castling[this->castlingBits()];
+    
 	processCastling(m, start_ptr);
 	//if was an enpassant capture, must remove the pawn it en-passanted
 	// if it's a promotion
@@ -210,6 +234,12 @@ void ChessBoard::processPsuedoLegalMove(Move m) {
 
 	end_ptr = std::move(start_ptr);
 	this->whiteToMove = !this->whiteToMove;
+    
+    zobrist_hash ^= ZOBRIST.pieces[end_ptr->getBelongsToWhite()][pieceNum(end_ptr->symbol())][m.endingSquare.to64()]; // add to to-square
+    zobrist_hash ^= ZOBRIST.sideToMove;
+    //#ifndef NDEBUG
+    this->verifyZobrist();
+    //#endif
 }
 void ChessBoard::processMove(Move m) {
 	if (this->isMoveLegal(m)) {
@@ -709,4 +739,21 @@ std::string ChessBoard::debug_board() const {
 	for (const Move &move : previousMoves)
 		debugBoard += (" " + move.operator()());
 	return debugBoard;
+}
+
+uint64_t ChessBoard::zobristFromScratch() const {
+    uint64_t hash = ZOBRIST.castling[this->castlingBits()];
+    if (!whiteToMove) hash^=ZOBRIST.sideToMove;
+    for (int sqnum = 0; sqnum<64; ++sqnum) {
+        Square square = Square::from64(sqnum);
+        PiecePtr piece = this->getPiece(square);
+        if (piece) {
+            hash ^= ZOBRIST.pieces[piece->getBelongsToWhite()][pieceNum(piece->symbol())][sqnum];
+        }
+    }
+    if (enPassant_targetSquare) {
+        hash ^= ZOBRIST.enPassantFile[enPassant_targetSquare->file()];
+    }
+    return hash;
+    
 }

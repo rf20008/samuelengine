@@ -42,6 +42,13 @@ struct Square {
 		constexpr int rank() const { return idx >> 4; } // /16
 		constexpr int operator-(const Square &other) const { return int(idx) - int(other.idx); }
 		constexpr std::string operator()() const { return this->toString(); }
+        constexpr int to64() const { 
+            return (idx & 7) + ((idx >> 4) * 8); 
+        }
+          
+        static constexpr Square from64(int sq64) {
+            return Square((sq64 & 7) + ((sq64 >> 3) << 4));
+        }
 };
 
 constexpr int maxNorm(const Square &a, const Square &b) { return std::max(std::abs(a.rank() - b.rank()), std::abs(a.file() - b.file())); }

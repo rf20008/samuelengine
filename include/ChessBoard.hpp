@@ -1,11 +1,13 @@
 #ifndef CS3520_MINIPROJECT_BOARD
 #define CS3520_MINIPROJECT_BOARD
+
 // Pieces
+#include "Piece.hpp"
+
 #include "Bishop.hpp"
 #include "King.hpp"
 #include "Knight.hpp"
 #include "Pawn.hpp"
-#include "Piece.hpp"
 #include "Queen.hpp"
 #include "Rook.hpp"
 
@@ -18,8 +20,12 @@
 // Errors
 #include "Errors.hpp"
 
+// Zobrist
+#include "Zobrist.hpp"
+
 // from STL
 #include <memory>
+#include <cstdint>
 #include <optional>
 #include <set>
 #include <string>
@@ -35,6 +41,7 @@ template <typename T> inline std::set<T> &mergeSets(std::set<T> &A, const std::s
 
 class ChessBoard {
 	protected:
+        uint64_t zobrist_hash;
 		PiecePtr pieces[128]{};
 		bool whiteToMove;
 		PlayerState whitePlayerState;
@@ -60,7 +67,14 @@ class ChessBoard {
 		ChessBoard &operator=(ChessBoard &&other) = default;
 
 		// getters
-		PiecePtr getPiece(Square sq) const;
+		PiecePtr getPiece(Square sq) const {
+            // bounds check: an out-of-board square simply has no piece on it
+            if (!sq.isValid()) {
+                return PiecePtr();
+                //throw std::logic_error("Invalid square position (idx="+std::to_string(sq.idx)+")");
+            }
+            return pieces[sq.idx];
+        }
 		int get_halfmove_clock() const { return halfmove_clock; }
 		int get_fullmove_clock() const { return fullmove_clock; }
 		bool get_whiteToMove() const { return whiteToMove; }
@@ -114,5 +128,27 @@ class ChessBoard {
 		bool move_is_zeroing(const Move m) const;
 		int perft(int depth, int divideThreshold = 2147483647) const;
 		std::string debug_board() const;
+
+        // zobrist
+        constexpr int castlingBits() const {
+            int bit = 0;
+            bit |= (whitePlayerState.canKingsideCastle ? 1 : 0);
+            bit |= (whitePlayerState.canQueensideCastle ? 2 : 0);
+            bit |= (blackPlayerState.canKingsideCastle ? 4 : 0);
+            bit |= (blackPlayerState.canQueensideCastle ? 8 : 0);
+            return bit;
+        }   
+    
+        uint64_t zobristFromScratch() const;
+        void verifyZobrist() const {
+            uint64_t scratch = this->zobristFromScratch(); 
+            if (this->zobrist_hash != scratch) { 
+                throw std::logic_error( 
+                    "Zobrist mismatch: incremental=" + std::to_string(this->zobrist_hash) + 
+                    " scratch=" + std::to_string(scratch) + 
+                    " fen=" + this->fen()
+                ); 
+            } 
+        }
 };
 #endif
