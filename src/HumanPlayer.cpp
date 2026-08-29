@@ -34,8 +34,8 @@ bool tryParseMove(const std::string &raw, Move &out) {
 
 	// Square.row is the file and Square.col is the rank (see
 	// Square::Square(std::string) in Square.hpp), so file goes first.
-	Square start(fileFrom - 'a' + 1, rankFrom - '0');
-	Square end(fileTo - 'a' + 1, rankTo - '0');
+	Square start(fileFrom - 'a', rankFrom - '1');
+	Square end(fileTo - 'a', rankTo - '1');
 	out = Move{start, end};
 	return true;
 }
@@ -48,7 +48,6 @@ Move HumanPlayer::getMove(const ChessBoard &board) {
 	// that shared signature out from under Joshua's half of the work, we
 	// const_cast here -- getMove is only ever handed a real, mutable board
 	// by the caller, so this doesn't cost us any actual safety.
-	ChessBoard &mutableBoard = const_cast<ChessBoard &>(board);
 
 	Move move;
 	while (true) {
@@ -63,7 +62,7 @@ Move HumanPlayer::getMove(const ChessBoard &board) {
 			continue;
 		}
 
-		if (!mutableBoard.isMoveLegal(move)) {
+		if (!board.isMoveLegal(move)) {
 			std::cout << "That move isn't legal. Try again." << std::endl;
 			continue;
 		}
