@@ -720,7 +720,7 @@ bool ChessBoard::move_is_zeroing(const Move move) const {
 }
 
 // this function exists for testing purposes
-int ChessBoard::perft(int depth, int divideThreshold) const {
+int ChessBoard::perftCopy(int depth, int divideThreshold) const {
 	if (depth == 0)
 		return 1;
 	int perft_res = 0;
@@ -734,6 +734,26 @@ int ChessBoard::perft(int depth, int divideThreshold) const {
 			std::cout /*<< "DEPTH = " << depth << " PERFT DIVIDE: m="*/ << m.operator()() << " " << perft_child << std::endl;
 
 		perft_res += perft_child;
+	}
+	return perft_res;
+}
+
+// and so does this
+int ChessBoard::perft(int depth, int divideThreshold) {
+	if (depth == 0)
+		return 1;
+	int perft_res = 0;
+	std::set<Move> moves = this->allLegalMoves();
+	//if (depth==1) return moves.size();
+	for (Move m : moves) {
+        this->processMove(m);
+
+		int perft_child = this->perft(depth - 1, divideThreshold);
+		if (depth == divideThreshold)
+			std::cout /*<< "DEPTH = " << depth << " PERFT DIVIDE: m="*/ << m.operator()() << " " << perft_child << std::endl;
+
+		perft_res += perft_child;
+        this->undoMove();
 	}
 	return perft_res;
 }
@@ -841,7 +861,7 @@ void ChessBoard::undoMove(const UndoMove &u) {
     verifyZobrist();
 #endif
 }
-bool undoMove() {
+bool ChessBoard::undoMove() {
     if (history.empty()) return false;
     undoMove(history.back()); 
     history.pop_back();

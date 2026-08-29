@@ -128,7 +128,10 @@ class ChessBoard {
 		bool move_is_check(const Move move) const;
 		bool move_is_capture(const Move m) const;
 		bool move_is_zeroing(const Move m) const;
-		int perft(int depth, int divideThreshold = 2147483647) const;
+
+
+		int perftCopy(int depth, int divideThreshold = 2147483647) const;
+        int perft(int depth, int divideThreshold = 2147483647);
 		std::string debug_board() const;
 
         // zobrist
@@ -156,6 +159,6 @@ class ChessBoard {
         // undo move
         UndoMove buildUndo(const Move& m) const;
         void undoMove(const UndoMove& u);
-        void undoMove();
+        bool undoMove();
 };
 #endif
