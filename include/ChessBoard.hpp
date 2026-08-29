@@ -52,16 +52,15 @@ class ChessBoard {
 		int halfmove_clock;
 		int fullmove_clock;
 		std::optional<Square> enPassant_targetSquare;
-        std::vector<Move> previousMoves;
+        std::vector<UndoMove> history;
 
 	public:
 		// constructors
 
 		ChessBoard();						// create a chess board with starting position
 		ChessBoard(const std::string &fen); // create chess board from given FEN
-		ChessBoard(PiecePtr pieces[128], const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare, const std::vector<Move> &moves);
+		ChessBoard(PiecePtr pieces[128], bool whiteToMove, PlayerState whitePlayerState, PlayerState blackPlayerState, int halfmove_clock, int fullmove_clock, Square enPassant_targetSquare, std::vector<UndoMove> history = {});
 
-		ChessBoard(PiecePtr pieces[128], const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare);
 		// rule of 5
 		~ChessBoard() = default;
 		ChessBoard(const ChessBoard &other) = default;
@@ -84,7 +83,7 @@ class ChessBoard {
 		PlayerState getWhitePlayerState() const { return whitePlayerState; }
 		PlayerState getBlackPlayerState() const { return blackPlayerState; }
 		std::optional<Square> getEnPassantTargetSquare() const { return enPassant_targetSquare; }
-        std::vector<Move> getPreviousMoves() const { return previousMoves; }
+        std::vector<UndoMove> getHistory() const {return history;}
 
 		// chess engine methods
 		bool isMoveLegal(Move m) const; // return whether a move is legal

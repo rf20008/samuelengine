@@ -68,17 +68,13 @@ ChessBoard::ChessBoard(const std::string &fen) {
     this->zobrist_hash = this->zobristFromScratch();
 }
 
-ChessBoard::ChessBoard(PiecePtr pieces[128], const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare, const std::vector<Move> &moves) : whiteToMove(whiteToMove), whitePlayerState(whitePlayerState), blackPlayerState(blackPlayerState), halfmove_clock(halfmove_clock), fullmove_clock(fullmove_clock), enPassant_targetSquare(enPassant_targetSquare), previousMoves(moves) {
+ChessBoard::ChessBoard(PiecePtr pieces[128], bool whiteToMove, PlayerState whitePlayerState, PlayerState blackPlayerState, int halfmove_clock, int fullmove_clock, Square enPassant_targetSquare, std::vector<UndoMove> history) : whiteToMove(whiteToMove), whitePlayerState(whitePlayerState), blackPlayerState(blackPlayerState), halfmove_clock(halfmove_clock), fullmove_clock(fullmove_clock), enPassant_targetSquare(enPassant_targetSquare), history(std::move(history)) {
 	for (int i = 0; i < 128; ++i)
 		this->pieces[i] = pieces[i];
     this->zobrist_hash = this->zobristFromScratch();
 }
 
-ChessBoard::ChessBoard(PiecePtr pieces[128], const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare) : whiteToMove(whiteToMove), whitePlayerState(whitePlayerState), blackPlayerState(blackPlayerState), halfmove_clock(halfmove_clock), fullmove_clock(fullmove_clock), enPassant_targetSquare(enPassant_targetSquare), previousMoves({}) {
-	for (int i = 0; i < 128; ++i)
-		this->pieces[i] = pieces[i];
-    this->zobrist_hash = this->zobristFromScratch();
-}
+
 
 
 
@@ -166,7 +162,7 @@ void ChessBoard::processCastling(Move m, const PiecePtr &start_ptr) {
 }
 void ChessBoard::processPsuedoLegalMove(Move m) {
     
-	this->previousMoves.push_back(m);
+    this->history.push_back(this->buildUndo(m));
     
     // Square rows/cols are 1-indexed, pieces is 0-indexed and rank-major (see getPiece)
 	PiecePtr &start_ptr = this->pieces[m.startingSquare.idx];
@@ -745,8 +741,8 @@ int ChessBoard::perft(int depth, int divideThreshold) const {
 std::string ChessBoard::debug_board() const {
 	std::string debugBoard = this->fen();
 	debugBoard += " Moves:";
-	for (const Move &move : previousMoves)
-		debugBoard += (" " + move.operator()());
+	for (const UndoMove& undo : this->history)
+		debugBoard += (" " + undo.move.operator()());
 	return debugBoard;
 }
 
@@ -844,4 +840,10 @@ void ChessBoard::undoMove(const UndoMove &u) {
 #ifndef NDEBUG
     verifyZobrist();
 #endif
+}
+bool undoMove() {
+    if (history.empty()) return false;
+    undoMove(history.back()); 
+    history.pop_back();
+    return true;
 }
