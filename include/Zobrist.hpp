@@ -1,3 +1,5 @@
+#ifndef CS3520_MINIPROJECT_ZOBRIST
+#define CS3520_MINIPROJECT_ZOBRIST
 struct Zobrist {
     // [color][pieceType][square64] color 0=white 1=black, piece 0..5 = P,N,B,R,Q,K
     uint64_t pieces[2][6][64];
@@ -23,3 +25,5 @@ struct Zobrist {
             return (sq88 & 7) + ((sq88 >> 4) * 8);
     }
 };
+inline Zobrist ZOBRIST;
+#endif
