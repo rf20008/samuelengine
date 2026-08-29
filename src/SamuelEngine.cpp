@@ -91,7 +91,7 @@ int SamuelEngine::MoveOrderer::priorityOfMove(const Move &mov) const {
 }
 bool SamuelEngine::MoveOrderer::operator()(const Move &m1, const Move &m2) const { return priorityOfMove(m1) < priorityOfMove(m2); }
 
-const double (*SamuelEngine::getPosVal(const PiecePtr ptr) const)[8]{
+const double (*SamuelEngine::getPosVal(const PiecePtr ptr) const)[8] {
 	switch (toupper(ptr->symbol())) {
 	case 'K':
 		return king_pieceval;
