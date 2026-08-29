@@ -806,7 +806,7 @@ Square getRookTo(Square kingTo) {
             return Square("f8");
     if (kingTo == Square("c8"))
             return Square("d8");
-    return Square(0);
+    return Square(-1);
 }
 // undo move
 UndoMove ChessBoard::buildUndo(const Move &m) const {
