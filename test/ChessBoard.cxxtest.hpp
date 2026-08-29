@@ -333,7 +333,7 @@ class TestBoard : public CxxTest::TestSuite {
             // Replace with your engine's FEN initialization and move generation syntax:
             ChessBoard board("8/8/8/8/8/4k3/4p1K1/8 b - - 0 1"); 
         
-
+            TS_ASSERT(!board.isMoveLegal(Move("e2", "e1", '\0')));
             TS_ASSERT(board.isMoveLegal(Move("e2", "e1", 'q')));
             TS_ASSERT(board.isMoveLegal(Move("e2", "e1", 'r')));
             TS_ASSERT(board.isMoveLegal(Move("e2", "e1", 'n')));
