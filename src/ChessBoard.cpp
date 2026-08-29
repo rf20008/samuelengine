@@ -243,7 +243,7 @@ void ChessBoard::processMove(Move m) {
 	if (this->isMoveLegal(m)) {
 		this->processPsuedoLegalMove(m);
 	} else {
-		throw IllegalMoveError("You have attempted an illegal move from " + m.startingSquare.toString() + " to " + m.endingSquare.toString() + ".");
+		throw IllegalMoveError("You have attempted an illegal move from " + m.startingSquare.toString() + " to " + m.endingSquare.toString() + ". FEN: " + fen());
 	}
 }
 
@@ -342,7 +342,10 @@ std::set<Move> ChessBoard::wherePawnCouldMove(const Square origin) const {
 		if (!target.isValid())
 			continue;
 		PiecePtr p = getPiece(target);
-		if ((p && p->getBelongsToWhite() != attackerIsWhite) || (enPassant_targetSquare && target == *enPassant_targetSquare)) {
+		if ((p && p->getBelongsToWhite() != attackerIsWhite)) {
+            places.insert({origin, target});
+        }
+        if (enPassant_targetSquare && target == *enPassant_targetSquare) {
 			places.insert({origin, target, '\0', MoveType::EN_PASSANT});
 		}
 	}
@@ -371,7 +374,7 @@ std::set<Move> ChessBoard::wherePawnCouldMove(const Square origin) const {
 		bool isPromoRank = attackerIsWhite ? place.endingSquare.rank() == 7 : place.endingSquare.rank() == 0;
 		if (isPromoRank) {
 			for (char toPromote : {'B', 'R', 'N', 'Q'}) {
-				newPlaces.insert(Move{place.startingSquare, place.endingSquare, attackerIsWhite ? toPromote : static_cast<char>(std::tolower(toPromote))});
+				newPlaces.insert(Move{place.startingSquare, place.endingSquare, attackerIsWhite ? toPromote : static_cast<char>(std::tolower(toPromote)), place.type});
 			}
 		} else {
 			newPlaces.insert(place);
@@ -809,18 +812,20 @@ Square getRookTo(Square kingTo) {
 UndoMove ChessBoard::buildUndo(const Move &m) const {
     UndoMove u;
     u.move = m;
+    u.whiteToMove = whiteToMove;
     u.zobrist = zobrist_hash;
     u.whiteState = whitePlayerState;
     u.blackState = blackPlayerState;
     u.epTarget = enPassant_targetSquare;
     u.halfmove = halfmove_clock;
     u.fullmove = fullmove_clock;
+    u.originalPiece = getPiece(m.startingSquare);
     u.capturedPiece = getPiece(m.endingSquare);
     u.capturedSquare = m.endingSquare;
 
     // what is captured?
     if (m.type == MoveType::EN_PASSANT) {
-            u.capturedSquare = Square(m.endingSquare);
+            u.capturedSquare = m.endingSquare + ((u.originalPiece->symbol() == 'P') ? SOUTH : NORTH);
             u.capturedPiece = getPiece(u.capturedSquare);
     } else {
             u.capturedSquare = m.endingSquare;
@@ -829,7 +834,7 @@ UndoMove ChessBoard::buildUndo(const Move &m) const {
 
     if (m.type == MoveType::CASTLING) {
             u.rookFrom = getRookFrom(m.endingSquare);
-            u.rookTo = getRookTo(m.startingSquare);
+            u.rookTo = getRookTo(m.endingSquare);
     } else {
             u.rookFrom = Square(-1);
             u.rookTo = Square(-1);
@@ -840,22 +845,22 @@ UndoMove ChessBoard::buildUndo(const Move &m) const {
 
 void ChessBoard::undoMove(const UndoMove &u) {
     pieces[u.move.startingSquare.idx] = u.originalPiece;
-    if (u.capturedSquare.isValid()) {
-            pieces[u.move.endingSquare.idx] = nullptr;
-            pieces[u.capturedSquare.idx] = u.capturedPiece; // pawn behind
+    if (u.move.type == MoveType::EN_PASSANT) {
+        pieces[u.move.endingSquare.idx] = nullptr;
+        pieces[u.capturedSquare.idx] = u.capturedPiece; // pawn behind
     } else {
             pieces[u.move.endingSquare.idx] = u.capturedPiece; // nullptr if no capture
     }
-    if (u.rookFrom.isValid() && u.rookTo.isValid()) {
+    if (u.rookFrom.isValid() && u.rookTo.isValid() && u.move.type == MoveType::CASTLING) {
             pieces[u.rookFrom.idx] = pieces[u.rookTo.idx];
             pieces[u.rookTo.idx] = nullptr;
     }
+    whiteToMove = u.whiteToMove;
     whitePlayerState = u.whiteState;
     blackPlayerState = u.blackState;
     enPassant_targetSquare = u.epTarget;
     halfmove_clock = u.halfmove;
     fullmove_clock = u.fullmove;
-    whiteToMove = !whiteToMove;
     zobrist_hash = u.zobrist;
 #ifndef NDEBUG
     verifyZobrist();

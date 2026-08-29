@@ -184,6 +184,7 @@ class TestBoard : public CxxTest::TestSuite {
 		}
 		void testWhiteKingsideCastling() {
 			ChessBoard myBoard("6k1/8/8/8/8/8/8/4K2R w K - 0 1");
+            ChessBoard oldBoard = myBoard;
 			TS_ASSERT(myBoard.getWhitePlayerState().canKingsideCastle);
 			TS_ASSERT_EQUALS(myBoard.findKing(true), "e1");
 			TS_ASSERT(myBoard.isMoveLegal(Move("e1", "g1")));
@@ -414,5 +415,6 @@ class TestBoard : public CxxTest::TestSuite {
                 TS_ASSERT_EQUALS(b, start);
             }
         }
+        
 };
 
