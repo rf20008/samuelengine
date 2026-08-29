@@ -402,20 +402,16 @@ class TestBoard : public CxxTest::TestSuite {
         void testUndoIsPure() {
             ChessBoard start;
             std::string startFen = start.fen();
-            auto startPieces = start.pieces; // copy 128 array
         
-            auto moves = start.generateLegalMoves();
+            auto moves = start.allLegalMoves();
             for (auto &m : moves) {
                 ChessBoard b = start; // fresh copy
-                b.makeMove(m);
-                TS_ASSERT(b.history.size() == 1);
+                b.processMove(m);
+                TS_ASSERT_EQUALS(b.getHistory().size(), 1);
                 b.undoMove();
                 TS_ASSERT_EQUALS(b.fen(), startFen);
-                TS_ASSERT_EQUALS(b.history.size(), 0);
-                // full array compare
-                for (int i=0; i<128; i++) {
-                    TS_ASSERT_EQUALS(b.pieces[i], startPieces[i]);
-                }
+                TS_ASSERT_EQUALS(b.getHistory().size(), 0);
+                TS_ASSERT_EQUALS(b, start);
             }
         }
 };
