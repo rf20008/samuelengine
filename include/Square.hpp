@@ -13,33 +13,35 @@ inline constexpr std::array<std::string_view, 128> SQUARE_NAMES = {
 constexpr int Offset(int drank, int dfile) { return 16 * drank + dfile; }
 
 struct Square {
-    public:
-        int idx;
-        constexpr explicit Square(): idx(0) {}
-        constexpr explicit Square(int idx_) : idx(idx_) {}
-        // FILE, RANK order - your preference
-        constexpr Square(int file, int rank) : idx(rank*16 + file){}
-        constexpr Square(const std::string_view& s) : Square(s[0]-'a', s[1]-'1') {}
-        constexpr Square(const char* s) : Square(s[0]-'a', s[1]-'1') {}
-        constexpr std::string toString() const {
-            if (!isValid()) return "??";
-            return std::string(SQUARE_NAMES[idx]);
-        }
-        constexpr bool isValid() const {return (idx & 0x88) == 0;}
-        constexpr bool operator==(const Square& other) const {return idx==other.idx;}
-        constexpr std::strong_ordering operator<=>(const Square& o) const {
-            if (file() != o.file()) return file() <=> o.file();
-            return rank() <=> o.rank();
-        }
-        constexpr Square operator+(int other) const {return Square(idx + other);}
-        constexpr Square& operator+=(int off) {
-            idx += off;
-            return *this;
-        }
-        constexpr int file() const { return idx & 7; } // %8
-        constexpr int rank() const { return idx >> 4; } // /16
-        constexpr int operator-(const Square& other) const {return int(idx) - int(other.idx);}
-        constexpr std::string operator()() const {return this->toString();}
+	public:
+		int idx;
+		constexpr explicit Square() : idx(0) {}
+		constexpr explicit Square(int idx_) : idx(idx_) {}
+		// FILE, RANK order - your preference
+		constexpr Square(int file, int rank) : idx(rank * 16 + file) {}
+		constexpr Square(const std::string_view &s) : Square(s[0] - 'a', s[1] - '1') {}
+		constexpr Square(const char *s) : Square(s[0] - 'a', s[1] - '1') {}
+		constexpr std::string toString() const {
+			if (!isValid())
+				return "??";
+			return std::string(SQUARE_NAMES[idx]);
+		}
+		constexpr bool isValid() const { return (idx & 0x88) == 0; }
+		constexpr bool operator==(const Square &other) const { return idx == other.idx; }
+		constexpr std::strong_ordering operator<=>(const Square &o) const {
+			if (file() != o.file())
+				return file() <=> o.file();
+			return rank() <=> o.rank();
+		}
+		constexpr Square operator+(int other) const { return Square(idx + other); }
+		constexpr Square &operator+=(int off) {
+			idx += off;
+			return *this;
+		}
+		constexpr int file() const { return idx & 7; }	// %8
+		constexpr int rank() const { return idx >> 4; } // /16
+		constexpr int operator-(const Square &other) const { return int(idx) - int(other.idx); }
+		constexpr std::string operator()() const { return this->toString(); }
 };
 
 constexpr int maxNorm(const Square &a, const Square &b) { return std::max(std::abs(a.rank() - b.rank()), std::abs(a.file() - b.file())); }
