@@ -160,5 +160,18 @@ class ChessBoard {
         UndoMove buildUndo(const Move& m) const;
         void undoMove(const UndoMove& u);
         bool undoMove();
+
+
+        // equality
+        bool operator==(const ChessBoard& other) const {
+            for(int i=0;i<128;i++) if(pieces[i]!=other.pieces[i]) return false;
+            return (
+                whitePlayerState == other.whitePlayerState &&
+                blackPlayerState == other.blackPlayerState &&
+                whiteToMove == other.whiteToMove &&
+                halfmove_clock == other.halfmove_clock &&
+                enPassant_targetSquare == other.enPassant_targetSquare
+            );
+        }
 };
 #endif
