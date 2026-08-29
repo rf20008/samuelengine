@@ -165,11 +165,13 @@ void ChessBoard::processCastling(Move m, const PiecePtr &start_ptr) {
 	return;
 }
 void ChessBoard::processPsuedoLegalMove(Move m) {
+    
 	this->previousMoves.push_back(m);
     
     // Square rows/cols are 1-indexed, pieces is 0-indexed and rank-major (see getPiece)
 	PiecePtr &start_ptr = this->pieces[m.startingSquare.idx];
 	PiecePtr &end_ptr = this->pieces[m.endingSquare.idx];
+
     assert((start_ptr->getBelongsToWhite()) == whiteToMove);
     zobrist_hash ^= ZOBRIST.pieces[whiteToMove][pieceNum(start_ptr->symbol())][m.startingSquare.to64()]; // remove movers
     if (end_ptr) {
@@ -237,9 +239,9 @@ void ChessBoard::processPsuedoLegalMove(Move m) {
     
     zobrist_hash ^= ZOBRIST.pieces[end_ptr->getBelongsToWhite()][pieceNum(end_ptr->symbol())][m.endingSquare.to64()]; // add to to-square
     zobrist_hash ^= ZOBRIST.sideToMove;
-    //#ifndef NDEBUG
+    #ifndef NDEBUG
     this->verifyZobrist();
-    //#endif
+    #endif
 }
 void ChessBoard::processMove(Move m) {
 	if (this->isMoveLegal(m)) {
@@ -345,7 +347,7 @@ std::set<Move> ChessBoard::wherePawnCouldMove(const Square origin) const {
 			continue;
 		PiecePtr p = getPiece(target);
 		if ((p && p->getBelongsToWhite() != attackerIsWhite) || (enPassant_targetSquare && target == *enPassant_targetSquare)) {
-			places.insert({origin, target});
+			places.insert({origin, target, '\0', MoveType::EN_PASSANT});
 		}
 	}
 
@@ -357,7 +359,14 @@ std::set<Move> ChessBoard::wherePawnCouldMove(const Square origin) const {
 			break;
 		if (getPiece(target))
 			break; // blocked
-		places.insert({origin, target});
+
+		if (i==1) {
+            places.insert({origin, target});
+        }
+        else {
+            assert(i==2);
+            places.insert({origin, target, '\0', MoveType::DOUBLE_PAWN_PUSH});
+        }
 	}
 
 	// promotion
@@ -756,4 +765,56 @@ uint64_t ChessBoard::zobristFromScratch() const {
     }
     return hash;
     
+}
+Square getRookFrom(Square kingTo) {
+    if (kingTo == Square("g1")) return Square("h1");
+    if (kingTo == Square("c1")) return Square("a1");
+    if (kingTo == Square("g8")) return Square("h8");
+    if (kingTo == Square("c8")) return Square("a8");
+    return Square(-1); // not a castle
+}
+
+Square getRookTo(Square kingTo) {
+    if (kingTo == Square("g1")) return Square("f1");
+    if (kingTo == Square("c1")) return Square("d1");
+    if (kingTo == Square("g8")) return Square("f8");
+    if (kingTo == Square("c8")) return Square("d8");
+    return Square(0);
+}
+// undo move
+UndoMove ChessBoard::buildUndo(const Move& m) const {
+    UndoMove u;
+    u.move = m;
+    u.zobrist = zobrist_hash;
+    u.whiteState = whitePlayerState;
+    u.blackState = blackPlayerState;
+    u.epTarget = enPassant_targetSquare;
+    u.halfmove = halfmove_clock;
+    u.fullmove = fullmove_clock;
+    u.capturedPiece = getPiece(m.endingSquare);
+    u.capturedSquare = m.endingSquare;
+
+    // what is captured?
+    if (m.type == MoveType::EN_PASSANT) {
+        u.capturedSquare = Square(m.endingSquare);
+        u.capturedPiece = getPiece(u.capturedSquare);
+    } else {
+        u.capturedSquare = m.endingSquare;
+        u.capturedPiece = getPiece(m.endingSquare);
+    }
+
+    if (m.type == MoveType::CASTLING) {
+        u.rookFrom = getRookFrom(m.endingSquare);
+        u.rookTo = getRookTo(m.startingSquare);
+    }
+    else {
+        u.rookFrom = Square(-1);
+        u.rookTo = Square(-1);
+    }
+
+    return u;
+}
+
+void ChessBoard::undoMove() const {
+    throw NotImplementedError("void ChessBoard::undoMove() const is not implemented yet!");
 }

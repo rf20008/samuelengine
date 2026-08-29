@@ -23,6 +23,9 @@
 // Zobrist
 #include "Zobrist.hpp"
 
+// Undo Move
+#include "UndoMove.hpp"
+
 // from STL
 #include <memory>
 #include <cstdint>
@@ -150,5 +153,9 @@ class ChessBoard {
                 ); 
             } 
         }
+
+        // undo move
+        UndoMove buildUndo(const Move& m) const;
+        void undoMove() const;
 };
 #endif
