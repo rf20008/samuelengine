@@ -314,12 +314,12 @@ std::set<Move> ChessBoard::whereKingCouldMove(const Square origin) const {
 		// check kingside castling
 		if (blackPlayerState.canKingsideCastle && !hasPiece("f8") && !hasPiece("g8")) {
 			if (!squareAttackedBy("f8", true))
-				places.insert({origin, Square("g8")});
+				places.insert({origin, Square("g8"), '\0', MoveType::CASTLING});
 		}
 		// check queenside castling
 		if (blackPlayerState.canQueensideCastle && !hasPiece("b8") && !hasPiece("c8") && !hasPiece("d8")) {
 			if (!squareAttackedBy("d8", true))
-				places.insert({origin, Square("c8")});
+				places.insert({origin, Square("c8"), '\0', MoveType::CASTLING});
 		}
 	}
 	//for (const Square& place : places) cout<<(place.operator()())<<endl;
@@ -662,9 +662,9 @@ std::set<Move> ChessBoard::allLegalMoves() const {
 	// this function is necessary for the engine
 	// it can call allLegalMoves for every piece it owns and splice them together into one set, then return that set
 	std::set<Move> legalMoves;
-	for (size_t rank = 0; rank < BOARD_SIZE; ++rank) {
-		for (size_t file = 0; file < BOARD_SIZE; ++file) {
-			std::set<Move> movesFromSquare = allLegalMoves(Square(rank, file));
+	for (size_t file = 0; file < BOARD_SIZE; ++file) {
+		for (size_t rank = 0; rank < BOARD_SIZE; ++rank) {
+			std::set<Move> movesFromSquare = allLegalMoves(Square(file, rank));
 			for (Move move : movesFromSquare) {
 				legalMoves.insert(move);
 			}
