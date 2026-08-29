@@ -210,6 +210,7 @@ void ChessBoard::processPsuedoLegalMove(Move m) {
 
 	end_ptr = std::move(start_ptr);
 	this->whiteToMove = !this->whiteToMove;
+    assert(zobrist_hash == this->zobristFromScratch());
 }
 void ChessBoard::processMove(Move m) {
 	if (this->isMoveLegal(m)) {
@@ -709,4 +710,21 @@ std::string ChessBoard::debug_board() const {
 	for (const Move &move : previousMoves)
 		debugBoard += (" " + move.operator()());
 	return debugBoard;
+}
+
+uint64_t zobristFromScratch() const {
+    uint64_t hash = ZOBRIST.castlingBits[this->castlingBits()];
+    if (!whiteToMove) hash^=ZOBRIST.sideToMove;
+    for (int sqnum = 0; sqnum<64; ++sqnum) {
+        Square square = Square.from64(sqnum);
+        PiecePtr piece = this->getPiece(square);
+        if (piece) {
+            hash ^= ZOBRIST[piece->getBelongsToWhite()][pieceNum(piece->symbol())][sqnum];
+        }
+    }
+    if (enPassantSquare) {
+        hash ^= ZOBRIST.enPassant[enPassantSquare.file()];
+    }
+    return hash;
+    
 }

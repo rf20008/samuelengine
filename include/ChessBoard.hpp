@@ -1,11 +1,13 @@
 #ifndef CS3520_MINIPROJECT_BOARD
 #define CS3520_MINIPROJECT_BOARD
+
 // Pieces
+#include "Piece.hpp"
+
 #include "Bishop.hpp"
 #include "King.hpp"
 #include "Knight.hpp"
 #include "Pawn.hpp"
-#include "Piece.hpp"
 #include "Queen.hpp"
 #include "Rook.hpp"
 
@@ -18,8 +20,12 @@
 // Errors
 #include "Errors.hpp"
 
+// Zobrist
+#include "Zobrist.hpp"
+
 // from STL
 #include <memory>
+#include <cstdint>
 #include <optional>
 #include <set>
 #include <string>
@@ -35,6 +41,7 @@ template <typename T> inline std::set<T> &mergeSets(std::set<T> &A, const std::s
 
 class ChessBoard {
 	protected:
+        uint64_t zobrist_hash;
 		PiecePtr pieces[128]{};
 		bool whiteToMove;
 		PlayerState whitePlayerState;
@@ -114,5 +121,17 @@ class ChessBoard {
 		bool move_is_zeroing(const Move m) const;
 		int perft(int depth, int divideThreshold = 2147483647) const;
 		std::string debug_board() const;
+
+        // zobrist
+        constexpr int castlingBits() const {
+            int bit = 0;
+            bit |= (whitePlayerState.canKingsideCastle ? 1 : 0);
+            bit |= (whitePlayerState.canQueensideCastle ? 2 : 0);
+            bit |= (blackPlayerState.canKingsideCastle ? 4 : 0);
+            bit |= (blackPlayerState.canQueensideCastle ? 8 : 0);
+            return bit;
+        }   
+    
+        ll zobristFromScratch() const;
 };
 #endif
