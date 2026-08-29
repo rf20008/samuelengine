@@ -65,16 +65,19 @@ ChessBoard::ChessBoard(const std::string &fen) {
 	if (fullmove_clock < 1) {
 		throw std::invalid_argument("fullmove clock too low");
 	}
+    this->zobrist_hash = this->zobristFromScratch();
 }
 
 ChessBoard::ChessBoard(PiecePtr pieces[128], const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare, const std::vector<Move> &moves) : whiteToMove(whiteToMove), whitePlayerState(whitePlayerState), blackPlayerState(blackPlayerState), halfmove_clock(halfmove_clock), fullmove_clock(fullmove_clock), enPassant_targetSquare(enPassant_targetSquare), previousMoves(moves) {
 	for (int i = 0; i < 128; ++i)
 		this->pieces[i] = pieces[i];
+    this->zobrist_hash = this->zobristFromScratch();
 }
 
 ChessBoard::ChessBoard(PiecePtr pieces[128], const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare) : whiteToMove(whiteToMove), whitePlayerState(whitePlayerState), blackPlayerState(blackPlayerState), halfmove_clock(halfmove_clock), fullmove_clock(fullmove_clock), enPassant_targetSquare(enPassant_targetSquare), previousMoves({}) {
 	for (int i = 0; i < 128; ++i)
 		this->pieces[i] = pieces[i];
+    this->zobrist_hash = this->zobristFromScratch();
 }
 
 PiecePtr ChessBoard::getPiece(Square sq) const {
