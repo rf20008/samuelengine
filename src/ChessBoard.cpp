@@ -592,6 +592,13 @@ bool ChessBoard::hasInsufficientMaterial() const {
 }
 GameStatus ChessBoard::getStatus() const {
 	// return the status of the game (whether white won, black won, it's a draw, or game is still going on)
+    if (halfmove_clock >= 100) {
+		return GameStatus::DRAW;
+	} else if (this->hasInsufficientMaterial()) {
+		return GameStatus::DRAW;
+	}else if (this->is_threefold_repetition()) {
+        return GameStatus::DRAW;
+    }
     auto legalMoves = this->allLegalMoves();
     bool inCheck = this->isInCheck(whiteToMove);
 	if (legalMoves.empty()) { // the game is over, checkmate
@@ -606,10 +613,6 @@ GameStatus ChessBoard::getStatus() const {
         else {
             return GameStatus::DRAW;
         }
-	} else if (halfmove_clock >= 100) {
-		return GameStatus::DRAW;
-	} else if (this->hasInsufficientMaterial()) {
-		return GameStatus::DRAW;
 	} else {
 		if (whiteToMove) {
 			return GameStatus::STILL_GOING_WHITE_TURN;
@@ -872,4 +875,29 @@ bool ChessBoard::undoMove() {
     undoMove(history.back()); 
     history.pop_back();
     return true;
+}
+
+bool ChessBoard::is_threefold_repetition() const {
+    if (history.empty()) return false;
+
+    uint64_t current_hash = zobrist_hash;
+    int match_count = 1; // current mvoe is NOT the first in history
+
+    // Iterate backward through the history
+    for (auto it = history.rbegin(); it != history.rend(); ++it) {
+        if (it->zobrist == current_hash) {
+            match_count++;
+            if (match_count >= 3) {
+                return true;
+            }
+        }
+
+        // Irreversible moves (pawn moves or captures) reset the halfmove clock.
+        // Positions before an irreversible move cannot be repeated, so we stop searching.
+        if (it->halfmove == 0) {
+            break;
+        }
+    }
+
+    return false;
 }

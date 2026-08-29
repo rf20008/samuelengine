@@ -77,6 +77,7 @@ class ChessBoard {
             }
             return pieces[sq.idx];
         }
+        uint64_t getZobrist() const {return zobrist_hash;}
 		int get_halfmove_clock() const { return halfmove_clock; }
 		int get_fullmove_clock() const { return fullmove_clock; }
 		bool get_whiteToMove() const { return whiteToMove; }
@@ -95,6 +96,7 @@ class ChessBoard {
 		bool isInCheck(bool player) const;
 		bool isInCheckmate() const;
 		bool isInStalemate() const;
+        bool is_threefold_repetition() const;
 		bool hasInsufficientMaterial() const;
 		Square findKing(bool belongsToWhite) const;
 		GameStatus getStatus() const;

@@ -415,6 +415,38 @@ class TestBoard : public CxxTest::TestSuite {
                 TS_ASSERT_EQUALS(b, start);
             }
         }
-        
+        void testThreefoldRepetition() {
+            // --- Loop 1 ---
+            ChessBoard board;
+            uint64_t initial_zobrist = board.getZobrist();
+            TS_ASSERT(!board.is_threefold_repetition());
+            board.processMove(Move(Square("g1"), Square("f3")));
+            board.processMove(Move(Square("b8"), Square("c6")));
+            board.processMove(Move(Square("f3"), Square("g1")));
+            board.processMove(Move(Square("c6"), Square("b8")));
+            TS_ASSERT_EQUALS(board.getZobrist(), initial_zobrist);
+            
+            // We are back at the starting position (Occurrence #2)
+            TS_ASSERT(!board.is_threefold_repetition()); // Only 2 occurrences total (Start + Loop 1)
+
+            // --- Loop 2 ---
+            board.processMove(Move(Square("g1"), Square("f3")));
+            board.processMove(Move(Square("b8"), Square("c6")));
+            board.processMove(Move(Square("f3"), Square("g1")));
+            board.processMove(Move(Square("c6"), Square("b8")));
+            TS_ASSERT_EQUALS(board.getZobrist(), initial_zobrist);
+            TSM_ASSERT("threefold repetition failed", board.is_threefold_repetition()); // Caught it!
+            TS_ASSERT(board.getStatus() == GameStatus::DRAW);
+            TS_ASSERT(isGameOver(board.getStatus()));
+            board.processMove(Move(Square("g1"), Square("f3")));
+            board.processMove(Move(Square("b8"), Square("c6")));
+            board.processMove(Move(Square("f3"), Square("g1")));
+            board.processMove(Move(Square("c6"), Square("b8")));
+            TSM_ASSERT_EQUALS("fourfold repetition failed", board.getZobrist(), initial_zobrist);
+            TS_ASSERT(board.is_threefold_repetition()); // Caught it!
+            TS_ASSERT(board.getStatus() == GameStatus::DRAW);
+            TS_ASSERT(isGameOver(board.getStatus()));
+        }
 };
+
 
