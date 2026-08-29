@@ -52,7 +52,7 @@ class ChessBoard {
 		int halfmove_clock;
 		int fullmove_clock;
 		std::optional<Square> enPassant_targetSquare;
-		std::vector<Move> previousMoves;
+        std::vector<Move> previousMoves;
 
 	public:
 		// constructors
@@ -84,7 +84,7 @@ class ChessBoard {
 		PlayerState getWhitePlayerState() const { return whitePlayerState; }
 		PlayerState getBlackPlayerState() const { return blackPlayerState; }
 		std::optional<Square> getEnPassantTargetSquare() const { return enPassant_targetSquare; }
-		std::vector<Move> getPreviousMoves() const { return previousMoves; }
+        std::vector<Move> getPreviousMoves() const { return previousMoves; }
 
 		// chess engine methods
 		bool isMoveLegal(Move m) const; // return whether a move is legal
@@ -156,6 +156,7 @@ class ChessBoard {
 
         // undo move
         UndoMove buildUndo(const Move& m) const;
+        void undoMove(const UndoMove& u);
         void undoMove();
 };
 #endif

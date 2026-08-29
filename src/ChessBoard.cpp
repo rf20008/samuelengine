@@ -823,12 +823,12 @@ UndoMove ChessBoard::buildUndo(const Move &m) const {
 }
 
 void ChessBoard::undoMove(const UndoMove &u) {
-    pieces[u.move.startingSquare] = u.originalPiece;
+    pieces[u.move.startingSquare.idx] = u.originalPiece;
     if (u.capturedSquare.isValid()) {
             pieces[u.move.endingSquare.idx] = nullptr;
-            pieces[u.capturedSquare.idx] = u.captured; // pawn behind
+            pieces[u.capturedSquare.idx] = u.capturedPiece; // pawn behind
     } else {
-            pieces[u.move.endingSquare.idx] = u.captured; // nullptr if no capture
+            pieces[u.move.endingSquare.idx] = u.capturedPiece; // nullptr if no capture
     }
     if (u.rookFrom.isValid() && u.rookTo.isValid()) {
             pieces[u.rookFrom.idx] = pieces[u.rookTo.idx];
