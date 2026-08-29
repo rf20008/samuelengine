@@ -284,6 +284,7 @@ std::set<Move> ChessBoard::whereKingCouldMove(const Square origin) const {
 	bool attackerIsWhite = king->getBelongsToWhite();
 
 	std::set<Move> places;
+
 	for (int off : kingOffsets) {
 		Square target = origin + off;
 		if (!target.isValid())
@@ -299,13 +300,13 @@ std::set<Move> ChessBoard::whereKingCouldMove(const Square origin) const {
 		// if white can kingside castle, and f1 and g1 are open
 		if (whitePlayerState.canKingsideCastle && !hasPiece("f1") && !hasPiece("g1")) {
 			if (!squareAttackedBy("f1", false))
-				places.insert({origin, Square("g1")});
+				places.insert({origin, Square("g1"), '\0', MoveType::CASTLING});
 		}
 
 		// check queenside castling
 		if (whitePlayerState.canQueensideCastle && !hasPiece("b1") && !hasPiece("c1") && !hasPiece("d1")) {
 			if (!squareAttackedBy("d1", false))
-				places.insert({origin, Square("c1")});
+				places.insert({origin, Square("c1"), '\0', MoveType::CASTLING});
 		}
 	}
 
@@ -661,9 +662,9 @@ std::set<Move> ChessBoard::allLegalMoves() const {
 	// this function is necessary for the engine
 	// it can call allLegalMoves for every piece it owns and splice them together into one set, then return that set
 	std::set<Move> legalMoves;
-	for (size_t row = 0; row < BOARD_SIZE; ++row) {
-		for (size_t col = 0; col < BOARD_SIZE; ++col) {
-			std::set<Move> movesFromSquare = allLegalMoves(Square(row, col));
+	for (size_t rank = 0; rank < BOARD_SIZE; ++rank) {
+		for (size_t file = 0; file < BOARD_SIZE; ++file) {
+			std::set<Move> movesFromSquare = allLegalMoves(Square(rank, file));
 			for (Move move : movesFromSquare) {
 				legalMoves.insert(move);
 			}
@@ -819,7 +820,7 @@ UndoMove ChessBoard::buildUndo(const Move &m) const {
     u.epTarget = enPassant_targetSquare;
     u.halfmove = halfmove_clock;
     u.fullmove = fullmove_clock;
-    u.originalPiece = getPiece(m.startingSquare);
+    u.originalPiece = getPieceC(getPiece(m.startingSquare)->symbol());
     u.capturedPiece = getPiece(m.endingSquare);
     u.capturedSquare = m.endingSquare;
 
