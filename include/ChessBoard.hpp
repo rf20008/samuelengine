@@ -31,15 +31,12 @@
 #include <cstdint>
 #include <cassert>
 #include <optional>
-#include <set>
 #include <string>
 #include <vector>
 
-template <typename T> inline std::set<T> &mergeSets(std::set<T> &A, const std::set<T> &B) {
+template <typename T> inline std::vector<T> &mergeSets(std::vector<T> &A, const std::vector<T> &B) {
 	// return the set, consisting of adding all the items in B to A
-	for (const T &item : B) {
-		A.insert(item);
-	}
+    A.insert(A.end(), B.begin(), B.end());
 	return A;
 }
 
@@ -123,17 +120,17 @@ class ChessBoard {
 		bool squareAttackedBy(Square target, bool attackerIsWhite) const;
 		bool isSlidingAttacker(Square from, int dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) const;
 
-		std::set<Move> whereKingCouldMove(const Square origin) const;
-		std::set<Move> wherePawnCouldMove(const Square origin) const;
-		std::set<Move> whereKnightCouldMove(const Square origin) const;
-		std::set<Move> isSlidingAttacker(const Square from, const int dir, bool attackerIsWhite) const;
-		std::set<Move> whereBishopCouldMove(const Square origin) const;
-		std::set<Move> whereRookCouldMove(const Square origin) const;
-		std::set<Move> whereQueenCouldMove(const Square origin) const;
-		std::set<Move> allPseudoLegalDestinations(const Square origin) const;
+		std::vector<Move> whereKingCouldMove(const Square origin) const;
+		std::vector<Move> wherePawnCouldMove(const Square origin) const;
+		std::vector<Move> whereKnightCouldMove(const Square origin) const;
+		std::vector<Move> isSlidingAttacker(const Square from, const int dir, bool attackerIsWhite) const;
+		std::vector<Move> whereBishopCouldMove(const Square origin) const;
+		std::vector<Move> whereRookCouldMove(const Square origin) const;
+		std::vector<Move> whereQueenCouldMove(const Square origin) const;
+		std::vector<Move> allPseudoLegalDestinations(const Square origin) const;
 
-		std::set<Move> allLegalMoves(const Square sq);
-		std::set<Move> allLegalMoves();
+		std::vector<Move> allLegalMoves(const Square sq);
+		std::vector<Move> allLegalMoves();
 
 		friend std::ostream &operator<<(std::ostream &os, const ChessBoard &board);
 

@@ -15,7 +15,7 @@
 #include <string>
 
 namespace {
-const double ENGINE_TIME_LIMIT_SECONDS = 0.1;
+const double ENGINE_TIME_LIMIT_SECONDS = 1.0;
 
 std::unique_ptr<AbstractPlayer> makePlayer(const std::string &colorName) {
 	while (true) {
@@ -31,7 +31,7 @@ std::unique_ptr<AbstractPlayer> makePlayer(const std::string &colorName) {
 		case 'h':
 			return std::make_unique<HumanPlayer>();
 		case 'e':
-			return std::make_unique<SamuelEngine>(ENGINE_TIME_LIMIT_SECONDS);
+			return std::make_unique<SamuelEngine>(ENGINE_TIME_LIMIT_SECONDS, true);
 		default:
 			std::cout << "Please enter 'h' or 'e'." << std::endl;
 		}
