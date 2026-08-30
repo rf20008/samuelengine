@@ -107,7 +107,7 @@ LDFLAGS_PRF:=$(LDFLAGS_BASE) $(LDFLAGS_EXTRA_PRF)
 ## rules
 .PHONY: all clean doc exe exe_dbg exe_cov exe_prf tests tests_dbg tests_cov tests_prf run run_dbg run_cov run_prf run-tests run-tests_dbg run-tests_cov run-tests_prf
 
-all: doc exe exe_dbg exe_cov exe_prf tests tests_dbg tests_cov tests_prf
+all: doc exe exe_dbg exe_cov exe_prf tests tests_dbg tests_cov tests_prf bench
 
 
 
@@ -279,3 +279,10 @@ run-test_%: bin/test_%
 
 .PRECIOUS: bin/test_%
 .SECONDARY:
+## benchmark
+bin/bench: benchmark/perft_bench.cpp $(OBJECT_FILES_REL)
+	mkdir -p $(dir $@)
+	g++ $^ $(CXXFLAGS_REL) -o $@
+
+bench: bin/bench
+	./bin/bench

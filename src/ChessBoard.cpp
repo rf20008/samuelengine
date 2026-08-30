@@ -68,17 +68,13 @@ ChessBoard::ChessBoard(const std::string &fen) {
     this->zobrist_hash = this->zobristFromScratch();
 }
 
-ChessBoard::ChessBoard(PiecePtr pieces[128], const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare, const std::vector<Move> &moves) : whiteToMove(whiteToMove), whitePlayerState(whitePlayerState), blackPlayerState(blackPlayerState), halfmove_clock(halfmove_clock), fullmove_clock(fullmove_clock), enPassant_targetSquare(enPassant_targetSquare), previousMoves(moves) {
+ChessBoard::ChessBoard(PiecePtr pieces[128], bool whiteToMove, PlayerState whitePlayerState, PlayerState blackPlayerState, int halfmove_clock, int fullmove_clock, Square enPassant_targetSquare, std::vector<UndoMove> history) : whiteToMove(whiteToMove), whitePlayerState(whitePlayerState), blackPlayerState(blackPlayerState), halfmove_clock(halfmove_clock), fullmove_clock(fullmove_clock), enPassant_targetSquare(enPassant_targetSquare), history(std::move(history)) {
 	for (int i = 0; i < 128; ++i)
 		this->pieces[i] = pieces[i];
     this->zobrist_hash = this->zobristFromScratch();
 }
 
-ChessBoard::ChessBoard(PiecePtr pieces[128], const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare) : whiteToMove(whiteToMove), whitePlayerState(whitePlayerState), blackPlayerState(blackPlayerState), halfmove_clock(halfmove_clock), fullmove_clock(fullmove_clock), enPassant_targetSquare(enPassant_targetSquare), previousMoves({}) {
-	for (int i = 0; i < 128; ++i)
-		this->pieces[i] = pieces[i];
-    this->zobrist_hash = this->zobristFromScratch();
-}
+
 
 
 
@@ -165,11 +161,13 @@ void ChessBoard::processCastling(Move m, const PiecePtr &start_ptr) {
 	return;
 }
 void ChessBoard::processPsuedoLegalMove(Move m) {
-	this->previousMoves.push_back(m);
+    
+    this->history.push_back(this->buildUndo(m));
     
     // Square rows/cols are 1-indexed, pieces is 0-indexed and rank-major (see getPiece)
 	PiecePtr &start_ptr = this->pieces[m.startingSquare.idx];
 	PiecePtr &end_ptr = this->pieces[m.endingSquare.idx];
+
     assert((start_ptr->getBelongsToWhite()) == whiteToMove);
     zobrist_hash ^= ZOBRIST.pieces[whiteToMove][pieceNum(start_ptr->symbol())][m.startingSquare.to64()]; // remove movers
     if (end_ptr) {
@@ -237,15 +235,15 @@ void ChessBoard::processPsuedoLegalMove(Move m) {
     
     zobrist_hash ^= ZOBRIST.pieces[end_ptr->getBelongsToWhite()][pieceNum(end_ptr->symbol())][m.endingSquare.to64()]; // add to to-square
     zobrist_hash ^= ZOBRIST.sideToMove;
-    //#ifndef NDEBUG
+    #ifndef NDEBUG
     this->verifyZobrist();
-    //#endif
+    #endif
 }
 void ChessBoard::processMove(Move m) {
 	if (this->isMoveLegal(m)) {
 		this->processPsuedoLegalMove(m);
 	} else {
-		throw IllegalMoveError("You have attempted an illegal move from " + m.startingSquare.toString() + " to " + m.endingSquare.toString() + ".");
+		throw IllegalMoveError("You have attempted an illegal move from " + m.startingSquare.toString() + " to " + m.endingSquare.toString() + ". FEN: " + fen());
 	}
 }
 
@@ -286,6 +284,7 @@ std::set<Move> ChessBoard::whereKingCouldMove(const Square origin) const {
 	bool attackerIsWhite = king->getBelongsToWhite();
 
 	std::set<Move> places;
+
 	for (int off : kingOffsets) {
 		Square target = origin + off;
 		if (!target.isValid())
@@ -301,13 +300,13 @@ std::set<Move> ChessBoard::whereKingCouldMove(const Square origin) const {
 		// if white can kingside castle, and f1 and g1 are open
 		if (whitePlayerState.canKingsideCastle && !hasPiece("f1") && !hasPiece("g1")) {
 			if (!squareAttackedBy("f1", false))
-				places.insert({origin, Square("g1")});
+				places.insert({origin, Square("g1"), '\0', MoveType::CASTLING});
 		}
 
 		// check queenside castling
 		if (whitePlayerState.canQueensideCastle && !hasPiece("b1") && !hasPiece("c1") && !hasPiece("d1")) {
 			if (!squareAttackedBy("d1", false))
-				places.insert({origin, Square("c1")});
+				places.insert({origin, Square("c1"), '\0', MoveType::CASTLING});
 		}
 	}
 
@@ -315,12 +314,12 @@ std::set<Move> ChessBoard::whereKingCouldMove(const Square origin) const {
 		// check kingside castling
 		if (blackPlayerState.canKingsideCastle && !hasPiece("f8") && !hasPiece("g8")) {
 			if (!squareAttackedBy("f8", true))
-				places.insert({origin, Square("g8")});
+				places.insert({origin, Square("g8"), '\0', MoveType::CASTLING});
 		}
 		// check queenside castling
 		if (blackPlayerState.canQueensideCastle && !hasPiece("b8") && !hasPiece("c8") && !hasPiece("d8")) {
 			if (!squareAttackedBy("d8", true))
-				places.insert({origin, Square("c8")});
+				places.insert({origin, Square("c8"), '\0', MoveType::CASTLING});
 		}
 	}
 	//for (const Square& place : places) cout<<(place.operator()())<<endl;
@@ -344,8 +343,11 @@ std::set<Move> ChessBoard::wherePawnCouldMove(const Square origin) const {
 		if (!target.isValid())
 			continue;
 		PiecePtr p = getPiece(target);
-		if ((p && p->getBelongsToWhite() != attackerIsWhite) || (enPassant_targetSquare && target == *enPassant_targetSquare)) {
-			places.insert({origin, target});
+		if ((p && p->getBelongsToWhite() != attackerIsWhite)) {
+            places.insert({origin, target});
+        }
+        if (enPassant_targetSquare && target == *enPassant_targetSquare) {
+			places.insert({origin, target, '\0', MoveType::EN_PASSANT});
 		}
 	}
 
@@ -357,7 +359,14 @@ std::set<Move> ChessBoard::wherePawnCouldMove(const Square origin) const {
 			break;
 		if (getPiece(target))
 			break; // blocked
-		places.insert({origin, target});
+
+		if (i==1) {
+            places.insert({origin, target});
+        }
+        else {
+            assert(i==2);
+            places.insert({origin, target, '\0', MoveType::DOUBLE_PAWN_PUSH});
+        }
 	}
 
 	// promotion
@@ -366,7 +375,7 @@ std::set<Move> ChessBoard::wherePawnCouldMove(const Square origin) const {
 		bool isPromoRank = attackerIsWhite ? place.endingSquare.rank() == 7 : place.endingSquare.rank() == 0;
 		if (isPromoRank) {
 			for (char toPromote : {'B', 'R', 'N', 'Q'}) {
-				newPlaces.insert(Move{place.startingSquare, place.endingSquare, attackerIsWhite ? toPromote : static_cast<char>(std::tolower(toPromote))});
+				newPlaces.insert(Move{place.startingSquare, place.endingSquare, attackerIsWhite ? toPromote : static_cast<char>(std::tolower(toPromote)), place.type});
 			}
 		} else {
 			newPlaces.insert(place);
@@ -583,6 +592,13 @@ bool ChessBoard::hasInsufficientMaterial() const {
 }
 GameStatus ChessBoard::getStatus() const {
 	// return the status of the game (whether white won, black won, it's a draw, or game is still going on)
+    if (halfmove_clock >= 100) {
+		return GameStatus::DRAW;
+	} else if (this->hasInsufficientMaterial()) {
+		return GameStatus::DRAW;
+	}else if (this->is_threefold_repetition()) {
+        return GameStatus::DRAW;
+    }
     auto legalMoves = this->allLegalMoves();
     bool inCheck = this->isInCheck(whiteToMove);
 	if (legalMoves.empty()) { // the game is over, checkmate
@@ -597,10 +613,6 @@ GameStatus ChessBoard::getStatus() const {
         else {
             return GameStatus::DRAW;
         }
-	} else if (halfmove_clock >= 100) {
-		return GameStatus::DRAW;
-	} else if (this->hasInsufficientMaterial()) {
-		return GameStatus::DRAW;
 	} else {
 		if (whiteToMove) {
 			return GameStatus::STILL_GOING_WHITE_TURN;
@@ -653,9 +665,9 @@ std::set<Move> ChessBoard::allLegalMoves() const {
 	// this function is necessary for the engine
 	// it can call allLegalMoves for every piece it owns and splice them together into one set, then return that set
 	std::set<Move> legalMoves;
-	for (size_t row = 0; row < BOARD_SIZE; ++row) {
-		for (size_t col = 0; col < BOARD_SIZE; ++col) {
-			std::set<Move> movesFromSquare = allLegalMoves(Square(row, col));
+	for (size_t file = 0; file < BOARD_SIZE; ++file) {
+		for (size_t rank = 0; rank < BOARD_SIZE; ++rank) {
+			std::set<Move> movesFromSquare = allLegalMoves(Square(file, rank));
 			for (Move move : movesFromSquare) {
 				legalMoves.insert(move);
 			}
@@ -715,7 +727,7 @@ bool ChessBoard::move_is_zeroing(const Move move) const {
 }
 
 // this function exists for testing purposes
-int ChessBoard::perft(int depth, int divideThreshold) const {
+int ChessBoard::perftCopy(int depth, int divideThreshold) const {
 	if (depth == 0)
 		return 1;
 	int perft_res = 0;
@@ -732,12 +744,32 @@ int ChessBoard::perft(int depth, int divideThreshold) const {
 	}
 	return perft_res;
 }
+
+// and so does this
+int ChessBoard::perft(int depth, int divideThreshold) {
+	if (depth == 0)
+		return 1;
+	int perft_res = 0;
+	std::set<Move> moves = this->allLegalMoves();
+	//if (depth==1) return moves.size();
+	for (Move m : moves) {
+        this->processMove(m);
+
+		int perft_child = this->perft(depth - 1, divideThreshold);
+		if (depth == divideThreshold)
+			std::cout /*<< "DEPTH = " << depth << " PERFT DIVIDE: m="*/ << m.operator()() << " " << perft_child << std::endl;
+
+		perft_res += perft_child;
+        this->undoMove();
+	}
+	return perft_res;
+}
 // and this function exists for debugging purposes
 std::string ChessBoard::debug_board() const {
 	std::string debugBoard = this->fen();
 	debugBoard += " Moves:";
-	for (const Move &move : previousMoves)
-		debugBoard += (" " + move.operator()());
+	for (const UndoMove& undo : this->history)
+		debugBoard += (" " + undo.move.operator()());
 	return debugBoard;
 }
 
@@ -756,4 +788,116 @@ uint64_t ChessBoard::zobristFromScratch() const {
     }
     return hash;
     
+}
+Square getRookFrom(Square kingTo) {
+    if (kingTo == Square("g1"))
+            return Square("h1");
+    if (kingTo == Square("c1"))
+            return Square("a1");
+    if (kingTo == Square("g8"))
+            return Square("h8");
+    if (kingTo == Square("c8"))
+            return Square("a8");
+    return Square(-1); // not a castle
+}
+
+Square getRookTo(Square kingTo) {
+    if (kingTo == Square("g1"))
+            return Square("f1");
+    if (kingTo == Square("c1"))
+            return Square("d1");
+    if (kingTo == Square("g8"))
+            return Square("f8");
+    if (kingTo == Square("c8"))
+            return Square("d8");
+    return Square(-1);
+}
+// undo move
+UndoMove ChessBoard::buildUndo(const Move &m) const {
+    UndoMove u;
+    u.move = m;
+    u.whiteToMove = whiteToMove;
+    u.zobrist = zobrist_hash;
+    u.whiteState = whitePlayerState;
+    u.blackState = blackPlayerState;
+    u.epTarget = enPassant_targetSquare;
+    u.halfmove = halfmove_clock;
+    u.fullmove = fullmove_clock;
+    u.originalPiece = getPieceC(getPiece(m.startingSquare)->symbol());
+    u.capturedPiece = getPiece(m.endingSquare);
+    u.capturedSquare = m.endingSquare;
+
+    // what is captured?
+    if (m.type == MoveType::EN_PASSANT) {
+            u.capturedSquare = m.endingSquare + ((u.originalPiece->symbol() == 'P') ? SOUTH : NORTH);
+            u.capturedPiece = getPiece(u.capturedSquare);
+    } else {
+            u.capturedSquare = m.endingSquare;
+            u.capturedPiece = getPiece(m.endingSquare);
+    }
+
+    if (m.type == MoveType::CASTLING) {
+            u.rookFrom = getRookFrom(m.endingSquare);
+            u.rookTo = getRookTo(m.endingSquare);
+    } else {
+            u.rookFrom = Square(-1);
+            u.rookTo = Square(-1);
+    }
+
+    return u;
+}
+
+void ChessBoard::undoMove(const UndoMove &u) {
+    pieces[u.move.startingSquare.idx] = u.originalPiece;
+    if (u.move.type == MoveType::EN_PASSANT) {
+        pieces[u.move.endingSquare.idx] = nullptr;
+        pieces[u.capturedSquare.idx] = u.capturedPiece; // pawn behind
+    } else {
+            pieces[u.move.endingSquare.idx] = u.capturedPiece; // nullptr if no capture
+    }
+    if (u.rookFrom.isValid() && u.rookTo.isValid() && u.move.type == MoveType::CASTLING) {
+            pieces[u.rookFrom.idx] = pieces[u.rookTo.idx];
+            pieces[u.rookTo.idx] = nullptr;
+    }
+    whiteToMove = u.whiteToMove;
+    whitePlayerState = u.whiteState;
+    blackPlayerState = u.blackState;
+    enPassant_targetSquare = u.epTarget;
+    halfmove_clock = u.halfmove;
+    fullmove_clock = u.fullmove;
+    zobrist_hash = u.zobrist;
+#ifndef NDEBUG
+    verifyZobrist();
+#endif
+}
+bool ChessBoard::undoMove() {
+    if (history.empty()) return false;
+    undoMove(history.back()); 
+    history.pop_back();
+    return true;
+}
+
+bool ChessBoard::is_threefold_repetition() const {
+    if (history.empty()) return false;
+
+    uint64_t current_hash = zobrist_hash;
+    int match_count = 1; // current mvoe is NOT the first in history
+
+    // Iterate backward through the history
+    for (auto it = history.rbegin(); it != history.rend(); ++it) {
+        if (it->zobrist == current_hash) {
+            match_count++;
+            if (match_count >= 3) {
+                return true;
+            }
+        }
+
+        // Irreversible moves (pawn moves or captures) reset the halfmove clock.
+        // Positions before an irreversible move cannot be repeated, so we stop searching.
+        if (it->halfmove == 0) {
+            break;
+        }
+    }
+
+    return false;
 }

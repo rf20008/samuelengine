@@ -132,8 +132,59 @@ class TestBoard : public CxxTest::TestSuite {
 			TS_ASSERT_EQUALS(myBoard.perft(2), 2079);
 			TS_ASSERT_EQUALS(myBoard.perft(3), 89890);
 		}
+
+        void testUndoPerftStartPos() {
+			ChessBoard myBoard = ChessBoard();
+			TS_ASSERT_EQUALS(myBoard.perft(1), myBoard.perftCopy(1));
+			TS_ASSERT_EQUALS(myBoard.perft(2), myBoard.perftCopy(2));
+			TS_ASSERT_EQUALS(myBoard.perft(3), myBoard.perftCopy(3));
+		}
+		void testUndoPerfPosition2() {
+			// credit to https://chessprogramming.org/Perft_Results for providing the position and correct perft results
+			ChessBoard myBoard = ChessBoard("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
+			// will only work when castling is implemented
+			TS_ASSERT_EQUALS(myBoard.perft(1), myBoard.perftCopy(1));
+			TS_ASSERT_EQUALS(myBoard.perft(2), myBoard.perftCopy(2));
+		}
+		void testUndoPerftPositionThree() {
+			// also from PerftResults
+			ChessBoard myBoard("8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1");
+            TS_ASSERT_EQUALS(myBoard.perft(1), myBoard.perftCopy(1));
+			TS_ASSERT_EQUALS(myBoard.perft(2), myBoard.perftCopy(2));
+			TS_ASSERT_EQUALS(myBoard.perft(3), myBoard.perftCopy(3));
+		}
+
+		void testUndoPerftPositionFour() {
+			ChessBoard myBoard("8/P6k/8/8/8/8/8/7K w - - 0 1");
+			TS_ASSERT_EQUALS(myBoard.perft(1), myBoard.perftCopy(1));
+			TS_ASSERT_EQUALS(myBoard.perft(2), myBoard.perftCopy(2));
+			TS_ASSERT_EQUALS(myBoard.perft(3), myBoard.perftCopy(3));
+            TS_ASSERT_EQUALS(myBoard.perft(4), myBoard.perftCopy(4));
+			
+		}
+		void testUndoPerftPositionFive() {
+			ChessBoard myBoard("r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1");
+			TS_ASSERT_EQUALS(myBoard.perft(1), myBoard.perftCopy(1));
+			TS_ASSERT_EQUALS(myBoard.perft(2), myBoard.perftCopy(2));
+			TS_ASSERT_EQUALS(myBoard.perft(3), myBoard.perftCopy(3));
+		}
+		
+		void testUndoPerftPositionSix() {
+			ChessBoard myBoard("rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8");
+			TS_ASSERT_EQUALS(myBoard.perft(1), myBoard.perftCopy(1));
+			TS_ASSERT_EQUALS(myBoard.perft(2), myBoard.perftCopy(2));
+		}
+		void testUndoPerftPositionSeven() {
+			ChessBoard myBoard("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10");
+			TS_ASSERT_EQUALS(myBoard.get_whiteToMove(), true);
+			TS_ASSERT_EQUALS(myBoard.perft(0), myBoard.perftCopy(0));
+			TS_ASSERT_EQUALS(myBoard.perft(1), myBoard.perftCopy(1));
+			TS_ASSERT_EQUALS(myBoard.perft(2), myBoard.perftCopy(2));
+			TS_ASSERT_EQUALS(myBoard.perft(3), myBoard.perftCopy(3));
+		}
 		void testWhiteKingsideCastling() {
 			ChessBoard myBoard("6k1/8/8/8/8/8/8/4K2R w K - 0 1");
+            ChessBoard oldBoard = myBoard;
 			TS_ASSERT(myBoard.getWhitePlayerState().canKingsideCastle);
 			TS_ASSERT_EQUALS(myBoard.findKing(true), "e1");
 			TS_ASSERT(myBoard.isMoveLegal(Move("e1", "g1")));
@@ -349,4 +400,53 @@ class TestBoard : public CxxTest::TestSuite {
             TS_ASSERT(board.allLegalMoves().empty());
             TS_ASSERT(board.isInCheckmate());
         }
+        void testUndoIsPure() {
+            ChessBoard start;
+            std::string startFen = start.fen();
+        
+            auto moves = start.allLegalMoves();
+            for (auto &m : moves) {
+                ChessBoard b = start; // fresh copy
+                b.processMove(m);
+                TS_ASSERT_EQUALS(b.getHistory().size(), 1);
+                b.undoMove();
+                TS_ASSERT_EQUALS(b.fen(), startFen);
+                TS_ASSERT_EQUALS(b.getHistory().size(), 0);
+                TS_ASSERT_EQUALS(b, start);
+            }
+        }
+        void testThreefoldRepetition() {
+            // --- Loop 1 ---
+            ChessBoard board;
+            uint64_t initial_zobrist = board.getZobrist();
+            TS_ASSERT(!board.is_threefold_repetition());
+            board.processMove(Move(Square("g1"), Square("f3")));
+            board.processMove(Move(Square("b8"), Square("c6")));
+            board.processMove(Move(Square("f3"), Square("g1")));
+            board.processMove(Move(Square("c6"), Square("b8")));
+            TS_ASSERT_EQUALS(board.getZobrist(), initial_zobrist);
+            
+            // We are back at the starting position (Occurrence #2)
+            TS_ASSERT(!board.is_threefold_repetition()); // Only 2 occurrences total (Start + Loop 1)
+
+            // --- Loop 2 ---
+            board.processMove(Move(Square("g1"), Square("f3")));
+            board.processMove(Move(Square("b8"), Square("c6")));
+            board.processMove(Move(Square("f3"), Square("g1")));
+            board.processMove(Move(Square("c6"), Square("b8")));
+            TS_ASSERT_EQUALS(board.getZobrist(), initial_zobrist);
+            TSM_ASSERT("threefold repetition failed", board.is_threefold_repetition()); // Caught it!
+            TS_ASSERT(board.getStatus() == GameStatus::DRAW);
+            TS_ASSERT(isGameOver(board.getStatus()));
+            board.processMove(Move(Square("g1"), Square("f3")));
+            board.processMove(Move(Square("b8"), Square("c6")));
+            board.processMove(Move(Square("f3"), Square("g1")));
+            board.processMove(Move(Square("c6"), Square("b8")));
+            TSM_ASSERT_EQUALS("fourfold repetition failed", board.getZobrist(), initial_zobrist);
+            TS_ASSERT(board.is_threefold_repetition()); // Caught it!
+            TS_ASSERT(board.getStatus() == GameStatus::DRAW);
+            TS_ASSERT(isGameOver(board.getStatus()));
+        }
 };
+
+

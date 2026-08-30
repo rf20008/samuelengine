@@ -23,6 +23,9 @@
 // Zobrist
 #include "Zobrist.hpp"
 
+// Undo Move
+#include "UndoMove.hpp"
+
 // from STL
 #include <memory>
 #include <cstdint>
@@ -49,16 +52,15 @@ class ChessBoard {
 		int halfmove_clock;
 		int fullmove_clock;
 		std::optional<Square> enPassant_targetSquare;
-		std::vector<Move> previousMoves;
+        std::vector<UndoMove> history;
 
 	public:
 		// constructors
 
 		ChessBoard();						// create a chess board with starting position
 		ChessBoard(const std::string &fen); // create chess board from given FEN
-		ChessBoard(PiecePtr pieces[128], const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare, const std::vector<Move> &moves);
+		ChessBoard(PiecePtr pieces[128], bool whiteToMove, PlayerState whitePlayerState, PlayerState blackPlayerState, int halfmove_clock, int fullmove_clock, Square enPassant_targetSquare, std::vector<UndoMove> history = {});
 
-		ChessBoard(PiecePtr pieces[128], const bool &whiteToMove, const PlayerState &whitePlayerState, const PlayerState &blackPlayerState, const int &halfmove_clock, const int &fullmove_clock, const Square &enPassant_targetSquare);
 		// rule of 5
 		~ChessBoard() = default;
 		ChessBoard(const ChessBoard &other) = default;
@@ -75,13 +77,14 @@ class ChessBoard {
             }
             return pieces[sq.idx];
         }
+        uint64_t getZobrist() const {return zobrist_hash;}
 		int get_halfmove_clock() const { return halfmove_clock; }
 		int get_fullmove_clock() const { return fullmove_clock; }
 		bool get_whiteToMove() const { return whiteToMove; }
 		PlayerState getWhitePlayerState() const { return whitePlayerState; }
 		PlayerState getBlackPlayerState() const { return blackPlayerState; }
 		std::optional<Square> getEnPassantTargetSquare() const { return enPassant_targetSquare; }
-		std::vector<Move> getPreviousMoves() const { return previousMoves; }
+        std::vector<UndoMove> getHistory() const {return history;}
 
 		// chess engine methods
 		bool isMoveLegal(Move m) const; // return whether a move is legal
@@ -93,6 +96,7 @@ class ChessBoard {
 		bool isInCheck(bool player) const;
 		bool isInCheckmate() const;
 		bool isInStalemate() const;
+        bool is_threefold_repetition() const;
 		bool hasInsufficientMaterial() const;
 		Square findKing(bool belongsToWhite) const;
 		GameStatus getStatus() const;
@@ -126,7 +130,10 @@ class ChessBoard {
 		bool move_is_check(const Move move) const;
 		bool move_is_capture(const Move m) const;
 		bool move_is_zeroing(const Move m) const;
-		int perft(int depth, int divideThreshold = 2147483647) const;
+
+
+		int perftCopy(int depth, int divideThreshold = 2147483647) const;
+        int perft(int depth, int divideThreshold = 2147483647);
 		std::string debug_board() const;
 
         // zobrist
@@ -149,6 +156,24 @@ class ChessBoard {
                     " fen=" + this->fen()
                 ); 
             } 
+        }
+
+        // undo move
+        UndoMove buildUndo(const Move& m) const;
+        void undoMove(const UndoMove& u);
+        bool undoMove();
+
+
+        // equality
+        bool operator==(const ChessBoard& other) const {
+            for(int i=0;i<128;i++) if(pieces[i]!=other.pieces[i]) return false;
+            return (
+                whitePlayerState == other.whitePlayerState &&
+                blackPlayerState == other.blackPlayerState &&
+                whiteToMove == other.whiteToMove &&
+                halfmove_clock == other.halfmove_clock &&
+                enPassant_targetSquare == other.enPassant_targetSquare
+            );
         }
 };
 #endif
