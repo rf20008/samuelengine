@@ -15,12 +15,12 @@ enum class PieceType : uint8_t {
     BISHOP = 4,
     KNIGHT = 5,
     PAWN = 6,
-}
+};
 enum class Color: uint8_t {
     NONE = 0,
     WHITE = 1,
     BLACK = 2,
-}
+};
 
 
 struct Piece {
@@ -28,7 +28,7 @@ struct Piece {
         PieceType type;
 		Color color;
         
-		constexpr Piece(PieceType type, Color c) : color(c), type(type) {}
+		constexpr Piece(PieceType type, Color c) : type(type), color(c) {}
 		constexpr bool getBelongsToWhite() const { return color == Color::WHITE; }
         constexpr char symbol() const {
             if (type == PieceType::NONE) return ' ';
