@@ -267,13 +267,15 @@ class TestBoard : public CxxTest::TestSuite {
 			TS_ASSERT_EQUALS(board.findKing(false), Square("d7"));
 		}
 		void testNoKingFound() {
-			ChessBoard myBoard("rnbq1bnr/pp2pppp/3p4/3p4/N7/8/PPPPPPPP/R1BQKBNR b KQ d6 5 4");
-			try {
-				myBoard.findKing(false);
-				TS_FAIL("ERROR: myBoard found a king");
-			} catch (std::logic_error &error) {
-			}
+			TS_ASSERT_THROWS_ANYTHING(ChessBoard myBoard("rnbq1bnr/pp2pppp/3p4/3p4/N7/8/PPPPPPPP/R1BQKBNR b KQ d6 5 4"));
 		}
+        void testFailsWithTwoWhiteKings() {
+			TS_ASSERT_THROWS_ANYTHING(ChessBoard myBoard("rnbqkbnr/pp2pppp/3p4/3p4/N7/8/PPPPPPPP/R1BKKBNR b KQ d6 5 4"));
+		}
+        void testFailsWithTwoBlackKings() {
+			TS_ASSERT_THROWS_ANYTHING(ChessBoard myBoard("rnbkkbnr/pp2pppp/3p4/3p4/N7/8/PPPPPPPP/R1BQKBNR b KQ d6 5 4"));
+		}
+        
 		void testCastlingPossibleWeirdRegressionTest() {
 			ChessBoard board;
 			board.processMove({"b1", "c3"});
