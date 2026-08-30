@@ -1,8 +1,11 @@
+#pragma once
 #ifndef CS3520_MINIPROJECT_PIECE
 #define CS3520_MINIPROJECT_PIECE
 
 #include <memory>
-
+#include <string>
+#include <cstdint>
+#include <cassert>
 constexpr char PIECETYPES[7] = {' ', 'k', 'q', 'r', 'b', 'n', 'p'};
 enum class PieceType : uint8_t {
     NONE = 0,
@@ -25,8 +28,8 @@ struct Piece {
         PieceType type;
 		Color color;
         
-		Piece(PieceType type, Color c) : color(c), piecetype(type) {}
-		constexpr bool getBelongsToWhite() const { return c == Color::WHITE; }
+		constexpr Piece(PieceType type, Color c) : color(c), type(type) {}
+		constexpr bool getBelongsToWhite() const { return color == Color::WHITE; }
         constexpr char symbol() const {
             if (type == PieceType::NONE) return ' ';
             char c = PIECETYPES[static_cast<int>(type)];
@@ -34,14 +37,14 @@ struct Piece {
             return c;
         }
 		constexpr bool operator==(const Piece &other) const { 
-            return this->color == other.color && piecetype == other.piecetype;
+            return this->color == other.color && type == other.type;
         }
-        constexpr operator bool() const {
-            return this->color != Color::NONE || this->type != PieceType::NONE;
+        constexpr bool isEmpty() const {
+            return this->color == Color::NONE && this->type == PieceType::NONE;
         }
 };
 
-constexpr Piece EMPTY_SQUARE = Piece{PieceType::NONE, Color::NONE};
+constexpr Piece EMPTY_SQUARE = {PieceType::NONE, Color::NONE};
 constexpr Piece WHITE_KING = {PieceType::KING, Color::WHITE};
 constexpr Piece BLACK_KING = {PieceType::KING, Color::BLACK};
 constexpr Piece WHITE_QUEEN = {PieceType::QUEEN, Color::WHITE};
@@ -55,7 +58,7 @@ constexpr Piece BLACK_KNIGHT = {PieceType::KNIGHT, Color::BLACK};
 constexpr Piece WHITE_PAWN = {PieceType::PAWN, Color::WHITE};
 constexpr Piece BLACK_PAWN = {PieceType::PAWN, Color::BLACK};
 
-static_assert(WHITE_KING.symbol(), 'K');
+static_assert(WHITE_KING.symbol() == 'K');
 static_assert(WHITE_QUEEN.symbol() == 'Q');
 static_assert(WHITE_ROOK.symbol() == 'R');
 static_assert(WHITE_BISHOP.symbol() == 'B');
@@ -69,8 +72,21 @@ static_assert(BLACK_BISHOP.symbol() == 'b');
 static_assert(BLACK_KNIGHT.symbol() == 'n');
 static_assert(BLACK_PAWN.symbol() == 'p');
 
-static_assert(EMPTY_PIECE.symbol() == ' ');
-static_assert(!EMPTY_PIECE);
+static_assert(EMPTY_SQUARE.symbol() == ' ');
+static_assert(EMPTY_SQUARE.isEmpty());
+static_assert(!WHITE_KING.isEmpty());
+static_assert(!BLACK_KING.isEmpty());
+static_assert(!WHITE_QUEEN.isEmpty());
+static_assert(!BLACK_QUEEN.isEmpty());
+static_assert(!WHITE_ROOK.isEmpty());
+static_assert(!BLACK_ROOK.isEmpty());
+static_assert(!WHITE_BISHOP.isEmpty());
+static_assert(!BLACK_BISHOP.isEmpty());
+static_assert(!WHITE_KNIGHT.isEmpty());
+static_assert(!BLACK_KNIGHT.isEmpty());
+static_assert(!WHITE_PAWN.isEmpty());
+static_assert(!BLACK_PAWN.isEmpty());
+
 
 constexpr int pieceNum(char c) {
     char u = (c >= 'a' && c <= 'z') ? c - 32 : c;
@@ -85,8 +101,8 @@ constexpr int pieceNum(char c) {
             assert(false && "invalid piece char "); return 6;
     }
 }
-PiecePtr getPiece(char c) {
-	switch(c):
+constexpr Piece getPiece(char c) {
+	switch(c) {
         case 'K': return WHITE_KING;
         case 'Q': return WHITE_QUEEN;
         case 'R': return WHITE_ROOK;
@@ -102,9 +118,9 @@ PiecePtr getPiece(char c) {
         case 'p': return BLACK_PAWN;
         case '\0': case '.': case ' ': return EMPTY_SQUARE;
         default: 
-            assert(false && ("unknown piece type: " + std::to_string(c)));
-            return {PieceType::KING, Color::EMPTY}; // an invalid piece
-
+            assert(false && (("unknown piece type: " + std::to_string(c)).c_str()));
+            return {PieceType::KING, Color::NONE}; // an invalid piece
+    }
 }
 static_assert(getPiece('K') == WHITE_KING);
 static_assert(getPiece('Q') == WHITE_QUEEN);
@@ -120,11 +136,10 @@ static_assert(getPiece('b') == BLACK_BISHOP);
 static_assert(getPiece('n') == BLACK_KNIGHT);
 static_assert(getPiece('p') == BLACK_PAWN);
 
-static_assert(getPiece(' ') == EMPTY_PIECE);
-static_assert(getPiece('.') == EMPTY_PIECE);
-static_assert(getPiece('\0') == EMPTY_PIECE);
+static_assert(getPiece(' ') == EMPTY_SQUARE);
+static_assert(getPiece('.') == EMPTY_SQUARE);
+static_assert(getPiece('\0') == EMPTY_SQUARE);
 
-static_assert(WHITE_KING.symbol() == 'K');
-static_assert(getPiece(WHITE_KING.symbol()) == WHITE_KING);
+
 
 #endif
