@@ -87,25 +87,25 @@ class ChessBoard {
         std::vector<UndoMove> getHistory() const {return history;}
 
 		// chess engine methods
-		bool isMoveLegal(Move m) const; // return whether a move is legal
+		bool isMoveLegal(Move m); // return whether a move is legal
 		void processMove(Move m);
 		void processPsuedoLegalMove(Move m);
 		void processEnPassantCapture(Move m, const PiecePtr &start_ptr, const PiecePtr &end_ptr);
 		void processEnPassantUpdate(Move m, const PiecePtr &start_ptr, const PiecePtr &end_ptr);
 		void processCastling(Move m, const PiecePtr &start_ptr);
 		bool isInCheck(bool player) const;
-		bool isInCheckmate() const;
-		bool isInStalemate() const;
+		bool isInCheckmate(); // interacts with move ordering!
+		bool isInStalemate(); // also interacts with move ordering
         bool is_threefold_repetition() const;
 		bool hasInsufficientMaterial() const;
 		Square findKing(bool belongsToWhite) const;
-		GameStatus getStatus() const;
+		GameStatus getStatus(); // doesn't change board but interacts with move ordering
 
 		// for engine use
 		std::string fen() const;
 
 		PiecePtr getAndAssertPiece(const Square origin, const char pieceType) const;
-		bool hasPiece(const Square origin) const;
+		bool hasPiece(const Square origin) const { return getPiece(origin) != nullptr; }
 		bool squareAttackedBy(Square target, bool attackerIsWhite) const;
 		bool isSlidingAttacker(Square from, int dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) const;
 
@@ -118,21 +118,21 @@ class ChessBoard {
 		std::set<Move> whereQueenCouldMove(const Square origin) const;
 		std::set<Move> allPseudoLegalDestinations(const Square origin) const;
 
-		std::set<Move> allLegalMoves(const Square sq) const;
-		std::set<Move> allLegalMoves() const;
+		std::set<Move> allLegalMoves(const Square sq);
+		std::set<Move> allLegalMoves();
 
 		friend std::ostream &operator<<(std::ostream &os, const ChessBoard &board);
 
 		// move evaluation
 		ChessBoard board_with_move(const Move &move) const; // return a copy of the board, with move move applied
-		bool move_ends_game(const Move move) const;
+		bool move_ends_game(const Move move);
 		bool move_is_castling(const Move move) const;
-		bool move_is_check(const Move move) const;
+		bool move_is_check(const Move move);
 		bool move_is_capture(const Move m) const;
 		bool move_is_zeroing(const Move m) const;
 
 
-		int perftCopy(int depth, int divideThreshold = 2147483647) const;
+		int perftCopy(int depth, int divideThreshold = 2147483647);
         int perft(int depth, int divideThreshold = 2147483647);
 		std::string debug_board() const;
 
