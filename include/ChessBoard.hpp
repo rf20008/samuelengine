@@ -53,7 +53,8 @@ class ChessBoard {
 		int fullmove_clock;
 		std::optional<Square> enPassant_targetSquare;
         std::vector<UndoMove> history;
-
+        Square whiteKingPos;
+        Square blackKingPos;
 	public:
 		// constructors
 
@@ -97,7 +98,11 @@ class ChessBoard {
 		bool isInStalemate(); // also interacts with move ordering
         bool is_threefold_repetition() const;
 		bool hasInsufficientMaterial() const;
-		Square findKing(bool belongsToWhite) const;
+		Square findKing(bool belongsToWhite) const {
+            Square kingPos = belongsToWhite ? whiteKingPos : blackKingPos;
+            assert((getPiece(kingPos) && getPiece(kingPos)->symbol() == (belongsToWhite ? 'K' : 'k'))&&"king cache desync");
+            return kingPos;
+        }
 		GameStatus getStatus(); // doesn't change board but interacts with move ordering
 
 		// for engine use
