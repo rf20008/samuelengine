@@ -68,11 +68,6 @@ ChessBoard::ChessBoard(const std::string &fen) {
     this->zobrist_hash = this->zobristFromScratch();
 }
 
-ChessBoard::ChessBoard(PiecePtr pieces[128], bool whiteToMove, PlayerState whitePlayerState, PlayerState blackPlayerState, int halfmove_clock, int fullmove_clock, Square enPassant_targetSquare, std::vector<UndoMove> history) : whiteToMove(whiteToMove), whitePlayerState(whitePlayerState), blackPlayerState(blackPlayerState), halfmove_clock(halfmove_clock), fullmove_clock(fullmove_clock), enPassant_targetSquare(enPassant_targetSquare), history(std::move(history)) {
-	for (int i = 0; i < 128; ++i)
-		this->pieces[i] = pieces[i];
-    this->zobrist_hash = this->zobristFromScratch();
-}
 
 
 

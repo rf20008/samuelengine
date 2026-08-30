@@ -59,8 +59,7 @@ class ChessBoard {
 
 		ChessBoard();						// create a chess board with starting position
 		ChessBoard(const std::string &fen); // create chess board from given FEN
-		ChessBoard(PiecePtr pieces[128], bool whiteToMove, PlayerState whitePlayerState, PlayerState blackPlayerState, int halfmove_clock, int fullmove_clock, Square enPassant_targetSquare, std::vector<UndoMove> history = {});
-
+		
 		// rule of 5
 		~ChessBoard() = default;
 		ChessBoard(const ChessBoard &other) = default;
