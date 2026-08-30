@@ -29,6 +29,7 @@
 // from STL
 #include <memory>
 #include <cstdint>
+#include <cassert>
 #include <optional>
 #include <set>
 #include <string>
@@ -98,6 +99,15 @@ class ChessBoard {
 		bool isInStalemate(); // also interacts with move ordering
         bool is_threefold_repetition() const;
 		bool hasInsufficientMaterial() const;
+        Square findKingSlow(bool belongsToWhite) const {
+            for (int sq_idx = 0; sq_idx < 128; ++sq_idx) {
+                PiecePtr p = pieces[sq_idx];
+                if (p && ((p->symbol()) == (belongsToWhite ? 'K' : 'k'))) {
+                    return Square(sq_idx);
+                }
+            }
+            throw std::logic_error(std::string("findKing: no king found for ") + (belongsToWhite ? "White" : "Black") + " in the board with FEN " + this->debug_board());
+        }
 		Square findKing(bool belongsToWhite) const {
             Square kingPos = belongsToWhite ? whiteKingPos : blackKingPos;
             assert((getPiece(kingPos) && getPiece(kingPos)->symbol() == (belongsToWhite ? 'K' : 'k'))&&"king cache desync");

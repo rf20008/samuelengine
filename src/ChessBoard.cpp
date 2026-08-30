@@ -65,6 +65,8 @@ ChessBoard::ChessBoard(const std::string &fen) {
 	if (fullmove_clock < 1) {
 		throw std::invalid_argument("fullmove clock too low");
 	}
+    this->whiteKingPos = findKingSlow(true);
+    this->blackKingPos = findKingSlow(false);
     this->zobrist_hash = this->zobristFromScratch();
 }
 
@@ -162,7 +164,10 @@ void ChessBoard::processPsuedoLegalMove(Move m) {
     // Square rows/cols are 1-indexed, pieces is 0-indexed and rank-major (see getPiece)
 	PiecePtr &start_ptr = this->pieces[m.startingSquare.idx];
 	PiecePtr &end_ptr = this->pieces[m.endingSquare.idx];
-
+    if (toupper(start_ptr->symbol()) == 'K') {
+        if (start_ptr->getBelongsToWhite()) whiteKingPos = m.endingSquare;
+        else blackKingPos = m.endingSquare;
+    }
     assert((start_ptr->getBelongsToWhite()) == whiteToMove);
     zobrist_hash ^= ZOBRIST.pieces[whiteToMove][pieceNum(start_ptr->symbol())][m.startingSquare.to64()]; // remove movers
     if (end_ptr) {
@@ -532,15 +537,7 @@ bool ChessBoard::squareAttackedBy(Square target, bool attackerIsWhite) const {
 	return false;
 }
 
-Square ChessBoard::findKing(bool belongsToWhite) const {
-	for (int sq_idx = 0; sq_idx < 128; ++sq_idx) {
-		PiecePtr p = pieces[sq_idx];
-		if (p && p->getBelongsToWhite() == belongsToWhite && std::toupper(p->symbol()) == 'K') {
-			return Square(sq_idx);
-		}
-	}
-	throw std::logic_error(std::string("findKing: no king found for ") + (belongsToWhite ? "White" : "Black") + " in the board with FEN " + this->debug_board());
-}
+
 
 bool ChessBoard::isInCheck(bool player) const {
 	// can the player whose turn it is, capture the king who is owned by Player?
@@ -841,7 +838,6 @@ UndoMove ChessBoard::buildUndo(const Move &m) const {
             u.rookFrom = Square(-1);
             u.rookTo = Square(-1);
     }
-
     return u;
 }
 
@@ -856,6 +852,12 @@ void ChessBoard::undoMove(const UndoMove &u) {
     if (u.rookFrom.isValid() && u.rookTo.isValid() && u.move.type == MoveType::CASTLING) {
             pieces[u.rookFrom.idx] = pieces[u.rookTo.idx];
             pieces[u.rookTo.idx] = nullptr;
+    }
+
+    // must update king cache
+    if (toupper(u.originalPiece->symbol() )=='K') {
+        if (u.originalPiece->getBelongsToWhite()) whiteKingPos = u.move.startingSquare;
+        else {blackKingPos = u.move.startingSquare;}
     }
     whiteToMove = u.whiteToMove;
     whitePlayerState = u.whiteState;
