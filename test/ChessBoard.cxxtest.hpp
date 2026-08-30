@@ -4,29 +4,9 @@
 #include <iostream>
 class TestBoard : public CxxTest::TestSuite {
 	public:
-		void testChessBoardMemberConstructor() {
-			PiecePtr pieces[128]{nullptr};
-			bool whiteToMove = true;
-			PlayerState whitePlayerState = {true, true};
-			PlayerState blackPlayerState = {true, true};
-			int halfmove_clock = 0;
-			int fullmove_clock = 0;
-			Square enPassant_targetSquare = {-1, -1};
-
-			ChessBoard myBoard = ChessBoard(pieces, whiteToMove, whitePlayerState, blackPlayerState, halfmove_clock, fullmove_clock, enPassant_targetSquare);
-			(void)myBoard;
-		}
-
 		void testChessBoardStreamout() {
-			PiecePtr pieces[128]{nullptr};
-			bool whiteToMove = true;
-			PlayerState whitePlayerState = {true, true};
-			PlayerState blackPlayerState = {true, true};
-			int halfmove_clock = 0;
-			int fullmove_clock = 0;
-			Square enPassant_targetSquare = {-1, -1};
 
-			ChessBoard myBoard = ChessBoard(pieces, whiteToMove, whitePlayerState, blackPlayerState, halfmove_clock, fullmove_clock, enPassant_targetSquare);
+			ChessBoard myBoard = ChessBoard("8/8/8/8/8/8/8/k6K w KQkq - 0 1");
 
 			std::ostringstream os;
 			os << myBoard << std::endl;

@@ -48,7 +48,7 @@ Move HumanPlayer::getMove(const ChessBoard &board) {
 	// that shared signature out from under Joshua's half of the work, we
 	// const_cast here -- getMove is only ever handed a real, mutable board
 	// by the caller, so this doesn't cost us any actual safety.
-
+    ChessBoard mutableBoard = board;
 	Move move;
 	while (true) {
 		std::cout << "Enter your move (e.g. e2e4): ";
@@ -62,7 +62,7 @@ Move HumanPlayer::getMove(const ChessBoard &board) {
 			continue;
 		}
 
-		if (!board.isMoveLegal(move)) {
+		if (!mutableBoard.isMoveLegal(move)) {
 			std::cout << "That move isn't legal. Try again." << std::endl;
 			continue;
 		}

@@ -68,17 +68,12 @@ ChessBoard::ChessBoard(const std::string &fen) {
     this->zobrist_hash = this->zobristFromScratch();
 }
 
-ChessBoard::ChessBoard(PiecePtr pieces[128], bool whiteToMove, PlayerState whitePlayerState, PlayerState blackPlayerState, int halfmove_clock, int fullmove_clock, Square enPassant_targetSquare, std::vector<UndoMove> history) : whiteToMove(whiteToMove), whitePlayerState(whitePlayerState), blackPlayerState(blackPlayerState), halfmove_clock(halfmove_clock), fullmove_clock(fullmove_clock), enPassant_targetSquare(enPassant_targetSquare), history(std::move(history)) {
-	for (int i = 0; i < 128; ++i)
-		this->pieces[i] = pieces[i];
-    this->zobrist_hash = this->zobristFromScratch();
-}
 
 
 
 
 
-bool ChessBoard::isMoveLegal(Move m) const {
+bool ChessBoard::isMoveLegal(Move m) {
 	// A move is legal exactly when its destination shows up among the legal
 	// destinations for whichever piece sits on the move's starting square --
 	// allLegalMoves(sq) does the real work of applying piece movement rules
@@ -277,7 +272,6 @@ PiecePtr ChessBoard::getAndAssertPiece(const Square origin, const char pieceType
 		throw WrongPieceType("Wrong piece type at origin");
 	return ptr;
 }
-bool ChessBoard::hasPiece(const Square origin) const { return getPiece(origin) != nullptr; }
 std::set<Move> ChessBoard::whereKingCouldMove(const Square origin) const {
 	// get al neighboring places
 	PiecePtr king = getAndAssertPiece(origin, 'K');
@@ -554,13 +548,13 @@ bool ChessBoard::isInCheck(bool player) const {
 	return this->squareAttackedBy(kingSquare, !player);
 }
 
-bool ChessBoard::isInCheckmate() const {
+bool ChessBoard::isInCheckmate() {
 	// this can be implemented by: are you in check right now
 	// and for every legal move you make, would you still be in check? if so it's checkmate, otherwise no
 	return isInCheck(whiteToMove) && allLegalMoves().empty();
 }
 
-bool ChessBoard::isInStalemate() const {
+bool ChessBoard::isInStalemate() {
 	// is implemented by: if not in check now, but every legal move you make is in check
 	return !isInCheck(whiteToMove) && allLegalMoves().empty();
 }
@@ -590,7 +584,7 @@ bool ChessBoard::hasInsufficientMaterial() const {
 	}
 	return (numBishops <= 1) && (numKnights <= 1);
 }
-GameStatus ChessBoard::getStatus() const {
+GameStatus ChessBoard::getStatus() {
 	// return the status of the game (whether white won, black won, it's a draw, or game is still going on)
     if (halfmove_clock >= 100) {
 		return GameStatus::DRAW;
@@ -634,7 +628,7 @@ std::string ChessBoard::fen() const {
 	return PiecePart + " " + PlayerPart + " " + CastlingPart + " " + enPassantPart + " " + halfMovePart + " " + fullMovePart;
 }
 
-std::set<Move> ChessBoard::allLegalMoves(const Square sq) const {
+std::set<Move> ChessBoard::allLegalMoves(const Square sq) {
 	// get all legal moves from the piece at the square indicated
 	// if there is no piece at that square, or if the piece at that square is owned by the opponent, return empty set
 	std::set<Move> legalMoves;
@@ -651,15 +645,15 @@ std::set<Move> ChessBoard::allLegalMoves(const Square sq) const {
 		// *not* going through processMove/isMoveLegal here, since that
 		// would call right back into allLegalMoves and recurse forever --
 		// then reject the move if it would leave our own king in check.
-		ChessBoard hypothetical = *this;
-		hypothetical.processPsuedoLegalMove(candidate);
-		if (!hypothetical.isInCheck(moverIsWhite)) {
+		this->processPsuedoLegalMove(candidate);
+		if (!this->isInCheck(moverIsWhite)) {
 			legalMoves.insert(candidate);
 		}
+        this->undoMove();
 	}
 	return legalMoves;
 }
-std::set<Move> ChessBoard::allLegalMoves() const {
+std::set<Move> ChessBoard::allLegalMoves() {
 	// done by Samuel
 	// return all legal moves from all pieces that the player owns
 	// this function is necessary for the engine
@@ -704,9 +698,11 @@ ChessBoard ChessBoard::board_with_move(const Move &move) const {
 	//std::cerr << "new:      " << newBoard.debug_board() << '\n';
 	return newBoard;
 }
-bool ChessBoard::move_ends_game(const Move move) const {
-	ChessBoard newBoard = this->board_with_move(move);
-	return isGameOver(newBoard.getStatus());
+bool ChessBoard::move_ends_game(const Move move) {
+    this->processMove(move);
+    bool isOver = isGameOver(this->getStatus());
+    this->undoMove();
+    return isOver;
 }
 bool ChessBoard::move_is_castling(const Move move) const {
 	PiecePtr pieceAtBeginning = this->getPiece(move.startingSquare);
@@ -714,9 +710,11 @@ bool ChessBoard::move_is_castling(const Move move) const {
 		return false;
 	return maxNorm(move.startingSquare, move.endingSquare) > 1;
 }
-bool ChessBoard::move_is_check(const Move move) const {
-	ChessBoard newBoard = this->board_with_move(move);
-	return newBoard.isInCheck(!whiteToMove);
+bool ChessBoard::move_is_check(const Move move) {
+    this->processMove(move);
+    bool inCheck = this->isInCheck(!whiteToMove);
+    this->undoMove();
+    return inCheck;
 }
 bool ChessBoard::move_is_capture(const Move move) const { return static_cast<bool>(this->getPiece(move.endingSquare)); }
 bool ChessBoard::move_is_zeroing(const Move move) const {
@@ -727,7 +725,7 @@ bool ChessBoard::move_is_zeroing(const Move move) const {
 }
 
 // this function exists for testing purposes
-int ChessBoard::perftCopy(int depth, int divideThreshold) const {
+int ChessBoard::perftCopy(int depth, int divideThreshold) {
 	if (depth == 0)
 		return 1;
 	int perft_res = 0;

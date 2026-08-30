@@ -17,11 +17,11 @@ class SamuelEngine : public AbstractPlayer {
 	public:
 		struct MoveOrderer {
 			public:
-				const ChessBoard m_board;
+				ChessBoard& m_board;
 
-				MoveOrderer(const ChessBoard &board) : m_board(board) {}
-				int priorityOfMove(const Move &mov) const;
-				bool operator()(const Move &m1, const Move &m2) const;
+				MoveOrderer(ChessBoard &board) : m_board(board) {}
+				int priorityOfMove(const Move &mov);
+				bool operator()(const Move &m1, const Move &m2);
 		};
 		ll numBoardsVisited;
 		double default_tl;
@@ -29,13 +29,13 @@ class SamuelEngine : public AbstractPlayer {
 
 		const double (*getPosVal(const PiecePtr ptr) const)[8];
 		double relative_value(const PiecePtr ptr) const;
-		std::optional<double> returnStatusIfGameOver(const ChessBoard &board) const;
+		std::optional<double> returnStatusIfGameOver(ChessBoard &board) const;
 		double PieceValue(const PiecePtr ptr, const Square sq) const;
 		double relative_value(const ChessBoard &board, const bool isWhite) const;
-		std::vector<Move> orderMoves(const ChessBoard &board) const;
-		double evaluate_chess_pos_without_depth(const ChessBoard &board) const;
-		std::pair<double, Move> evaluate_chess_pos_with_depth(const ChessBoard &board, int depth, double alpha, double beta);
-		std::pair<double, Move> evaluate_chess_pos_with_tl(const ChessBoard &board, double time_limit = 3.0);
+		std::vector<Move> orderMoves(ChessBoard &board) const;
+		double evaluate_chess_pos_without_depth(ChessBoard &board) const;
+		std::pair<double, Move> evaluate_chess_pos_with_depth(ChessBoard &board, int depth, double alpha, double beta);
+		std::pair<double, Move> evaluate_chess_pos_with_tl(ChessBoard &board, double time_limit = 3.0);
 		inline bool shouldStop() const;
 
 	public:
