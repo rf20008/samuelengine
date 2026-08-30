@@ -173,12 +173,7 @@ double SamuelEngine::evaluate_chess_pos_without_depth(ChessBoard &board) const {
 }
 
 std::vector<Move> SamuelEngine::orderMoves(ChessBoard &board) const {
-	std::set<Move> moves = board.allLegalMoves();
-	std::vector<Move> movesVec;
-	movesVec.reserve(moves.size());
-	for (const Move &move : moves) {
-		movesVec.push_back(move);
-	}
+	std::vector<Move> movesVec = board.allLegalMoves();
 	std::sort(begin(movesVec), end(movesVec), SamuelEngine::MoveOrderer(board));
 	return movesVec;
 }
