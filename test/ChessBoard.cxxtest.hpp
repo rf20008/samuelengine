@@ -269,6 +269,12 @@ class TestBoard : public CxxTest::TestSuite {
 		void testNoKingFound() {
 			TS_ASSERT_THROWS_ANYTHING(ChessBoard myBoard("rnbq1bnr/pp2pppp/3p4/3p4/N7/8/PPPPPPPP/R1BQKBNR b KQ d6 5 4"));
 		}
+        void testFailsWithTwoWhiteKings() {
+			TS_ASSERT_THROWS_ANYTHING(ChessBoard myBoard("rnbqkbnr/pp2pppp/3p4/3p4/N7/8/PPPPPPPP/R1BKKBNR b KQ d6 5 4"));
+		}
+        void testFailsWithTwoBlackKings() {
+			TS_ASSERT_THROWS_ANYTHING(ChessBoard myBoard("rnbkkbnr/pp2pppp/3p4/3p4/N7/8/PPPPPPPP/R1BQKBNR b KQ d6 5 4"));
+		}
         
 		void testCastlingPossibleWeirdRegressionTest() {
 			ChessBoard board;

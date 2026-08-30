@@ -65,9 +65,27 @@ ChessBoard::ChessBoard(const std::string &fen) {
 	if (fullmove_clock < 1) {
 		throw std::invalid_argument("fullmove clock too low");
 	}
-    this->whiteKingPos = findKingSlow(true);
-    this->blackKingPos = findKingSlow(false);
     this->zobrist_hash = this->zobristFromScratch();
+
+    // find Kings and validate them
+    int numWhiteKings = 0;
+    int numBlackKings = 0;
+    for (int sq64 = 0; sq64<64; ++sq64) {
+        Square sq = Square::from64(sq64);  
+        auto piece = this->pieces[sq.idx];
+        if (!piece) continue;
+        char symb = piece-> symbol();
+        if (toupper(symb) == 'K') { // it's a king
+            if (this->pieces[sq.idx]->getBelongsToWhite()) {
+                ++numWhiteKings; whiteKingPos = sq;
+            } else {
+                ++numBlackKings; blackKingPos = sq;
+            }
+        }
+    }
+    if (numWhiteKings != 1 || numBlackKings != 1) {
+        throw std::logic_error("Invalid chess position. Expected 1 king of each color but found " + std::to_string(numWhiteKings) + " white kings and " + std::to_string(numBlackKings) + " black kings. FEN: " + fen);
+    }
 }
 
 
