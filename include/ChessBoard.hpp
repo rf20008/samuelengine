@@ -36,7 +36,7 @@ template <typename T> inline std::vector<T> &mergeSets(std::vector<T> &A, const 
 class ChessBoard {
 	protected:
         uint64_t zobrist_hash;
-		PiecePtr pieces[128]{};
+		Piece pieces[128]{};
 		bool whiteToMove;
 		PlayerState whitePlayerState;
 		PlayerState blackPlayerState;

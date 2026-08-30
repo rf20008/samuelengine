@@ -27,7 +27,7 @@ struct Piece {
     public:
         PieceType type;
 		Color color;
-        
+        constexpr Piece() : type(PieceType::NONE), color(Color::NONE) {}
 		constexpr Piece(PieceType type, Color c) : type(type), color(c) {}
 		constexpr bool getBelongsToWhite() const { return color == Color::WHITE; }
         constexpr char symbol() const {
