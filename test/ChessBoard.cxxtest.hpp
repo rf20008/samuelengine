@@ -42,6 +42,7 @@ class TestBoard : public CxxTest::TestSuite {
             }
             std::cerr<<"after checking e5f6: "<<myBoard.fen()<<std::endl;
 			myBoard.processMove(Move(Square("e5"), Square("f6"), '\0', MoveType::EN_PASSANT));
+            TS_ASSERT(!myBoard.isMoveLegal(Move("e5", "f6")));
 			TS_ASSERT(myBoard.getPiece(Square("f6")).isValid());
 			TS_ASSERT_EQUALS(myBoard.getPiece(Square("f6")).symbol(), 'P');
 			TS_ASSERT(myBoard.getPiece(Square("f5")).isEmpty());
@@ -50,16 +51,41 @@ class TestBoard : public CxxTest::TestSuite {
 		void testEnPassantBlack() {
 			std::string myFen = "rnbqkbnr/pppp1ppp/8/8/P3pP2/8/1PPPP1PP/RNBQKBNR b KQkq f3 0 4";
 			ChessBoard myBoard = ChessBoard(myFen);
+            TS_ASSERT_EQUALS(myBoard.fen(), myFen);
+            try {
+                myBoard.verifyZobrist();
+            } catch (const std::logic_error& err) {
+                TS_FAIL(std::string("error (after making board): ") + err.what());
+            }
 			TS_ASSERT_EQUALS(*myBoard.getEnPassantTargetSquare(), Square("f3"));
 			TS_ASSERT_EQUALS(myBoard.getPiece(Square("e4")).symbol(), 'p');
 			TS_ASSERT(myBoard.isMoveLegal(Move(Square("e4"), Square("f3"), '\0', MoveType::EN_PASSANT)));
+            try {
+                myBoard.verifyZobrist();
+            } catch (const std::logic_error& err) {
+                TS_FAIL(std::string("error (after checking e4f3EP): ") + err.what());
+            }
+            TS_ASSERT(!myBoard.isMoveLegal(Move("e4", "f3")));
+            TS_ASSERT_EQUALS(myBoard.fen(), myFen);
+            try {
+                myBoard.verifyZobrist();
+            } catch (const std::logic_error& err) {
+                TS_FAIL(std::string("error (after checking e4f3, NO EP): ") + err.what());
+            }
 			myBoard.processMove(Move(Square("e4"), Square("f3"), '\0', MoveType::EN_PASSANT));
+            TS_ASSERT_EQUALS(myBoard.fen(), myFen);
+            try {
+                myBoard.verifyZobrist();
+            } catch (const std::logic_error& err) {
+                TS_FAIL(std::string("error (after making board): ") + err.what());
+            }
 			TS_ASSERT_EQUALS(myBoard.getPiece(Square("f3")).symbol(), 'p');
 			TS_ASSERT_EQUALS(myBoard.getPiece(Square("f4")), EMPTY_SQUARE);
 		}
 		void testStartingPosNotCheckmate() {
 			ChessBoard myBoard = ChessBoard();
 			TS_ASSERT(!myBoard.isInCheckmate());
+            std::cout<<"board status: "<<static_cast<int>(myBoard.getStatus())<<std::endl;
 			TS_ASSERT(!isGameOver(myBoard.getStatus()));
 			TS_ASSERT_EQUALS(myBoard.perft(1), 20);
 			TS_ASSERT_EQUALS(myBoard.perft(2), 400);

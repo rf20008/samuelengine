@@ -115,6 +115,7 @@ bool ChessBoard::isMoveLegal(Move m) {
 } // return whether a move is legal
 
 void ChessBoard::processEnPassantCapture(Move m, const Piece &start_ptr, const Piece &end_ptr) {
+    if (m.type != MoveType::EN_PASSANT) return;
     if (!enPassant_targetSquare || m.endingSquare != *enPassant_targetSquare) return;
     if (start_ptr.type != PieceType::PAWN || !end_ptr.isEmpty()) return;
 
@@ -132,7 +133,7 @@ void ChessBoard::processEnPassantUpdate(Move m, const Piece &start_ptr, const Pi
 	//if (enPassant_targetSquare) cout<<"enPassant target Square: "<< (enPassant_targetSquare->toString())<<endl;
 	if (start_ptr.type == PieceType::PAWN && maxNorm(m.endingSquare, m.startingSquare) > 1) {
 		//cout<<"a Pawn moved 2 squares\n";
-		enPassant_targetSquare = std::optional<Square>(m.startingSquare + ((start_ptr.color == Color::WHITE) ? NORTH : SOUTH));
+		enPassant_targetSquare = Square(m.startingSquare.file(), (m.startingSquare.rank() + m.endingSquare.rank())/2);
 	} else {
 		enPassant_targetSquare = std::nullopt;
 	}
@@ -424,6 +425,7 @@ std::vector<Move> ChessBoard::getSlidingMoverPositions(const Square from, const 
 	while (cur.isValid()) {
 		Piece p = getPiece(cur);
 		if (p.isValid()) {
+            assert(p.color != Color::NONE);
 			if (p.color != fromColor) {
 				// not of same color, so can capture!
 				places.emplace_back(from, cur);
@@ -826,16 +828,16 @@ UndoMove ChessBoard::buildUndo(const Move &m) const {
 }
 
 void ChessBoard::undoMove(const UndoMove &u) {
-    pieces[u.move.startingSquare.idx] = u.originalPiece;
+    setPiece(u.move.startingSquare, u.originalPiece);
     if (u.move.type == MoveType::EN_PASSANT) {
-        pieces[u.move.endingSquare.idx] = EMPTY_SQUARE;
-        pieces[u.capturedSquare.idx] = u.capturedPiece; // pawn behind
+        setPiece(u.move.endingSquare, EMPTY_SQUARE);
+        setPiece(u.capturedSquare, u.capturedPiece); // pawn behind
     } else {
-            pieces[u.move.endingSquare.idx] = u.capturedPiece; // nullptr if no capture
+            setPiece(u.move.endingSquare, u.capturedPiece); // nullptr if no capture
     }
     if (u.rookFrom.isValid() && u.rookTo.isValid() && u.move.type == MoveType::CASTLING) {
-            pieces[u.rookFrom.idx] = pieces[u.rookTo.idx];
-            pieces[u.rookTo.idx] = EMPTY_SQUARE;
+            setPiece(u.rookFrom, getPieceFromSymbol(getPiece(u.rookTo).symbol()));
+            setPiece(u.rookTo, EMPTY_SQUARE);
     }
 
     // must update king cache

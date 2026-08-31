@@ -22,7 +22,7 @@ struct Move {
 		Move &operator=(Move &&other) = default;
 		~Move() = default;
 		bool operator<(const Move &other) const;
-		bool operator==(const Move &other) const;
+		bool operator==(const Move &other) const = default;
 		std::string operator()() const;
 };
 #endif
