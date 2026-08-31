@@ -79,4 +79,8 @@ class TestSquare : public CxxTest::TestSuite {
 			const Square s2 = Square(9);
 			TS_ASSERT_EQUALS(s2.isValid(), false);
 		}
+		void testFile() {
+			const Square s = Square(3 * 16 + 5);
+			TS_ASSERT_EQUALS(s.file(), 5);
+		}
 };
