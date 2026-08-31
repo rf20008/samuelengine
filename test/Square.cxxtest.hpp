@@ -24,6 +24,12 @@ class TestSquare : public CxxTest::TestSuite {
 			TS_ASSERT_EQUALS(s.file(), 1);
 			TS_ASSERT_EQUALS(s.rank(), 4);
 		}
+		void testCharArrayConstructor() {
+			char a[2] = {'b', '5'};
+			Square s = Square(a);
+			TS_ASSERT_EQUALS(s.file(), 1);
+			TS_ASSERT_EQUALS(s.rank(), 4);
+		}
 
 		// testing operators
 		void testAdd() {
