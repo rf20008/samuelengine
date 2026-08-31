@@ -22,29 +22,29 @@ enum class PieceType {
 
 inline std::string display_piece(PieceType pt) {
 	switch (pt) {
-	case PieceType::WPAWN:
-		return "♟";
-	case PieceType::WKNIGHT:
-		return "♞";
-	case PieceType::WBISHOP:
-		return "♝";
-	case PieceType::WROOK:
-		return "♜";
-	case PieceType::WQUEEN:
-		return "♛";
-	case PieceType::WKING:
-		return "♚";
 	case PieceType::BPAWN:
-		return "♙";
+		return "♟";
 	case PieceType::BKNIGHT:
-		return "♘";
+		return "♞";
 	case PieceType::BBISHOP:
-		return "♗";
+		return "♝";
 	case PieceType::BROOK:
-		return "♖";
+		return "♜";
 	case PieceType::BQUEEN:
-		return "♕";
+		return "♛";
 	case PieceType::BKING:
+		return "♚";
+	case PieceType::WPAWN:
+		return "♙";
+	case PieceType::WKNIGHT:
+		return "♘";
+	case PieceType::WBISHOP:
+		return "♗";
+	case PieceType::WROOK:
+		return "♖";
+	case PieceType::WQUEEN:
+		return "♕";
+	case PieceType::WKING:
 		return "♔";
 	default:
 		return "?";
