@@ -1,7 +1,6 @@
 #include "ChessBoard.hpp"
 #include "Errors.hpp"
 #include "FEN.hpp"
-#include "GetPiece.hpp"
 
 #include <algorithm>
 #include <cassert>

@@ -9,10 +9,10 @@
 #include <vector>
 namespace ParsePieces {
 
-void parsePiecePart(const std::string &PiecePart, PiecePtr board[128]) {
+void parsePiecePart(const std::string &PiecePart, Piece board[128]) {
 	// 1. init all to null
 	for (int i = 0; i < 128; ++i)
-		board[i] = nullptr;
+		board[i] = EMPTY_SQUARE;
 
 	std::stringstream RankReader(PiecePart);
 	std::vector<std::string> Ranks;
@@ -93,22 +93,22 @@ std::optional<Square> parseEnPassantPart(std::string EnPassantPart) {
 		throw InvalidFEN("Square is out of bounds");
 	return sq;
 }
-std::string getPiecePart(const PiecePtr pieces[128]) {
+std::string getPiecePart(const Piece pieces[128]) {
 	std::string PiecePart;
 	// FEN goes rank 8 -> 1, so loop 7 down to 0
 	for (int rank = 7; rank >= 0; --rank) {
 		int numWOPiece = 0;
 		for (int file = 0; file < 8; ++file) {
 			Square sq(file, rank);
-			PiecePtr piece = pieces[sq.idx];
-			if (!piece) {
+			Piece piece = pieces[sq.idx];
+			if (piece.isEmpty()) {
 				++numWOPiece;
 			} else {
 				if (numWOPiece != 0) {
 					PiecePart.push_back('0' + numWOPiece);
 					numWOPiece = 0;
 				}
-				PiecePart.push_back(piece->symbol());
+				PiecePart.push_back(piece.symbol());
 			}
 		}
 		if (numWOPiece != 0) {
