@@ -93,13 +93,24 @@ ChessBoard::ChessBoard(const std::string &fen) {
 
 
 bool ChessBoard::isMoveLegal(Move m) {
-	// A move is legal exactly when its destination shows up among the legal
-	// destinations for whichever piece sits on the move's starting square --
-	// allLegalMoves(sq) does the real work of applying piece movement rules
-	// and rejecting anything that would leave our own king in check.
-	std::vector<Move> legalMovesFromStart = allLegalMoves(m.startingSquare);
-	return std::find(legalMovesFromStart.begin(), 
-    legalMovesFromStart.end(), m) != legalMovesFromStart.end();
+    std::vector<Move> pseudoLegalMoves =
+        allPseudoLegalDestinations(m.startingSquare);
+
+    bool moveIsPseudoLegal =
+        std::find(pseudoLegalMoves.begin(),
+                  pseudoLegalMoves.end(),
+                  m) != pseudoLegalMoves.end();
+
+    if (!moveIsPseudoLegal)
+        return false;
+
+    Color movingColor = playerToMove;
+
+    this->processPsuedoLegalMove(m);
+    bool inCheck = this->isInCheck(movingColor);
+    this->undoMove();
+
+    return !inCheck;
 } // return whether a move is legal
 
 void ChessBoard::processEnPassantCapture(Move m, const Piece &start_ptr, const Piece &end_ptr) {
