@@ -37,7 +37,7 @@ class ChessBoard {
 	protected:
         uint64_t zobrist_hash;
 		Piece pieces[128]{};
-		bool whiteToMove;
+		Color playerToMove;
 		PlayerState whitePlayerState;
 		PlayerState blackPlayerState;
 		int halfmove_clock;
@@ -71,7 +71,7 @@ class ChessBoard {
         uint64_t getZobrist() const {return zobrist_hash;}
 		int get_halfmove_clock() const { return halfmove_clock; }
 		int get_fullmove_clock() const { return fullmove_clock; }
-		bool get_whiteToMove() const { return whiteToMove; }
+		bool get_whiteToMove() const { return playerToMove == Color::WHITE; }
 		PlayerState getWhitePlayerState() const { return whitePlayerState; }
 		PlayerState getBlackPlayerState() const { return blackPlayerState; }
 		std::optional<Square> getEnPassantTargetSquare() const { return enPassant_targetSquare; }
@@ -117,7 +117,7 @@ class ChessBoard {
         }
 		bool hasPiece(const Square origin) const { return getPiece(origin) != EMPTY_SQUARE; }
 		bool squareAttackedBy(Square target, bool attackerIsWhite) const;
-		bool isSlidingAttacker(Square from, int dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) const;
+		bool isSlidingAttacker(Square from, int dir, bool attackerIsWhite, PieceType pieceTypeA, PieceType pieceTypeB) const;
 
 		std::vector<Move> whereKingCouldMove(const Square origin) const;
 		std::vector<Move> wherePawnCouldMove(const Square origin) const;
@@ -180,7 +180,7 @@ class ChessBoard {
             return (
                 whitePlayerState == other.whitePlayerState &&
                 blackPlayerState == other.blackPlayerState &&
-                whiteToMove == other.whiteToMove &&
+                playerToMove == other.playerToMove &&
                 halfmove_clock == other.halfmove_clock &&
                 enPassant_targetSquare == other.enPassant_targetSquare
             );

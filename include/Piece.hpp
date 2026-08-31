@@ -54,6 +54,13 @@ struct Piece {
         constexpr bool isEmpty() const {
             return this->color == Color::NONE && this->type == PieceType::NONE;
         }
+        constexpr bool isValid() const {
+            return !isEmpty();
+        }
+        constexpr int pieceNum() const {
+            assert(this.type != PieceType::NONE);
+            return static_cast<int>(this->type) - 1;
+        }
 };
 
 constexpr Piece EMPTY_SQUARE = {PieceType::NONE, Color::NONE};

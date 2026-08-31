@@ -49,14 +49,14 @@ void parsePiecePart(const std::string &PiecePart, Piece board[128]) {
 		}
 	}
 }
-bool parsePlayerPart(const std::string &PlayerPart) {
+Color parsePlayerPart(const std::string &PlayerPart) {
 	if (PlayerPart.size() != 1) {
 		throw InvalidFEN("Error: Player argument must be 1 character");
 	}
 	char PlayerChar = PlayerPart[0];
 	if (PlayerChar != 'w' && PlayerChar != 'b')
 		throw InvalidFEN("Error: Player Argument must be either \"w\" or \"b\".");
-	return (PlayerChar == 'w');
+	return (PlayerChar == 'w' ? Color::WHITE : Color::BLACK);
 }
 std::pair<PlayerState, PlayerState> parseCastlingPart(const std::string &CastlingPart) {
 	PlayerState whiteState{false, false};
