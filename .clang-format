@@ -5,3 +5,4 @@ IndentAccessModifiers: true
 AccessModifierOffset: 1
 ReflowComments: false
 ColumnLimit: 10000
+MaxEmptyLinesToKeep: 1
