@@ -22,22 +22,22 @@ class TestBoard : public CxxTest::TestSuite {
 			std::string myFen = "rnbqkbnr/1pppp1pp/8/p3Pp2/8/7P/PPPP1PP1/RNBQKBNR w KQkq f6 0 4";
 			ChessBoard myBoard = ChessBoard(myFen);
 			TS_ASSERT_EQUALS(*myBoard.getEnPassantTargetSquare(), Square("f6"));
-			TS_ASSERT_EQUALS(myBoard.getPiece(Square("e5"))->symbol(), 'P');
+			TS_ASSERT_EQUALS(myBoard.getPiece(Square("e5")).symbol(), 'P');
 			TS_ASSERT(myBoard.isMoveLegal(Move(Square("e5"), Square("f6"))))
 			myBoard.processMove(Move(Square("e5"), Square("f6")));
-			TS_ASSERT(myBoard.getPiece(Square("f6")));
-			TS_ASSERT_EQUALS(myBoard.getPiece(Square("f6"))->symbol(), 'P');
-			TS_ASSERT(!myBoard.getPiece(Square("f5")));
+			TS_ASSERT(myBoard.getPiece(Square("f6")).isValid());
+			TS_ASSERT_EQUALS(myBoard.getPiece(Square("f6")).symbol(), 'P');
+			TS_ASSERT(myBoard.getPiece(Square("f5")).isEmpty());
 		}
 		void testEnPassantBlack() {
 			std::string myFen = "rnbqkbnr/pppp1ppp/8/8/P3pP2/8/1PPPP1PP/RNBQKBNR b KQkq f3 0 4";
 			ChessBoard myBoard = ChessBoard(myFen);
 			TS_ASSERT_EQUALS(*myBoard.getEnPassantTargetSquare(), Square("f3"));
-			TS_ASSERT_EQUALS(myBoard.getPiece(Square("e4"))->symbol(), 'p');
+			TS_ASSERT_EQUALS(myBoard.getPiece(Square("e4")).symbol(), 'p');
 			TS_ASSERT(myBoard.isMoveLegal(Move(Square("e4"), Square("f3"))));
 			myBoard.processMove(Move(Square("e4"), Square("f3")));
-			TS_ASSERT_EQUALS(myBoard.getPiece(Square("f3"))->symbol(), 'p');
-			TS_ASSERT_EQUALS(myBoard.getPiece(Square("f4")), nullptr);
+			TS_ASSERT_EQUALS(myBoard.getPiece(Square("f3")).symbol(), 'p');
+			TS_ASSERT_EQUALS(myBoard.getPiece(Square("f4")), EMPTY_SQUARE);
 		}
 		void testStartingPosNotCheckmate() {
 			ChessBoard myBoard = ChessBoard();
@@ -166,7 +166,8 @@ class TestBoard : public CxxTest::TestSuite {
 			ChessBoard myBoard("6k1/8/8/8/8/8/8/4K2R w K - 0 1");
             ChessBoard oldBoard = myBoard;
 			TS_ASSERT(myBoard.getWhitePlayerState().canKingsideCastle);
-			TS_ASSERT_EQUALS(myBoard.findKing(true), "e1");
+			TS_ASSERT_EQUALS(myBoard.findKing(Color::WHITE), "e1");
+            TS_ASSERT_EQUALS(myBoard.findKing(Color::BLACK), "e8");
 			TS_ASSERT(myBoard.isMoveLegal(Move("e1", "g1")));
 			try {
 				myBoard.processMove(Move("e1", "g1"));
@@ -174,12 +175,12 @@ class TestBoard : public CxxTest::TestSuite {
 				TS_FAIL("move from e1 to g1 not legal");
 			}
 			try {
-				TS_ASSERT(myBoard.getAndAssertPiece("g1", 'K'));
+				TS_ASSERT(myBoard.getAndAssertPiece("g1", PieceType::KING).type == PieceType::KING);
 			} catch (WrongPieceType &err) {
 				TS_FAIL("g1 does not contain king");
 			}
 			try {
-				TS_ASSERT(myBoard.getAndAssertPiece("f1", 'R'));
+				TS_ASSERT(myBoard.getAndAssertPiece("f1", PieceType::ROOK).type == PieceType::ROOK);
 			} catch (WrongPieceType &err) {
 				TS_FAIL("f1 does not contain rook");
 			}
@@ -196,12 +197,12 @@ class TestBoard : public CxxTest::TestSuite {
 				TS_FAIL("move from e1 to c1 not legal");
 			}
 			try {
-				TS_ASSERT(myBoard.getAndAssertPiece("c1", 'K'));
+				TS_ASSERT(myBoard.getAndAssertPiece("c1", PieceType::KING).type == PieceType::KING);
 			} catch (WrongPieceType &err) {
 				TS_FAIL("c1 does not contain king");
 			}
 			try {
-				TS_ASSERT(myBoard.getAndAssertPiece("d1", 'R'));
+				TS_ASSERT(myBoard.getAndAssertPiece("d1", PieceType::ROOK).type == PieceType::ROOK);
 			} catch (WrongPieceType &err) {
 				TS_FAIL("f1 does not contain rook");
 			}
@@ -211,7 +212,7 @@ class TestBoard : public CxxTest::TestSuite {
 		void testBlackKingsideCastling() {
 			ChessBoard myBoard("4k2r/8/8/8/8/8/8/6K1 b k - 0 1");
 			TS_ASSERT(myBoard.getBlackPlayerState().canKingsideCastle);
-			TS_ASSERT_EQUALS(myBoard.findKing(false), "e8");
+			TS_ASSERT_EQUALS(myBoard.findKing(Color::BLACK), "e8");
 			TS_ASSERT(myBoard.isMoveLegal(Move("e8", "g8")));
 			try {
 				myBoard.processMove(Move("e8", "g8"));
@@ -219,12 +220,12 @@ class TestBoard : public CxxTest::TestSuite {
 				TS_FAIL("move from e8 to g8 not legal");
 			}
 			try {
-				TS_ASSERT(myBoard.getAndAssertPiece("g8", 'K'));
+				TS_ASSERT(myBoard.getAndAssertPiece("g8", PieceType::KING).type == PieceType::KING);
 			} catch (WrongPieceType &err) {
 				TS_FAIL("g8 does not contain king");
 			}
 			try {
-				TS_ASSERT(myBoard.getAndAssertPiece("f8", 'R'));
+				TS_ASSERT(myBoard.getAndAssertPiece("f8", PieceType::ROOK).type == PieceType::ROOK);
 			} catch (WrongPieceType &err) {
 				TS_FAIL("f8 does not contain rook");
 			}
@@ -241,12 +242,12 @@ class TestBoard : public CxxTest::TestSuite {
 				TS_FAIL("move from e8 to c8 not legal");
 			}
 			try {
-				TS_ASSERT(myBoard.getAndAssertPiece("c8", 'K'));
+				TS_ASSERT(myBoard.getAndAssertPiece("c8", PieceType::KING).type == PieceType::KING);
 			} catch (WrongPieceType &err) {
 				TS_FAIL("c8 does not contain king");
 			}
 			try {
-				TS_ASSERT(myBoard.getAndAssertPiece("d8", 'R'));
+				TS_ASSERT(myBoard.getAndAssertPiece("d8", PieceType::ROOK).type == PieceType::ROOK);
 			} catch (WrongPieceType &err) {
 				TS_FAIL("d8 does not contain rook");
 			}
@@ -264,7 +265,7 @@ class TestBoard : public CxxTest::TestSuite {
 			TS_ASSERT(!board.isMoveLegal(Move("e7", "d6")));
 			TS_ASSERT_THROWS_ANYTHING(board.processMove(Move("e7", "d6")));
 			//std::cout<<board.debug_board()<<std::endl;
-			TS_ASSERT_EQUALS(board.findKing(false), Square("d7"));
+			TS_ASSERT_EQUALS(board.findKing(Color::BLACK), Square("d7"));
 		}
 		void testNoKingFound() {
 			TS_ASSERT_THROWS_ANYTHING(ChessBoard myBoard("rnbq1bnr/pp2pppp/3p4/3p4/N7/8/PPPPPPPP/R1BQKBNR b KQ d6 5 4"));
@@ -333,20 +334,20 @@ class TestBoard : public CxxTest::TestSuite {
 			for (int rank = 0; rank < 8; ++rank) {
 				for (int file = 0; file < 8; ++file) {
 					Square sq(file, rank);
-					PiecePtr piece = board.getPiece(sq);
+					Piece piece = board.getPiece(sq);
 					char exp = expected[rank][file];
 
 					if (exp == 0) {
 						std::string msg = "expected empty at " + sq.toString();
-						TSM_ASSERT(msg.c_str(), piece == nullptr);
+						TSM_ASSERT(msg.c_str(), piece.isEmpty());
 					} else {
 						std::string where = sq.toString();
 						std::string expStr(1, exp);
 						std::string msg1 = "expected " + expStr + " but got empty at " + where;
-						TSM_ASSERT(msg1.c_str(), piece != nullptr);
-						if (piece) {
+						TSM_ASSERT(msg1.c_str(), piece.isValid());
+						if (piece.isValid()) {
 							std::string msg2 = "at " + where;
-							TSM_ASSERT_EQUALS(msg2.c_str(), piece->symbol(), exp);
+							TSM_ASSERT_EQUALS(msg2.c_str(), piece.symbol(), exp);
 						}
 					}
 				}
@@ -356,7 +357,7 @@ class TestBoard : public CxxTest::TestSuite {
 			int count = 0;
 			for (int r = 0; r < 8; ++r)
 				for (int f = 0; f < 8; ++f)
-					if (board.getPiece(Square(f, r)))
+					if (board.getPiece(Square(f, r)).isValid())
 						count++;
 			TS_ASSERT_EQUALS(count, 32);
 		}
@@ -378,7 +379,7 @@ class TestBoard : public CxxTest::TestSuite {
 		}
         void testSixtyQueensCheckmate() {
             ChessBoard board("knQQQQQQ/QnQQQQQQ/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ/QQQQQQQQ/KQQQQQQQ b - - 0 1");
-            TS_ASSERT(board.isInCheck(false));
+            TS_ASSERT(board.isInCheck(Color::BLACK));
             TS_ASSERT(board.allLegalMoves().empty());
             TS_ASSERT(board.isInCheckmate());
         }
