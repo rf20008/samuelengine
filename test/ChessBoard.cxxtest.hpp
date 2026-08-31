@@ -19,27 +19,41 @@ class TestBoard : public CxxTest::TestSuite {
 			(void)myBoard;
 		}
 		void testEnPassantWhite() {
-			std::string myFen = "rnbqkbnr/1pppp1pp/8/p3Pp2/8/7P/PPPP1PP1/RNBQKBNR w KQkq f6 0 4";
+			const std::string myFen = "rnbqkbnr/1pppp1pp/8/p3Pp2/8/7P/PPPP1PP1/RNBQKBNR w KQkq f6 0 4";
 			ChessBoard myBoard = ChessBoard(myFen);
             TS_ASSERT_EQUALS(myBoard.fen(), myFen);
             std::cerr<<"original FEN: "<<myBoard.fen()<<std::endl;
 			TS_ASSERT_EQUALS(*myBoard.getEnPassantTargetSquare(), Square("f6"));
 			TS_ASSERT_EQUALS(myBoard.getPiece(Square("e5")).symbol(), 'P');
             std::cerr<<"before checking e5f6: "<<myBoard.fen()<<std::endl;
-			TS_ASSERT(myBoard.isMoveLegal(Move(Square("e5"), Square("f6"))));
+            TS_ASSERT_EQUALS(myBoard.fen(), myFen);
+            try {
+                myBoard.verifyZobrist();
+            } catch (const std::logic_error& err) {
+                TS_FAIL(std::string("error (before checking legality): ") + err.what());
+            }
+			TS_ASSERT(myBoard.isMoveLegal(
+                Move(Square("e5"), Square("f6"), '\0', MoveType::EN_PASSANT)));
+            TS_ASSERT_EQUALS(myBoard.fen(), myFen);
+            try {
+                myBoard.verifyZobrist();
+            } catch (const std::logic_error& err) {
+                TS_FAIL(std::string("error (after checking legality): ") + err.what());
+            }
             std::cerr<<"after checking e5f6: "<<myBoard.fen()<<std::endl;
-			myBoard.processMove(Move(Square("e5"), Square("f6")));
+			myBoard.processMove(Move(Square("e5"), Square("f6"), '\0', MoveType::EN_PASSANT));
 			TS_ASSERT(myBoard.getPiece(Square("f6")).isValid());
 			TS_ASSERT_EQUALS(myBoard.getPiece(Square("f6")).symbol(), 'P');
 			TS_ASSERT(myBoard.getPiece(Square("f5")).isEmpty());
+            std::cerr<<"testEP has finished\n";
 		}
 		void testEnPassantBlack() {
 			std::string myFen = "rnbqkbnr/pppp1ppp/8/8/P3pP2/8/1PPPP1PP/RNBQKBNR b KQkq f3 0 4";
 			ChessBoard myBoard = ChessBoard(myFen);
 			TS_ASSERT_EQUALS(*myBoard.getEnPassantTargetSquare(), Square("f3"));
 			TS_ASSERT_EQUALS(myBoard.getPiece(Square("e4")).symbol(), 'p');
-			TS_ASSERT(myBoard.isMoveLegal(Move(Square("e4"), Square("f3"))));
-			myBoard.processMove(Move(Square("e4"), Square("f3")));
+			TS_ASSERT(myBoard.isMoveLegal(Move(Square("e4"), Square("f3"), '\0', MoveType::EN_PASSANT)));
+			myBoard.processMove(Move(Square("e4"), Square("f3"), '\0', MoveType::EN_PASSANT));
 			TS_ASSERT_EQUALS(myBoard.getPiece(Square("f3")).symbol(), 'p');
 			TS_ASSERT_EQUALS(myBoard.getPiece(Square("f4")), EMPTY_SQUARE);
 		}

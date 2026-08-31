@@ -59,6 +59,15 @@ class ChessBoard {
 		ChessBoard &operator=(const ChessBoard &other) = default;
 		ChessBoard &operator=(ChessBoard &&other) = default;
 
+        //zobrist setter
+        void setPiece(Square sq, Piece newPiece) {
+            assert(sq.idx>=0 && sq.idx < 128);
+            Piece old = pieces[sq.idx];
+            if (old.isValid()) zobrist_hash ^= ZOBRIST.pieces[old.colorNum()][old.pieceNum()][sq.to64()];
+            pieces[sq.idx] = newPiece;
+            if (newPiece.isValid()) zobrist_hash ^= ZOBRIST.pieces[newPiece.colorNum()][newPiece.pieceNum()][sq.to64()];
+        }
+
 		// getters
 		Piece getPiece(Square sq) const {
             // bounds check: an out-of-board square simply has no piece on it

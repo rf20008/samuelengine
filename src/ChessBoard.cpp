@@ -38,13 +38,14 @@ ChessBoard::ChessBoard() : ChessBoard::ChessBoard("rnbqkbnr/pppppppp/8/8/8/8/PPP
 
 ChessBoard::ChessBoard(const std::string &fen) {
 	(void)fen;
+    this->zobrist_hash = 0;
 	std::istringstream fenSS(fen);
 	std::string PiecePart;
 	std::string PlayerPart;
 	std::string CastlingPart;
 	std::string EnPassantPart;
 	for (int i = 0; i < 128; i++)
-		this->pieces[i] = EMPTY_SQUARE;
+        pieces[i] = EMPTY_SQUARE;
 	int Halfmove_Part;
 	int Fullmove_part;
 	fenSS >> PiecePart >> PlayerPart >> CastlingPart >> EnPassantPart >> Halfmove_Part >> Fullmove_part;
@@ -114,19 +115,12 @@ bool ChessBoard::isMoveLegal(Move m) {
 } // return whether a move is legal
 
 void ChessBoard::processEnPassantCapture(Move m, const Piece &start_ptr, const Piece &end_ptr) {
-	if (enPassant_targetSquare && (m.endingSquare == *enPassant_targetSquare) && start_ptr.type == PieceType::PAWN && end_ptr.isEmpty()) {
-		Square squareCaptured = m.endingSquare + ((start_ptr.color == Color::WHITE) ? SOUTH : NORTH);
-		//cout<<"removing piece at"<<(squareCaptured.toString())<<endl;
-        // xor out the old piece
-        Piece cap = pieces[squareCaptured.idx];
-        if (cap.type != PieceType::NONE) {
-            assert(cap.isValid());
-            zobrist_hash ^= ZOBRIST.pieces[cap.colorNum()][cap.pieceNum()][squareCaptured.to64()];
-        }
-        // remove the old square
-		pieces[squareCaptured.idx] = EMPTY_SQUARE;
+    if (!enPassant_targetSquare || m.endingSquare != *enPassant_targetSquare) return;
+    if (start_ptr.type != PieceType::PAWN || !end_ptr.isEmpty()) return;
 
-	}
+    Square squareCaptured = Square(m.endingSquare.file(), m.startingSquare.rank());
+    // cout << "removing piece at " << squareCaptured.toString() << endl;
+    setPiece(squareCaptured, EMPTY_SQUARE);
 }
 void ChessBoard::processEnPassantUpdate(Move m, const Piece &start_ptr, const Piece &end_ptr) {
 	// update enPassantTargetSquare
@@ -173,37 +167,28 @@ void ChessBoard::processCastling(Move m, const Piece &start_ptr) {
 	} // black queenside castling
 	// sanity check
 	// assert a rook at oldRookPos, and newRookPOs is empty
-    zobrist_hash ^= ZOBRIST.pieces[get_whiteToMove()][rPr][oldRookPos.to64()];
-    zobrist_hash ^= ZOBRIST.pieces[get_whiteToMove()][rPr][newRookPos.to64()];
     ENSURE((pieces[oldRookPos.idx].type == PieceType::ROOK), ("Expected a rook at " + oldRookPos.toString() + " that was not found. debug board: " + this->debug_board()));
     ENSURE(pieces[newRookPos.idx].isEmpty(), ("Expected newRookPos to be empty, but found " + std::string(1, pieces[newRookPos.idx].symbol()) + " instead"));
-    pieces[newRookPos.idx] = pieces[oldRookPos.idx];
-    pieces[oldRookPos.idx] = EMPTY_SQUARE;
+    setPiece(newRookPos, getPiece(oldRookPos));
+    setPiece(oldRookPos, EMPTY_SQUARE);
 	return;
 }
 void ChessBoard::processPsuedoLegalMove(Move m) {
     #ifndef NDEBUG
-    std::cout<<"BEFORE PROCESSING MOVE\n";
     this->verifyZobrist();
-    std::cout<<"Zobrist successfully processed\n";
     #endif
 
     this->history.push_back(this->buildUndo(m));
     
     // Square rows/cols are 1-indexed, pieces is 0-indexed and rank-major (see getPiece)
-	Piece start_ptr = this->pieces[m.startingSquare.idx];
-	Piece end_ptr = this->pieces[m.endingSquare.idx];
+	const Piece start_ptr = this->pieces[m.startingSquare.idx];
+	const Piece end_ptr = this->pieces[m.endingSquare.idx];
     if (start_ptr.type == PieceType::KING) {
         if (start_ptr.getBelongsToWhite()) whiteKingPos = m.endingSquare;
         else blackKingPos = m.endingSquare;
     }
     assert(start_ptr.color == playerToMove);
-    zobrist_hash ^= ZOBRIST.pieces[start_ptr.colorNum()][start_ptr.pieceNum()][m.startingSquare.to64()]; // remove movers
-    
-    if (end_ptr.isValid()) {
-        // remove captured piece, if any
-        zobrist_hash ^= ZOBRIST.pieces[end_ptr.colorNum()][end_ptr.pieceNum()][m.endingSquare.to64()];
-    }
+
 	// update fullmove_clock (increments once Black's move completes a full move pair)
 	this->fullmove_clock += (playerToMove==Color::BLACK);
 
@@ -253,21 +238,18 @@ void ChessBoard::processPsuedoLegalMove(Move m) {
 	processCastling(m, start_ptr);
 	//if was an enpassant capture, must remove the pawn it en-passanted
 	// if it's a promotion
-	if (m.promotion) {
-		start_ptr = getPieceFromSymbol(m.promotion);
-	}
 	if (isPawnMove) {
 		processEnPassantCapture(m, start_ptr, end_ptr);
 	}
 	processEnPassantUpdate(m, start_ptr, end_ptr);
 
+    Piece newPiece = m.promotion ? getPieceFromSymbol(m.promotion) : start_ptr;
     // actually move the piece
-    zobrist_hash ^= ZOBRIST.pieces[start_ptr.colorNum()][start_ptr.pieceNum()][m.endingSquare.to64()]; // add to to-square
-    zobrist_hash ^= ZOBRIST.sideToMove;
-    this->pieces[m.endingSquare.idx] = start_ptr;
-    this->pieces[m.startingSquare.idx] = EMPTY_SQUARE;
+    this->setPiece(m.endingSquare, newPiece);
+    this->setPiece(m.startingSquare, EMPTY_SQUARE);
+
     this->playerToMove = oppositeColor(playerToMove);
-    
+    zobrist_hash ^= ZOBRIST.sideToMove;
     
     #ifndef NDEBUG
     this->verifyZobrist();
@@ -290,7 +272,7 @@ bool ChessBoard::isSlidingAttacker(Square from, int dir, Color attackerColor, Pi
 	Square cur = from + dir;
 	while (cur.isValid()) {
         Piece p = getPiece(cur);
-        if (p.isEmpty()) {
+        if (p.isValid()) {
             if (p.color == attackerColor) {
                 if (p.type == pieceTypeA || p.type == pieceTypeB) {
                     return true;
@@ -821,12 +803,12 @@ UndoMove ChessBoard::buildUndo(const Move &m) const {
     u.halfmove = halfmove_clock;
     u.fullmove = fullmove_clock;
     u.originalPiece = getPiece(m.startingSquare);
-    u.capturedPiece = getPiece(m.endingSquare);
-    u.capturedSquare = m.endingSquare;
 
     // what is captured?
     if (m.type == MoveType::EN_PASSANT) {
-            u.capturedSquare = m.endingSquare + ((u.originalPiece == WHITE_PAWN) ? SOUTH : NORTH);
+            
+            u.capturedSquare = Square(m.endingSquare.file(), m.startingSquare.rank());
+            std::cout<<"Captured Square: "<<u.capturedSquare.toString()<<endl;
             u.capturedPiece = getPiece(u.capturedSquare);
     } else {
             u.capturedSquare = m.endingSquare;
