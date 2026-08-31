@@ -83,4 +83,8 @@ class TestSquare : public CxxTest::TestSuite {
 			const Square s = Square(3 * 16 + 5);
 			TS_ASSERT_EQUALS(s.file(), 5);
 		}
+		void testRank() {
+			const Square s = Square(3 * 16 + 5);
+			TS_ASSERT_EQUALS(s.rank(), 3);
+		}
 };
