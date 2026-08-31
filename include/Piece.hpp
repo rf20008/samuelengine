@@ -21,10 +21,11 @@ enum class Color: uint8_t {
     WHITE = 1,
     BLACK = 2,
 };
-constexpr const char* ColorNames[3] = {"White", "Black", "None^"};
+constexpr const char* ColorNames[3] = {"None^", "White", "Black"};
 constexpr const char* colorName(Color c) {
     return ColorNames[static_cast<int>(c)];
 }
+
 constexpr Color oppositeColor(Color c) {
     assert(c != Color::NONE);
     return (c==Color::WHITE) ? Color::BLACK : Color::WHITE;
@@ -63,11 +64,11 @@ struct Piece {
             return !isEmpty();
         }
         constexpr int pieceNum() const {
-            assert(this.type != PieceType::NONE);
+            assert(this->type != PieceType::NONE);
             return static_cast<int>(this->type) - 1;
         }
         constexpr int colorNum() const {
-            assert(this.color != Color::NONE);
+            assert(this->color != Color::NONE);
             return ((color == Color::WHITE) ? 0 : 1);
         }
 };
@@ -86,34 +87,7 @@ constexpr Piece BLACK_KNIGHT = {PieceType::KNIGHT, Color::BLACK};
 constexpr Piece WHITE_PAWN = {PieceType::PAWN, Color::WHITE};
 constexpr Piece BLACK_PAWN = {PieceType::PAWN, Color::BLACK};
 
-static_assert(WHITE_KING.symbol() == 'K');
-static_assert(WHITE_QUEEN.symbol() == 'Q');
-static_assert(WHITE_ROOK.symbol() == 'R');
-static_assert(WHITE_BISHOP.symbol() == 'B');
-static_assert(WHITE_KNIGHT.symbol() == 'N');
-static_assert(WHITE_PAWN.symbol() == 'P');
 
-static_assert(BLACK_KING.symbol() == 'k');
-static_assert(BLACK_QUEEN.symbol() == 'q');
-static_assert(BLACK_ROOK.symbol() == 'r');
-static_assert(BLACK_BISHOP.symbol() == 'b');
-static_assert(BLACK_KNIGHT.symbol() == 'n');
-static_assert(BLACK_PAWN.symbol() == 'p');
-
-static_assert(EMPTY_SQUARE.symbol() == ' ');
-static_assert(EMPTY_SQUARE.isEmpty());
-static_assert(!WHITE_KING.isEmpty());
-static_assert(!BLACK_KING.isEmpty());
-static_assert(!WHITE_QUEEN.isEmpty());
-static_assert(!BLACK_QUEEN.isEmpty());
-static_assert(!WHITE_ROOK.isEmpty());
-static_assert(!BLACK_ROOK.isEmpty());
-static_assert(!WHITE_BISHOP.isEmpty());
-static_assert(!BLACK_BISHOP.isEmpty());
-static_assert(!WHITE_KNIGHT.isEmpty());
-static_assert(!BLACK_KNIGHT.isEmpty());
-static_assert(!WHITE_PAWN.isEmpty());
-static_assert(!BLACK_PAWN.isEmpty());
 
 
 constexpr int pieceNum(char c) {
@@ -150,6 +124,37 @@ constexpr Piece getPieceFromSymbol(char c) {
             return {PieceType::KING, Color::NONE}; // an invalid piece
     }
 }
+
+static_assert(WHITE_KING.symbol() == 'K');
+static_assert(WHITE_QUEEN.symbol() == 'Q');
+static_assert(WHITE_ROOK.symbol() == 'R');
+static_assert(WHITE_BISHOP.symbol() == 'B');
+static_assert(WHITE_KNIGHT.symbol() == 'N');
+static_assert(WHITE_PAWN.symbol() == 'P');
+
+static_assert(BLACK_KING.symbol() == 'k');
+static_assert(BLACK_QUEEN.symbol() == 'q');
+static_assert(BLACK_ROOK.symbol() == 'r');
+static_assert(BLACK_BISHOP.symbol() == 'b');
+static_assert(BLACK_KNIGHT.symbol() == 'n');
+static_assert(BLACK_PAWN.symbol() == 'p');
+
+static_assert(EMPTY_SQUARE.symbol() == ' ');
+static_assert(EMPTY_SQUARE.isEmpty());
+static_assert(!WHITE_KING.isEmpty());
+static_assert(!BLACK_KING.isEmpty());
+static_assert(!WHITE_QUEEN.isEmpty());
+static_assert(!BLACK_QUEEN.isEmpty());
+static_assert(!WHITE_ROOK.isEmpty());
+static_assert(!BLACK_ROOK.isEmpty());
+static_assert(!WHITE_BISHOP.isEmpty());
+static_assert(!BLACK_BISHOP.isEmpty());
+static_assert(!WHITE_KNIGHT.isEmpty());
+static_assert(!BLACK_KNIGHT.isEmpty());
+static_assert(!WHITE_PAWN.isEmpty());
+static_assert(!BLACK_PAWN.isEmpty());
+
+
 static_assert(getPieceFromSymbol('K') == WHITE_KING);
 static_assert(getPieceFromSymbol('Q') == WHITE_QUEEN);
 static_assert(getPieceFromSymbol('R') == WHITE_ROOK);

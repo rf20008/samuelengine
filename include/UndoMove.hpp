@@ -20,7 +20,7 @@ struct UndoMove {
     PlayerState blackState;
     std::optional<Square> epTarget;
     int halfmove = 0;
-    bool whiteToMove = true;
+    Color playerToMove = Color::NONE;
     int fullmove = 0;
     uint64_t zobrist = 0;
 };

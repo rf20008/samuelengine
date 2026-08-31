@@ -1,6 +1,7 @@
 #include "ChessBoard.hpp"
 #include "Errors.hpp"
 #include "FEN.hpp"
+#include "Ensure.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -163,8 +164,8 @@ void ChessBoard::processCastling(Move m, const Piece &start_ptr) {
 	// assert a rook at oldRookPos, and newRookPOs is empty
     zobrist_hash ^= ZOBRIST.pieces[get_whiteToMove()][rPr][oldRookPos.to64()];
     zobrist_hash ^= ZOBRIST.pieces[get_whiteToMove()][rPr][newRookPos.to64()];
-    assert((pieces[oldRookPos.idx].type == PieceType::ROOK) && ("Expected a rook at " + oldRookPos.toString() + " that was not found. debug board: " + this->debug_board()));
-    assert(pieces[newRookPos.idx] && ("Expected newRookPos to be empty, but found " + std::string(1, pieces[newRookPos.idx].symbol()) + " instead"));
+    ENSURE((pieces[oldRookPos.idx].type == PieceType::ROOK), ("Expected a rook at " + oldRookPos.toString() + " that was not found. debug board: " + this->debug_board()));
+    ENSURE(pieces[newRookPos.idx].isEmpty(), ("Expected newRookPos to be empty, but found " + std::string(1, pieces[newRookPos.idx].symbol()) + " instead"));
     pieces[newRookPos.idx] = pieces[oldRookPos.idx];
     pieces[oldRookPos.idx] = EMPTY_SQUARE;
 	return;
@@ -334,7 +335,7 @@ std::vector<Move> ChessBoard::whereKingCouldMove(const Square origin) const {
 
 std::vector<Move> ChessBoard::wherePawnCouldMove(const Square origin) const {
 	Piece pawn = getAndAssertPiece(origin, PieceType::PAWN);
-    assert(pawnColor == playerToMove);
+    assert(pawn.color == playerToMove);
 	int dir = (pawn.color==Color::WHITE) ? 1 : -1; // rank direction
 
 	bool canMoveTwoSpaces = (pawn.color==Color::WHITE) ? (origin.rank() == 1) : (origin.rank() == 6);
@@ -401,8 +402,7 @@ std::vector<Move> ChessBoard::wherePawnCouldMove(const Square origin) const {
 }
 
 std::vector<Move> ChessBoard::whereKnightCouldMove(const Square origin) const {
-	PiecePtr knight = getAndAssertPiece(origin, 'N');
-	bool attackerIsWhite = knight->getBelongsToWhite();
+	Piece knight = getAndAssertPiece(origin, PieceType::KNIGHT);
 
 	std::vector<Move> places;
 	for (const int &off : knightOffsets) {
@@ -411,8 +411,8 @@ std::vector<Move> ChessBoard::whereKnightCouldMove(const Square origin) const {
 			continue;
 		// if there is a piece of a different color, then it's okay
 		// else not
-		PiecePtr p = getPiece(target);
-		if ((!p) || (p && p->getBelongsToWhite() != attackerIsWhite))
+		Piece targetPiece = getPiece(target);
+		if (targetPiece.color != knight.color) // empty has None COLOR
 			places.emplace_back(origin, target);
 	}
 	return places;
@@ -422,9 +422,9 @@ std::vector<Move> ChessBoard::getSlidingMoverPositions(const Square from, const 
 	Square cur = from + dir;
 	std::vector<Move> places;
 	while (cur.isValid()) {
-		PiecePtr p = getPiece(cur);
-		if (p) {
-			if (p->getBelongsToWhite() != attackerIsWhite) {
+		Piece p = getPiece(cur);
+		if (p.isValid()) {
+			if (p.color != fromColor) {
 				// not of same color, so can capture!
 				places.emplace_back(from, cur);
 			}
@@ -437,54 +437,46 @@ std::vector<Move> ChessBoard::getSlidingMoverPositions(const Square from, const 
 }
 
 std::vector<Move> ChessBoard::whereBishopCouldMove(const Square origin) const {
-	PiecePtr bishop = getAndAssertPiece(origin, 'B');
-	bool attackerIsWhite = bishop->getBelongsToWhite();
+	Piece bishop = getAndAssertPiece(origin, PieceType::BISHOP);
 	std::vector<Move> places;
 	for (int dir : bishopOffsets) {
-		mergeSets(places, getSlidingMoverPositions(origin, dir, attackerIsWhite));
+		mergeSets(places, getSlidingMoverPositions(origin, dir, bishop.color));
 	}
 	return places;
 }
 std::vector<Move> ChessBoard::whereRookCouldMove(const Square origin) const {
-	PiecePtr rook = getAndAssertPiece(origin, 'R');
-	bool attackerIsWhite = rook->getBelongsToWhite();
+	Piece rook = getAndAssertPiece(origin, PieceType::ROOK);
 	std::vector<Move> places;
 	for (int dir : rookOffsets) {
-		mergeSets(places, getSlidingMoverPositions(origin, dir, attackerIsWhite));
+		mergeSets(places, getSlidingMoverPositions(origin, dir, rook.color));
 	}
 	return places;
 }
 std::vector<Move> ChessBoard::whereQueenCouldMove(const Square origin) const {
-	PiecePtr queen = getAndAssertPiece(origin, 'Q');
-	bool attackerIsWhite = queen->getBelongsToWhite();
+	Piece queen = getAndAssertPiece(origin, PieceType::QUEEN);
 	std::vector<Move> places;
 	for (int dir : queenOffsets) {
-		mergeSets(places, getSlidingMoverPositions(origin, dir, attackerIsWhite));
+		mergeSets(places, getSlidingMoverPositions(origin, dir, queen.color));
 	}
 	return places;
 }
 
 std::vector<Move> ChessBoard::allPseudoLegalDestinations(const Square origin) const {
-	PiecePtr piece = getPiece(origin);
-	if (!piece)
+	Piece piece = getPiece(origin);
+	if (piece.isEmpty()) {
 		return {}; // no piece there
-	if (piece->getBelongsToWhite() != whiteToMove)
-		return {}; // can't move the piece, is of wrong color
-	switch (toupper(piece->symbol())) {
-	case 'R':
-		return whereRookCouldMove(origin);
-	case 'B':
-		return whereBishopCouldMove(origin);
-	case 'Q':
-		return whereQueenCouldMove(origin);
-	case 'N':
-		return whereKnightCouldMove(origin);
-	case 'P':
-		return wherePawnCouldMove(origin);
-	case 'K':
-		return whereKingCouldMove(origin);
-	default:
-		throw UnknownPiece("unknown piece");
+    }
+    if (piece.color != playerToMove) {
+        return {}; // can't move the piece, is of wrong color
+    }
+	switch (piece.type) {
+        case PieceType::KING: return whereKingCouldMove(origin);
+        case PieceType::QUEEN: return whereQueenCouldMove(origin);
+        case PieceType::ROOK: return whereRookCouldMove(origin);
+        case PieceType::BISHOP: return whereBishopCouldMove(origin);
+        case PieceType::KNIGHT: return whereKnightCouldMove(origin);
+        case PieceType::PAWN: return wherePawnCouldMove(origin);
+        default: assert(false && "unknown piece"); return {};
 	}
 }
 
@@ -502,8 +494,8 @@ bool ChessBoard::squareAttackedBy(Square target, Color attackerColor) const {
 		Square sq = target + off;
 		if (!sq.isValid())
 			continue;
-		std::shared_ptr<const Piece> p = getPiece(sq);
-		if (p && p->getBelongsToWhite() == attackerIsWhite && std::toupper(p->symbol()) == 'N') {
+		Piece knightPossibleTarget = getPiece(sq);
+		if (knightPossibleTarget.type == PieceType::KNIGHT && knightPossibleTarget.color == attackerColor) {
 			return true;
 		}
 	}
@@ -516,36 +508,39 @@ bool ChessBoard::squareAttackedBy(Square target, Color attackerColor) const {
 			Square sq = target + Offset(dr, dc);
 			if (!sq.isValid())
 				continue;
-			std::shared_ptr<const Piece> p = getPiece(sq);
-			if (p && p->getBelongsToWhite() == attackerIsWhite && std::toupper(p->symbol()) == 'K') {
+			Piece possibleKing = getPiece(sq);
+			if (possibleKing.type == PieceType::KING && possibleKing.color == attackerColor) {
 				return true;
 			}
 		}
 	}
 
+    // attack by pawn
 	// A pawn attacks diagonally, one rank "ahead" of where it sits (from
 	// its own side's perspective): white pawns advance toward higher
 	// ranks, so an attacking white pawn sits one rank *below* the target.
 	// Square.row is the file, Square.col is the rank.
-	int behind = attackerIsWhite ? -1 : 1;
+	int behind = isWhite(attackerColor) ? -1 : 1;
 	for (int dc : {-1, 1}) {
 		Square sq = target + Offset(behind, dc);
 		if (!sq.isValid())
 			continue;
-		std::shared_ptr<const Piece> p = getPiece(sq);
-		if (p && p->getBelongsToWhite() == attackerIsWhite && std::toupper(p->symbol()) == 'P') {
+		Piece possiblePawn = getPiece(sq);
+		if (possiblePawn.type == PieceType::PAWN && possiblePawn.color == attackerColor) {
 			return true;
 		}
 	}
 
+    // attack by rook
 	for (const int dir : rookOffsets) {
-		if (isSlidingAttacker(target, dir, attackerIsWhite, 'R', 'Q')) {
+		if (isSlidingAttacker(target, dir, attackerColor, PieceType::ROOK, PieceType::QUEEN)) {
 			return true;
 		}
 	}
 
+    // attack by bishop
 	for (const int dir : bishopOffsets) {
-		if (isSlidingAttacker(target, dir, attackerIsWhite, 'B', 'Q')) {
+		if (isSlidingAttacker(target, dir, attackerColor, PieceType::BISHOP, PieceType::QUEEN)) {
 			return true;
 		}
 	}
@@ -560,17 +555,18 @@ bool ChessBoard::hasInsufficientMaterial() const {
 	int numKnights = 0;
 	for (size_t row = 0; row < BOARD_SIZE; ++row) {
 		for (size_t col = 0; col < BOARD_SIZE; ++col) {
-			const PiecePtr piece = pieces[Square(row, col).idx];
-			if (!piece)
+			Piece piece = pieces[Square(row, col).idx];
+			if (piece.isValid())
 				continue;
-			char pieceTypeT = toupper(piece->symbol());
-			switch (pieceTypeT) {
-			case 'K':
+			switch (piece.type) {
+            case PieceType::NONE:
+                continue;
+			case PieceType::KING:
 				continue;
-			case 'B':
+			case PieceType::BISHOP:
 				++numBishops;
 				break;
-			case 'N':
+			case PieceType::KNIGHT:
 				++numKnights;
 				break;
 			default:
@@ -590,11 +586,11 @@ GameStatus ChessBoard::getStatus() {
         return GameStatus::DRAW;
     }
     auto legalMoves = this->allLegalMoves();
-    bool inCheck = this->isInCheck(whiteToMove);
+    bool inCheck = this->isInCheck(playerToMove);
 	if (legalMoves.empty()) { // the game is over, checkmate
         if (inCheck) {
 		    // is it black's turn? then white won
-		    if (whiteToMove) {
+		    if (get_whiteToMove()) {
 			    return GameStatus::BLACK_WON;
 		    } else {
 			    return GameStatus::WHITE_WON;
@@ -604,7 +600,7 @@ GameStatus ChessBoard::getStatus() {
             return GameStatus::DRAW;
         }
 	} else {
-		if (whiteToMove) {
+		if (get_whiteToMove()) {
 			return GameStatus::STILL_GOING_WHITE_TURN;
 		} else {
 			return GameStatus::STILL_GOING_BLACK_TURN;
@@ -616,7 +612,7 @@ GameStatus ChessBoard::getStatus() {
 std::string ChessBoard::fen() const {
 	// to be done by Samuel
 	std::string PiecePart = ParsePieces::getPiecePart(pieces);
-	std::string PlayerPart = ParsePieces::getPlayerPart(whiteToMove);
+	std::string PlayerPart = ParsePieces::getPlayerPart(playerToMove);
 	std::string CastlingPart = ParsePieces::getCastlingPart(whitePlayerState, blackPlayerState);
 	std::string enPassantPart = ParsePieces::getEnPassantPart(enPassant_targetSquare);
 	std::string halfMovePart = std::to_string(halfmove_clock);
@@ -630,13 +626,12 @@ std::vector<Move> ChessBoard::allLegalMoves(const Square sq) {
     // this will return an empty vector if there are no moves available
 	std::vector<Move> moves = allPseudoLegalDestinations(sq);
 	
-    auto piece = getPiece(sq);
-    if (!piece) return {};
-	bool moverIsWhite = piece->getBelongsToWhite();
+    Piece piece = getPiece(sq);
+    if (piece.isEmpty()) return {};
 
 	std::erase_if(moves, [&](const Move& mov){
         processPsuedoLegalMove(mov);
-        bool illegal = isInCheck(moverIsWhite);
+        bool illegal = isInCheck(piece.color);
         undoMove();
         return illegal;
     });
@@ -661,10 +656,10 @@ std::ostream &operator<<(std::ostream &os, const ChessBoard &board) {
 
 		for (int filenum = 0; filenum < 8; ++filenum) {
 			auto piece_ptr = board.pieces[Square(filenum, ranknum).idx];
-			if (piece_ptr == nullptr) {
+			if (piece_ptr.isEmpty()) {
 				os << ' ';
 			} else {
-				os << piece_ptr->symbol();
+				os << piece_ptr.symbol();
 			}
 		}
 		os << endl;
@@ -691,23 +686,23 @@ bool ChessBoard::move_ends_game(const Move move) {
     return isOver;
 }
 bool ChessBoard::move_is_castling(const Move move) const {
-	PiecePtr pieceAtBeginning = this->getPiece(move.startingSquare);
-	if (!pieceAtBeginning || toupper(pieceAtBeginning->symbol()) != 'K')
+	Piece movingPiece = this->getPiece(move.startingSquare);
+	if (movingPiece.type != PieceType::KING)
 		return false;
 	return maxNorm(move.startingSquare, move.endingSquare) > 1;
 }
 bool ChessBoard::move_is_check(const Move move) {
     this->processMove(move);
-    bool inCheck = this->isInCheck(!whiteToMove);
+    bool inCheck = this->isInCheck(oppositeColor(playerToMove));
     this->undoMove();
     return inCheck;
 }
-bool ChessBoard::move_is_capture(const Move move) const { return static_cast<bool>(this->getPiece(move.endingSquare)); }
+bool ChessBoard::move_is_capture(const Move move) const { return hasPiece(move.endingSquare); } // OR EN PASSANT!
 bool ChessBoard::move_is_zeroing(const Move move) const {
 	if (this->move_is_capture(move))
 		return true;
-	PiecePtr pieceAtBeginning = this->getPiece(move.startingSquare);
-	return (static_cast<bool>(pieceAtBeginning) && toupper(pieceAtBeginning->symbol()) == 'P');
+	Piece pieceAtBeginning = this->getPiece(move.startingSquare);
+	return pieceAtBeginning.type == PieceType::PAWN;
 }
 
 // this function exists for testing purposes
@@ -759,12 +754,12 @@ std::string ChessBoard::debug_board() const {
 
 uint64_t ChessBoard::zobristFromScratch() const {
     uint64_t hash = ZOBRIST.castling[this->castlingBits()];
-    if (!whiteToMove) hash^=ZOBRIST.sideToMove;
+    if (!get_whiteToMove()) hash^=ZOBRIST.sideToMove;
     for (int sqnum = 0; sqnum<64; ++sqnum) {
         Square square = Square::from64(sqnum);
-        PiecePtr piece = this->getPiece(square);
-        if (piece) {
-            hash ^= ZOBRIST.pieces[piece->getBelongsToWhite()][pieceNum(piece->symbol())][sqnum];
+        Piece piece = this->getPiece(square);
+        if (piece.isValid()) {
+            hash ^= ZOBRIST.pieces[piece.colorNum()][piece.pieceNum()][sqnum];
         }
     }
     if (enPassant_targetSquare) {
@@ -800,20 +795,20 @@ Square getRookTo(Square kingTo) {
 UndoMove ChessBoard::buildUndo(const Move &m) const {
     UndoMove u;
     u.move = m;
-    u.whiteToMove = whiteToMove;
+    u.playerToMove = playerToMove;
     u.zobrist = zobrist_hash;
     u.whiteState = whitePlayerState;
     u.blackState = blackPlayerState;
     u.epTarget = enPassant_targetSquare;
     u.halfmove = halfmove_clock;
     u.fullmove = fullmove_clock;
-    u.originalPiece = getPieceC(getPiece(m.startingSquare)->symbol());
+    u.originalPiece = getPiece(m.startingSquare);
     u.capturedPiece = getPiece(m.endingSquare);
     u.capturedSquare = m.endingSquare;
 
     // what is captured?
     if (m.type == MoveType::EN_PASSANT) {
-            u.capturedSquare = m.endingSquare + ((u.originalPiece->symbol() == 'P') ? SOUTH : NORTH);
+            u.capturedSquare = m.endingSquare + ((u.originalPiece == WHITE_PAWN) ? SOUTH : NORTH);
             u.capturedPiece = getPiece(u.capturedSquare);
     } else {
             u.capturedSquare = m.endingSquare;
@@ -833,22 +828,22 @@ UndoMove ChessBoard::buildUndo(const Move &m) const {
 void ChessBoard::undoMove(const UndoMove &u) {
     pieces[u.move.startingSquare.idx] = u.originalPiece;
     if (u.move.type == MoveType::EN_PASSANT) {
-        pieces[u.move.endingSquare.idx] = nullptr;
+        pieces[u.move.endingSquare.idx] = EMPTY_SQUARE;
         pieces[u.capturedSquare.idx] = u.capturedPiece; // pawn behind
     } else {
             pieces[u.move.endingSquare.idx] = u.capturedPiece; // nullptr if no capture
     }
     if (u.rookFrom.isValid() && u.rookTo.isValid() && u.move.type == MoveType::CASTLING) {
             pieces[u.rookFrom.idx] = pieces[u.rookTo.idx];
-            pieces[u.rookTo.idx] = nullptr;
+            pieces[u.rookTo.idx] = EMPTY_SQUARE;
     }
 
     // must update king cache
-    if (toupper(u.originalPiece->symbol() )=='K') {
-        if (u.originalPiece->getBelongsToWhite()) whiteKingPos = u.move.startingSquare;
+    if (u.originalPiece.type == PieceType::KING) {
+        if (u.originalPiece.getBelongsToWhite()) whiteKingPos = u.move.startingSquare;
         else {blackKingPos = u.move.startingSquare;}
     }
-    whiteToMove = u.whiteToMove;
+    playerToMove = u.playerToMove;
     whitePlayerState = u.whiteState;
     blackPlayerState = u.blackState;
     enPassant_targetSquare = u.epTarget;
