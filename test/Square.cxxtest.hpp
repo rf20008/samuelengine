@@ -62,7 +62,7 @@ class TestSquare : public CxxTest::TestSuite {
 			// valid
 			const Square s = Square(3, 5);
 			TS_ASSERT_EQUALS(s.toString(), "d6");
-			
+
 			// invalid
 			const Square s2 = Square(73);
 			TS_ASSERT_EQUALS(s2.toString(), "??");
