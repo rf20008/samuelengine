@@ -11,8 +11,8 @@
 
 struct UndoMove {
     Move move;
-    PiecePtr capturedPiece {};
-    PiecePtr originalPiece{};
+    Piece capturedPiece {};
+    Piece originalPiece{};
     Square rookFrom = Square(-1);
     Square rookTo = Square(-1);
     Square capturedSquare = Square(-1);
