@@ -19,6 +19,11 @@ class TestSquare : public CxxTest::TestSuite {
 			TS_ASSERT_EQUALS(sq3.file(), 3);
 			TS_ASSERT_EQUALS(sq3.rank(), 8);
 		}
+		void testStringViewConstructor() {
+			Square s = Square("b5");
+			TS_ASSERT_EQUALS(s.file(), 1);
+			TS_ASSERT_EQUALS(s.rank(), 4);
+		}
 
 		// testing operators
 		void testAdd() {
