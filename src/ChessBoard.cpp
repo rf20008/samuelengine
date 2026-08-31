@@ -104,16 +104,16 @@ bool ChessBoard::isMoveLegal(Move m) {
 
 void ChessBoard::processEnPassantCapture(Move m, const Piece &start_ptr, const Piece &end_ptr) {
 	if (enPassant_targetSquare && (m.endingSquare == *enPassant_targetSquare) && start_ptr.type == PieceType::PAWN && end_ptr.isEmpty()) {
-		Square squareCaptured = m.endingSquare + ((start_ptr.type == PieceType::PAWN) ? SOUTH : NORTH);
+		Square squareCaptured = m.endingSquare + ((start_ptr.color == Color::WHITE) ? SOUTH : NORTH);
 		//cout<<"removing piece at"<<(squareCaptured.toString())<<endl;
         // xor out the old piece
-        Piece& cap = pieces[squareCaptured.idx];
+        Piece cap = pieces[squareCaptured.idx];
         if (cap.type != PieceType::NONE) {
             assert(cap.isValid());
-            zobrist_hash ^= ZOBRIST.pieces[cap.getBelongsToWhite()][cap.pieceNum()][squareCaptured.to64()];
+            zobrist_hash ^= ZOBRIST.pieces[cap.colorNum()][cap.pieceNum()][squareCaptured.to64()];
         }
         // remove the old square
-		cap = EMPTY_SQUARE;
+		pieces[squareCaptured.idx] = EMPTY_SQUARE;
 
 	}
 }
@@ -171,18 +171,24 @@ void ChessBoard::processCastling(Move m, const Piece &start_ptr) {
 	return;
 }
 void ChessBoard::processPsuedoLegalMove(Move m) {
-    
+    #ifndef NDEBUG
+    std::cout<<"BEFORE PROCESSING MOVE\n";
+    this->verifyZobrist();
+    std::cout<<"Zobrist successfully processed\n";
+    #endif
+
     this->history.push_back(this->buildUndo(m));
     
     // Square rows/cols are 1-indexed, pieces is 0-indexed and rank-major (see getPiece)
-	Piece &start_ptr = this->pieces[m.startingSquare.idx];
-	Piece &end_ptr = this->pieces[m.endingSquare.idx];
+	Piece start_ptr = this->pieces[m.startingSquare.idx];
+	Piece end_ptr = this->pieces[m.endingSquare.idx];
     if (start_ptr.type == PieceType::KING) {
         if (start_ptr.getBelongsToWhite()) whiteKingPos = m.endingSquare;
         else blackKingPos = m.endingSquare;
     }
     assert(start_ptr.color == playerToMove);
     zobrist_hash ^= ZOBRIST.pieces[start_ptr.colorNum()][start_ptr.pieceNum()][m.startingSquare.to64()]; // remove movers
+    
     if (end_ptr.isValid()) {
         // remove captured piece, if any
         zobrist_hash ^= ZOBRIST.pieces[end_ptr.colorNum()][end_ptr.pieceNum()][m.endingSquare.to64()];
@@ -245,12 +251,13 @@ void ChessBoard::processPsuedoLegalMove(Move m) {
 	processEnPassantUpdate(m, start_ptr, end_ptr);
 
     // actually move the piece
-    this->pieces[m.endingSquare.idx] = this->pieces[m.startingSquare.idx];
+    zobrist_hash ^= ZOBRIST.pieces[start_ptr.colorNum()][start_ptr.pieceNum()][m.endingSquare.to64()]; // add to to-square
+    zobrist_hash ^= ZOBRIST.sideToMove;
+    this->pieces[m.endingSquare.idx] = start_ptr;
     this->pieces[m.startingSquare.idx] = EMPTY_SQUARE;
     this->playerToMove = oppositeColor(playerToMove);
     
-    zobrist_hash ^= ZOBRIST.pieces[end_ptr.colorNum()][end_ptr.pieceNum()][m.endingSquare.to64()]; // add to to-square
-    zobrist_hash ^= ZOBRIST.sideToMove;
+    
     #ifndef NDEBUG
     this->verifyZobrist();
     #endif
@@ -630,9 +637,9 @@ std::vector<Move> ChessBoard::allLegalMoves(const Square sq) {
     if (piece.isEmpty()) return {};
 
 	std::erase_if(moves, [&](const Move& mov){
-        processPsuedoLegalMove(mov);
+        this->processPsuedoLegalMove(mov);
         bool illegal = isInCheck(piece.color);
-        undoMove();
+        this->undoMove();
         return illegal;
     });
     return moves;
