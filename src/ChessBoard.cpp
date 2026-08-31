@@ -148,24 +148,25 @@ void ChessBoard::processCastling(Move m, const Piece &start_ptr) {
 	if (start_ptr.type != PieceType::KING || maxNorm(m.endingSquare, m.startingSquare) <= 1)
 		return;
 	// need to move rook to appropriate location
-	Square oldRookPos;
-	Square newRookPos;
-	if (m == Move("e1", "g1")) {
+	Square oldRookPos = Square(-1);
+	Square newRookPos = Square(-1);
+	if (m == Move("e1", "g1", '\0', MoveType::CASTLING)) {
 		oldRookPos = "h1";
 		newRookPos = "f1";
 	} // white kingside castling
-	else if (m == Move("e1", "c1")) {
+	else if (m == Move("e1", "c1", '\0', MoveType::CASTLING)) {
 		oldRookPos = "a1";
 		newRookPos = "d1";
 	} // white queenside castling
-	else if (m == Move("e8", "g8")) {
+	else if (m == Move("e8", "g8", '\0', MoveType::CASTLING)) {
 		oldRookPos = "h8";
 		newRookPos = "f8";
 	} // black kingside castling
-	else if (m == Move("e8", "c8")) {
+	else if (m == Move("e8", "c8", '\0', MoveType::CASTLING)) {
 		oldRookPos = "a8";
 		newRookPos = "d8";
 	} // black queenside castling
+    ENSURE(oldRookPos.isValid() && newRookPos.isValid(), "oldRookPos or newRookPos is invalid");
 	// sanity check
 	// assert a rook at oldRookPos, and newRookPOs is empty
     ENSURE((pieces[oldRookPos.idx].type == PieceType::ROOK), ("Expected a rook at " + oldRookPos.toString() + " that was not found. debug board: " + this->debug_board()));
@@ -299,6 +300,7 @@ std::vector<Move> ChessBoard::whereKingCouldMove(const Square origin) const {
 			continue;
 		// if there is a piece of a different color, then it's okay
 		// else not
+        // empty is fine as well
 		Piece targetPiece = getPiece(target);
 		if (targetPiece.color != king.color)
 			places.emplace_back(origin, target);
@@ -351,7 +353,7 @@ std::vector<Move> ChessBoard::wherePawnCouldMove(const Square origin) const {
 		if (!target.isValid())
 			continue;
 		Piece targetPiece = getPiece(target);
-		if (targetPiece.color != pawn.color && target.isValid()) {
+		if (targetPiece.color != pawn.color && targetPiece.color != Color::NONE) {
             places.emplace_back(origin, target);
         }
         if (enPassant_targetSquare && target == *enPassant_targetSquare) {
@@ -558,7 +560,7 @@ bool ChessBoard::hasInsufficientMaterial() const {
 	for (size_t row = 0; row < BOARD_SIZE; ++row) {
 		for (size_t col = 0; col < BOARD_SIZE; ++col) {
 			Piece piece = pieces[Square(row, col).idx];
-			if (piece.isValid())
+			if (piece.isEmpty())
 				continue;
 			switch (piece.type) {
             case PieceType::NONE:
@@ -810,7 +812,6 @@ UndoMove ChessBoard::buildUndo(const Move &m) const {
     if (m.type == MoveType::EN_PASSANT) {
             
             u.capturedSquare = Square(m.endingSquare.file(), m.startingSquare.rank());
-            std::cout<<"Captured Square: "<<u.capturedSquare.toString()<<endl;
             u.capturedPiece = getPiece(u.capturedSquare);
     } else {
             u.capturedSquare = m.endingSquare;
