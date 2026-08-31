@@ -36,6 +36,11 @@ class TestSquare : public CxxTest::TestSuite {
 			Square sq3 = Square(3, 8) + Offset(2, -1);
 			TS_ASSERT_EQUALS(sq3, Square(3 + (-1), 8 + 2));
 		}
+		void testAdditionAssignment() {
+			Square s = Square(2, 5);
+			s += 1;
+			TS_ASSERT_EQUALS(s, Square(3, 5));
+		}
 		void testEquals() {
 			TS_ASSERT(Square(3, 8) == Square(3, 8));
 			TS_ASSERT(!(Square(3, 7) == Square(3, 8)));
