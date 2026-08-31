@@ -19,11 +19,11 @@
 namespace ChessUI {
 
 inline std::string squareGlyph(const ChessBoard &board, Square sq) {
-	PiecePtr piece = board.getPiece(sq);
-	if (!piece) {
+	Piece piece = board.getPiece(sq);
+	if (!piece.isEmpty()) {
 		return ".";
 	}
-	return display_piece_symbol(piece->symbol());
+	return display_piece_symbol(piece.symbol());
 }
 
 // Renders the board with rank numbers (8 down to 1) down the left side and

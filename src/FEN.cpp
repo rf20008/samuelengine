@@ -1,5 +1,4 @@
 #include "Errors.hpp"
-#include "GetPiece.hpp"
 #include "Piece.hpp"
 #include "PlayerState.hpp"
 #include "Square.hpp"

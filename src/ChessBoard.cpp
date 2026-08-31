@@ -73,11 +73,9 @@ ChessBoard::ChessBoard(const std::string &fen) {
     int numBlackKings = 0;
     for (int sq64 = 0; sq64<64; ++sq64) {
         Square sq = Square::from64(sq64);  
-        auto piece = this->pieces[sq.idx];
-        if (!piece) continue;
-        char symb = piece-> symbol();
-        if (toupper(symb) == 'K') { // it's a king
-            if (this->pieces[sq.idx]->getBelongsToWhite()) {
+        Piece piece = this->pieces[sq.idx];
+        if (piece.type == PieceType::KING) { // it's a king
+            if (piece.color == Color::WHITE) {
                 ++numWhiteKings; whiteKingPos = sq;
             } else {
                 ++numBlackKings; blackKingPos = sq;
@@ -104,20 +102,21 @@ bool ChessBoard::isMoveLegal(Move m) {
     legalMovesFromStart.end(), m) != legalMovesFromStart.end();
 } // return whether a move is legal
 
-void ChessBoard::processEnPassantCapture(Move m, const PiecePtr &start_ptr, const PiecePtr &end_ptr) {
+void ChessBoard::processEnPassantCapture(Move m, const Piece &start_ptr, const Piece &end_ptr) {
 	if (enPassant_targetSquare && (m.endingSquare == *enPassant_targetSquare) && toupper(start_ptr->symbol()) == 'P' && !end_ptr) {
-		Square squareCaptured = m.endingSquare + ((start_ptr->symbol() == 'P') ? SOUTH : NORTH);
+		Square squareCaptured = m.endingSquare + ((start_ptr.type == PieceType::PAWN) ? SOUTH : NORTH);
 		//cout<<"removing piece at"<<(squareCaptured.toString())<<endl;
         // xor out the old piece
         auto &cap = pieces[squareCaptured.idx];
         if (cap) {
             zobrist_hash ^= ZOBRIST.pieces[cap->getBelongsToWhite()][pieceNum(cap->symbol())][squareCaptured.to64()];
         }
-		cap = PiecePtr();
-        // xor out the captured index
+        // remove the old square
+		cap = EMPTY_SQUARE;
+
 	}
 }
-void ChessBoard::processEnPassantUpdate(Move m, const PiecePtr &start_ptr, const PiecePtr &end_ptr) {
+void ChessBoard::processEnPassantUpdate(Move m, const Piece &start_ptr, const Piece &end_ptr) {
 	// update enPassantTargetSquare
     // XOR out OLD zobrist hash
     if (enPassant_targetSquare) {
@@ -136,7 +135,7 @@ void ChessBoard::processEnPassantUpdate(Move m, const PiecePtr &start_ptr, const
         zobrist_hash ^= ZOBRIST.enPassantFile[enPassant_targetSquare->file()];
     }
 }
-void ChessBoard::processCastling(Move m, const PiecePtr &start_ptr) {
+void ChessBoard::processCastling(Move m, const Piece &start_ptr) {
 	// check it's a king move, else do nothing
 
 	if (!start_ptr || toupper(start_ptr->symbol()) != 'K')
@@ -290,13 +289,7 @@ bool ChessBoard::isSlidingAttacker(Square from, int dir, bool attackerIsWhite, c
 	return false;
 }
 
-PiecePtr ChessBoard::getAndAssertPiece(const Square origin, const char pieceType) const {
-	// get the piece at origin, and assert it is of tpe pieceTzype
-	PiecePtr ptr = getPiece(origin);
-	if (!ptr || toupper(ptr->symbol()) != toupper(pieceType))
-		throw WrongPieceType("Wrong piece type at origin");
-	return ptr;
-}
+
 std::vector<Move> ChessBoard::whereKingCouldMove(const Square origin) const {
 	// get al neighboring places
 	PiecePtr king = getAndAssertPiece(origin, 'K');

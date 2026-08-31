@@ -60,10 +60,10 @@ class ChessBoard {
 		ChessBoard &operator=(ChessBoard &&other) = default;
 
 		// getters
-		PiecePtr getPiece(Square sq) const {
+		Piece getPiece(Square sq) const {
             // bounds check: an out-of-board square simply has no piece on it
             if (!sq.isValid()) {
-                return PiecePtr();
+                return EMPTY_SQUARE;
                 //throw std::logic_error("Invalid square position (idx="+std::to_string(sq.idx)+")");
             }
             return pieces[sq.idx];
@@ -81,26 +81,27 @@ class ChessBoard {
 		bool isMoveLegal(Move m); // return whether a move is legal
 		void processMove(Move m);
 		void processPsuedoLegalMove(Move m);
-		void processEnPassantCapture(Move m, const PiecePtr &start_ptr, const PiecePtr &end_ptr);
-		void processEnPassantUpdate(Move m, const PiecePtr &start_ptr, const PiecePtr &end_ptr);
-		void processCastling(Move m, const PiecePtr &start_ptr);
+		void processEnPassantCapture(Move m, const Piece &start_ptr, const Piece &end_ptr);
+		void processEnPassantUpdate(Move m, const Piece &start_ptr, const Piece &end_ptr);
+		void processCastling(Move m, const Piece &start_ptr);
 		bool isInCheck(bool player) const;
 		bool isInCheckmate(); // interacts with move ordering!
 		bool isInStalemate(); // also interacts with move ordering
         bool is_threefold_repetition() const;
 		bool hasInsufficientMaterial() const;
-        Square findKingSlow(bool belongsToWhite) const {
+        Square findKingSlow(Color expectedColor) const {
             for (int sq_idx = 0; sq_idx < 128; ++sq_idx) {
-                PiecePtr p = pieces[sq_idx];
-                if (p && ((p->symbol()) == (belongsToWhite ? 'K' : 'k'))) {
+                Piece p = pieces[sq_idx];
+                if (p.type == PieceType::KING && p.color == expectedColor) {
                     return Square(sq_idx);
                 }
             }
-            throw std::logic_error(std::string("findKing: no king found for ") + (belongsToWhite ? "White" : "Black") + " in the board with FEN " + this->debug_board());
+            throw std::logic_error(std::string("findKing: no king found for ") + (colorName(expectedColor)) + " in the board with FEN " + this->debug_board());
         }
-		Square findKing(bool belongsToWhite) const {
-            Square kingPos = belongsToWhite ? whiteKingPos : blackKingPos;
-            assert((getPiece(kingPos) && getPiece(kingPos)->symbol() == (belongsToWhite ? 'K' : 'k'))&&"king cache desync");
+		Square findKing(Color expectedColor) const {
+            assert(expectedColor != Color::NONE);
+            Square kingPos = expectedColor == Color::WHITE ? whiteKingPos : blackKingPos;
+            assert((getPiece(kingPos) == ((expectedColor == Color::WHITE) ? WHITE_KING : BLACK_KING))&&"king cache desync");
             return kingPos;
         }
 		GameStatus getStatus(); // doesn't change board but interacts with move ordering
@@ -108,8 +109,13 @@ class ChessBoard {
 		// for engine use
 		std::string fen() const;
 
-		PiecePtr getAndAssertPiece(const Square origin, const char pieceType) const;
-		bool hasPiece(const Square origin) const { return getPiece(origin) != nullptr; }
+		Piece getAndAssertPiece(const Square origin, const Piece expectedType) const {
+            // get the piece at origin, and assert it is of tpe pieceTzype
+            Piece ptr = getPiece(origin);
+            assert(ptr == expectedType);
+            return ptr;
+        }
+		bool hasPiece(const Square origin) const { return getPiece(origin) != EMPTY_SQUARE; }
 		bool squareAttackedBy(Square target, bool attackerIsWhite) const;
 		bool isSlidingAttacker(Square from, int dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) const;
 

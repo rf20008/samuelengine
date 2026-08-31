@@ -18,7 +18,7 @@ inline std::string piece_type_from_symbol(char symbol) {
 	case 'B': return "♗";
 	case 'R': return "♖";
 	case 'Q': return "♕";
-	case 'K': return "♔"
+	case 'K': return "♔";
 	case 'p': return "♟";
 	case 'n': return "♞";
 	case 'b': return "♝";
@@ -31,6 +31,6 @@ inline std::string piece_type_from_symbol(char symbol) {
 };
 
 // Convenience: go straight from an engine piece symbol to its display glyph.
-inline std::string display_piece_symbol(char symbol) { return display_piece(piece_type_from_symbol(symbol)); }
+inline std::string display_piece_symbol(char symbol) { return piece_type_from_symbol(symbol); }
 
 #endif

@@ -21,6 +21,10 @@ enum class Color: uint8_t {
     WHITE = 1,
     BLACK = 2,
 };
+constexpr const char* ColorNames[3] = {"White", "Black", "None^"};
+constexpr const char* colorName(Color c) {
+    return ColorNames[static_cast<int>(c)];
+}
 
 
 struct Piece {
@@ -31,8 +35,16 @@ struct Piece {
 		constexpr Piece(PieceType type, Color c) : type(type), color(c) {}
 		constexpr bool getBelongsToWhite() const { return color == Color::WHITE; }
         constexpr char symbol() const {
-            if (type == PieceType::NONE) return ' ';
-            char c = PIECETYPES[static_cast<int>(type)];
+            char c;
+            switch(this->type) {
+                case PieceType::KING: c='k'; break;
+                case PieceType::QUEEN: c='q'; break;
+                case PieceType::ROOK: c='r'; break;
+                case PieceType::BISHOP: c='b'; break;
+                case PieceType::KNIGHT: c='n'; break;
+                case PieceType::PAWN: c='p'; break;
+                default: return ' ';
+            }
             if (color == Color::WHITE) c += 'A' - 'a'; // -32
             return c;
         }
