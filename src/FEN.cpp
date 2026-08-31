@@ -40,7 +40,7 @@ void parsePiecePart(const std::string &PiecePart, Piece board[128]) {
 					throw InvalidFEN("Too many squares on rank " + std::to_string(ranknum));
 				}
 				Square sq(file, (int)ranknum);
-				board[sq.idx] = getPiece(pieceChar);
+				board[sq.idx] = getPieceFromSymbol(pieceChar);
 				file++;
 			}
 		}

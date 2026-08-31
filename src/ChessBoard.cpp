@@ -51,7 +51,7 @@ ChessBoard::ChessBoard(const std::string &fen) {
 		throw std::invalid_argument("Not enough arguments to construct fen (need 7)");
 	}
 	ParsePieces::parsePiecePart(PiecePart, this->pieces);
-	this->whiteToMove = ParsePieces::parsePlayerPart(PlayerPart);
+	this->playerToMove = ParsePieces::parsePlayerPart(PlayerPart);
 	auto [whiteState, blackState] = ParsePieces::parseCastlingPart(CastlingPart);
 	this->whitePlayerState = whiteState;
 	this->blackPlayerState = blackState;
@@ -102,7 +102,7 @@ bool ChessBoard::isMoveLegal(Move m) {
 } // return whether a move is legal
 
 void ChessBoard::processEnPassantCapture(Move m, const Piece &start_ptr, const Piece &end_ptr) {
-	if (enPassant_targetSquare && (m.endingSquare == *enPassant_targetSquare) && toupper(start_ptr->symbol()) == 'P' && !end_ptr) {
+	if (enPassant_targetSquare && (m.endingSquare == *enPassant_targetSquare) && start_ptr.type == PieceType::PAWN && end_ptr.isEmpty()) {
 		Square squareCaptured = m.endingSquare + ((start_ptr.type == PieceType::PAWN) ? SOUTH : NORTH);
 		//cout<<"removing piece at"<<(squareCaptured.toString())<<endl;
         // xor out the old piece
@@ -161,12 +161,10 @@ void ChessBoard::processCastling(Move m, const Piece &start_ptr) {
 	} // black queenside castling
 	// sanity check
 	// assert a rook at oldRookPos, and newRookPOs is empty
-	Piece &oldRook = pieces[oldRookPos.idx];
-    zobrist_hash ^= ZOBRIST.pieces[whiteToMove][rPr][oldRookPos.to64()];
-    zobrist_hash ^= ZOBRIST.pieces[whiteToMove][rPr][newRookPos.to64()];
-	Piece &newRook = pieces[newRookPos.idx];
-    assert((oldRook.symbol() == 'R') && ("Expected a rook at " + oldRookPos.toString() + " that was not found. debug board: " + this->debug_board()));
-    assert(newRook.isEmpty() && ("Expected newRookPos to be empty, but found " + std::string(1, newRook->symbol()) + " instead"))
+    zobrist_hash ^= ZOBRIST.pieces[get_whiteToMove()][rPr][oldRookPos.to64()];
+    zobrist_hash ^= ZOBRIST.pieces[get_whiteToMove()][rPr][newRookPos.to64()];
+    assert((pieces[oldRookPos.idx].type == PieceType::ROOK) && ("Expected a rook at " + oldRookPos.toString() + " that was not found. debug board: " + this->debug_board()));
+    assert(pieces[newRookPos.idx] && ("Expected newRookPos to be empty, but found " + std::string(1, pieces[newRookPos.idx].symbol()) + " instead"));
     pieces[newRookPos.idx] = pieces[oldRookPos.idx];
     pieces[oldRookPos.idx] = EMPTY_SQUARE;
 	return;
@@ -179,14 +177,14 @@ void ChessBoard::processPsuedoLegalMove(Move m) {
 	Piece &start_ptr = this->pieces[m.startingSquare.idx];
 	Piece &end_ptr = this->pieces[m.endingSquare.idx];
     if (start_ptr.type == PieceType::KING) {
-        if (start_ptr->getBelongsToWhite()) whiteKingPos = m.endingSquare;
+        if (start_ptr.getBelongsToWhite()) whiteKingPos = m.endingSquare;
         else blackKingPos = m.endingSquare;
     }
-    assert((start_ptr.getBelongsToWhite()) == whiteToMove);
-    zobrist_hash ^= ZOBRIST.pieces[whiteToMove][start_ptr.pieceNum()][m.startingSquare.to64()]; // remove movers
+    assert(start_ptr.color == playerToMove);
+    zobrist_hash ^= ZOBRIST.pieces[start_ptr.colorNum()][start_ptr.pieceNum()][m.startingSquare.to64()]; // remove movers
     if (end_ptr.isValid()) {
         // remove captured piece, if any
-        zobrist_hash ^= ZOBRIST.pieces[end_ptr.getBelongsToWhite()][end_ptr.pieceNum()][m.endingSquare.to64()];
+        zobrist_hash ^= ZOBRIST.pieces[end_ptr.colorNum()][end_ptr.pieceNum()][m.endingSquare.to64()];
     }
 	// update fullmove_clock (increments once Black's move completes a full move pair)
 	this->fullmove_clock += (playerToMove==Color::BLACK);
@@ -203,8 +201,8 @@ void ChessBoard::processPsuedoLegalMove(Move m) {
 	// update whitePlayerState, blackPlayerState
 
 	// if rook on a file moved, queenside is gone
-	Square queensideRookSquare = whiteToMove ? "a1" : "a8";
-	Square KingsideRookSquare = whiteToMove ? "h1" : "h8";
+	Square queensideRookSquare = get_whiteToMove() ? "a1" : "a8";
+	Square kingsideRookSquare = get_whiteToMove() ? "h1" : "h8";
 	if (m.endingSquare == Square("a1")) // a1 rook captured
 		whitePlayerState.canQueensideCastle = false;
 	if (m.endingSquare == Square("h1")) //h1 rook captured
@@ -213,19 +211,20 @@ void ChessBoard::processPsuedoLegalMove(Move m) {
 		blackPlayerState.canQueensideCastle = false;
 	if (m.endingSquare == Square("h8")) //h8 rook captured
 		blackPlayerState.canKingsideCastle = false;
-	PlayerState cur_state = whiteToMove ? whitePlayerState : blackPlayerState;
+	PlayerState cur_state = get_whiteToMove() ? whitePlayerState : blackPlayerState;
     
 	// if king moved, both are gone
-	if (start_ptr.type == PieceType::KING)
+	if (start_ptr.type == PieceType::KING) {
 		cur_state = PlayerState(false, false);
-	if (start_ptr.type == PieceType::ROOK && m.startingSquare == queensideRookSquare) || m.endingSquare == queensideRookSquare) {
+    }
+    if ((start_ptr.type == PieceType::ROOK && m.startingSquare == queensideRookSquare) || m.endingSquare == queensideRookSquare) {
 		cur_state.canQueensideCastle = false;
 	}
 	// if rook on h file moved, kingside is gone
-	if (start_ptr.type == PieceType::ROOK && m.startingSquare == KingsideRookSquare) || m.endingSquare == KingsideRookSquare) {
+	if ((start_ptr.type == PieceType::ROOK && m.startingSquare == kingsideRookSquare) || m.endingSquare == kingsideRookSquare) {
 		cur_state.canKingsideCastle = false;
 	}
-	if (whiteToMove) {
+	if (get_whiteToMove()) {
 		whitePlayerState = cur_state;
 	} else {
 		blackPlayerState = cur_state;
@@ -237,7 +236,7 @@ void ChessBoard::processPsuedoLegalMove(Move m) {
 	//if was an enpassant capture, must remove the pawn it en-passanted
 	// if it's a promotion
 	if (m.promotion) {
-		start_ptr = getPieceC(m.promotion);
+		start_ptr = getPieceFromSymbol(m.promotion);
 	}
 	if (isPawnMove) {
 		processEnPassantCapture(m, start_ptr, end_ptr);
@@ -247,9 +246,9 @@ void ChessBoard::processPsuedoLegalMove(Move m) {
     // actually move the piece
     this->pieces[m.endingSquare.idx] = this->pieces[m.startingSquare.idx];
     this->pieces[m.startingSquare.idx] = EMPTY_SQUARE;
-    this->playerToMove = (playerToMove==Color::WHITE ? Color::BLACK : Color::WHITE);
+    this->playerToMove = oppositeColor(playerToMove);
     
-    zobrist_hash ^= ZOBRIST.pieces[end_ptr.getBelongsToWhite()][end_ptr.pieceNum()][m.endingSquare.to64()]; // add to to-square
+    zobrist_hash ^= ZOBRIST.pieces[end_ptr.colorNum()][end_ptr.pieceNum()][m.endingSquare.to64()]; // add to to-square
     zobrist_hash ^= ZOBRIST.sideToMove;
     #ifndef NDEBUG
     this->verifyZobrist();
@@ -271,15 +270,15 @@ void ChessBoard::processMove(Move m) {
 bool ChessBoard::isSlidingAttacker(Square from, int dir, Color attackerColor, PieceType pieceTypeA, PieceType pieceTypeB) const {
 	Square cur = from + dir;
 	while (cur.isValid()) {
-		std::shared_ptr<const Piece> p = getPiece(cur);
-		if (p) {
-			if (p->getBelongsToWhite() == attackerIsWhite) {
-				if (sym == pieceLetterA || sym == pieceLetterB) {
-					return true;
-				}
-			}
-			return false; // occupied, so the ray is blocked past here regardless
-		}
+        Piece p = getPiece(cur);
+        if (p.isEmpty()) {
+            if (p.color == attackerColor) {
+                if (p.type == pieceTypeA || p.type == pieceTypeB) {
+                    return true;
+                }
+            }
+            return false; // occupied, so the ray is blocked past here regardless
+        }
 		cur = cur + dir;
 	}
 	return false;
@@ -288,8 +287,7 @@ bool ChessBoard::isSlidingAttacker(Square from, int dir, Color attackerColor, Pi
 
 std::vector<Move> ChessBoard::whereKingCouldMove(const Square origin) const {
 	// get al neighboring places
-	PiecePtr king = getAndAssertPiece(origin, 'K');
-	bool attackerIsWhite = king->getBelongsToWhite();
+	Piece king = getAndAssertPiece(origin, PieceType::KING);
 
 	std::vector<Move> places;
 
@@ -299,21 +297,21 @@ std::vector<Move> ChessBoard::whereKingCouldMove(const Square origin) const {
 			continue;
 		// if there is a piece of a different color, then it's okay
 		// else not
-		PiecePtr p = getPiece(target);
-		if ((!p) || (p && p->getBelongsToWhite() != attackerIsWhite))
+		Piece targetPiece = getPiece(target);
+		if (targetPiece.color != king.color)
 			places.emplace_back(origin, target);
 	}
 	// check for castling
-	if (whiteToMove && !squareAttackedBy("e1", false)) {
+	if (get_whiteToMove() && !squareAttackedBy("e1", false)) {
 		// if white can kingside castle, and f1 and g1 are open
 		if (whitePlayerState.canKingsideCastle && !hasPiece("f1") && !hasPiece("g1")) {
-			if (!squareAttackedBy("f1", false))
+			if (!squareAttackedBy("f1", Color::BLACK))
 				places.emplace_back(origin, Square("g1"), '\0', MoveType::CASTLING);
 		}
 
 		// check queenside castling
 		if (whitePlayerState.canQueensideCastle && !hasPiece("b1") && !hasPiece("c1") && !hasPiece("d1")) {
-			if (!squareAttackedBy("d1", false))
+			if (!squareAttackedBy("d1", Color::BLACK))
 				places.emplace_back(origin, Square("c1"), '\0', MoveType::CASTLING);
 		}
 	}
@@ -321,12 +319,12 @@ std::vector<Move> ChessBoard::whereKingCouldMove(const Square origin) const {
 	if (!whiteToMove && !squareAttackedBy("e8", true)) { // can black castle
 		// check kingside castling
 		if (blackPlayerState.canKingsideCastle && !hasPiece("f8") && !hasPiece("g8")) {
-			if (!squareAttackedBy("f8", true))
+			if (!squareAttackedBy("f8", Color::WHITE))
 				places.emplace_back(origin, Square("g8"), '\0', MoveType::CASTLING);
 		}
 		// check queenside castling
 		if (blackPlayerState.canQueensideCastle && !hasPiece("b8") && !hasPiece("c8") && !hasPiece("d8")) {
-			if (!squareAttackedBy("d8", true))
+			if (!squareAttackedBy("d8", Color::WHITE))
 				places.emplace_back(origin, Square("c8"), '\0', MoveType::CASTLING);
 		}
 	}
@@ -558,23 +556,6 @@ bool ChessBoard::squareAttackedBy(Square target, bool attackerIsWhite) const {
 }
 
 
-
-bool ChessBoard::isInCheck(bool player) const {
-	// can the player whose turn it is, capture the king who is owned by Player?
-	Square kingSquare = this->findKing(player);
-	return this->squareAttackedBy(kingSquare, !player);
-}
-
-bool ChessBoard::isInCheckmate() {
-	// this can be implemented by: are you in check right now
-	// and for every legal move you make, would you still be in check? if so it's checkmate, otherwise no
-	return isInCheck(whiteToMove) && allLegalMoves().empty();
-}
-
-bool ChessBoard::isInStalemate() {
-	// is implemented by: if not in check now, but every legal move you make is in check
-	return !isInCheck(whiteToMove) && allLegalMoves().empty();
-}
 bool ChessBoard::hasInsufficientMaterial() const {
 	// is there anything other than a king, bishop, or knight?
 	int numBishops = 0;

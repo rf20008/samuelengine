@@ -25,7 +25,10 @@ constexpr const char* ColorNames[3] = {"White", "Black", "None^"};
 constexpr const char* colorName(Color c) {
     return ColorNames[static_cast<int>(c)];
 }
-
+constexpr Color oppositeColor(Color c) {
+    assert(c != Color::NONE);
+    return (c==Color::WHITE) ? Color::BLACK : Color::WHITE;
+}
 
 struct Piece {
     public:
@@ -60,6 +63,10 @@ struct Piece {
         constexpr int pieceNum() const {
             assert(this.type != PieceType::NONE);
             return static_cast<int>(this->type) - 1;
+        }
+        constexpr int colorNum() const {
+            assert(this.color != Color::NONE);
+            return ((color == Color::WHITE) ? 0 : 1);
         }
 };
 
@@ -120,7 +127,7 @@ constexpr int pieceNum(char c) {
             assert(false && "invalid piece char "); return 6;
     }
 }
-constexpr Piece getPiece(char c) {
+constexpr Piece getPieceFromSymbol(char c) {
 	switch(c) {
         case 'K': return WHITE_KING;
         case 'Q': return WHITE_QUEEN;
@@ -141,23 +148,23 @@ constexpr Piece getPiece(char c) {
             return {PieceType::KING, Color::NONE}; // an invalid piece
     }
 }
-static_assert(getPiece('K') == WHITE_KING);
-static_assert(getPiece('Q') == WHITE_QUEEN);
-static_assert(getPiece('R') == WHITE_ROOK);
-static_assert(getPiece('B') == WHITE_BISHOP);
-static_assert(getPiece('N') == WHITE_KNIGHT);
-static_assert(getPiece('P') == WHITE_PAWN);
+static_assert(getPieceFromSymbol('K') == WHITE_KING);
+static_assert(getPieceFromSymbol('Q') == WHITE_QUEEN);
+static_assert(getPieceFromSymbol('R') == WHITE_ROOK);
+static_assert(getPieceFromSymbol('B') == WHITE_BISHOP);
+static_assert(getPieceFromSymbol('N') == WHITE_KNIGHT);
+static_assert(getPieceFromSymbol('P') == WHITE_PAWN);
 
-static_assert(getPiece('k') == BLACK_KING);
-static_assert(getPiece('q') == BLACK_QUEEN);
-static_assert(getPiece('r') == BLACK_ROOK);
-static_assert(getPiece('b') == BLACK_BISHOP);
-static_assert(getPiece('n') == BLACK_KNIGHT);
-static_assert(getPiece('p') == BLACK_PAWN);
+static_assert(getPieceFromSymbol('k') == BLACK_KING);
+static_assert(getPieceFromSymbol('q') == BLACK_QUEEN);
+static_assert(getPieceFromSymbol('r') == BLACK_ROOK);
+static_assert(getPieceFromSymbol('b') == BLACK_BISHOP);
+static_assert(getPieceFromSymbol('n') == BLACK_KNIGHT);
+static_assert(getPieceFromSymbol('p') == BLACK_PAWN);
 
-static_assert(getPiece(' ') == EMPTY_SQUARE);
-static_assert(getPiece('.') == EMPTY_SQUARE);
-static_assert(getPiece('\0') == EMPTY_SQUARE);
+static_assert(getPieceFromSymbol(' ') == EMPTY_SQUARE);
+static_assert(getPieceFromSymbol('.') == EMPTY_SQUARE);
+static_assert(getPieceFromSymbol('\0') == EMPTY_SQUARE);
 
 
 

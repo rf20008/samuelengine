@@ -71,7 +71,7 @@ class ChessBoard {
         uint64_t getZobrist() const {return zobrist_hash;}
 		int get_halfmove_clock() const { return halfmove_clock; }
 		int get_fullmove_clock() const { return fullmove_clock; }
-		bool get_whiteToMove() const { return playerToMove == Color::WHITE; }
+		bool get_whiteToMove() const { return playerToMove == Color::WHITE;}
 		PlayerState getWhitePlayerState() const { return whitePlayerState; }
 		PlayerState getBlackPlayerState() const { return blackPlayerState; }
 		std::optional<Square> getEnPassantTargetSquare() const { return enPassant_targetSquare; }
@@ -84,9 +84,14 @@ class ChessBoard {
 		void processEnPassantCapture(Move m, const Piece &start_ptr, const Piece &end_ptr);
 		void processEnPassantUpdate(Move m, const Piece &start_ptr, const Piece &end_ptr);
 		void processCastling(Move m, const Piece &start_ptr);
-		bool isInCheck(bool player) const;
-		bool isInCheckmate(); // interacts with move ordering!
-		bool isInStalemate(); // also interacts with move ordering
+		bool isInCheck(Color player) const {
+            // can the player whose turn it is, capture the king who is owned by Player?
+            assert(player != Color::NONE);
+            return this->squareAttackedBy(this->findKing(player), oppositeColor(player));
+        }
+		bool isInCheckmate() {return isInCheck(playerToMove) && allLegalMoves().empty();}
+            
+        bool isInStalemate() { return !isInCheck(playerToMove) && allLegalMoves().empty();}// interacts with move ordering!
         bool is_threefold_repetition() const;
 		bool hasInsufficientMaterial() const;
         Square findKingSlow(Color expectedColor) const {
@@ -109,15 +114,15 @@ class ChessBoard {
 		// for engine use
 		std::string fen() const;
 
-		Piece getAndAssertPiece(const Square origin, const Piece expectedType) const {
+		Piece getAndAssertPiece(const Square origin, const PieceType expectedType) const {
             // get the piece at origin, and assert it is of tpe pieceTzype
             Piece ptr = getPiece(origin);
-            assert(ptr == expectedType);
+            assert(ptr.type == expectedType);
             return ptr;
         }
 		bool hasPiece(const Square origin) const { return getPiece(origin) != EMPTY_SQUARE; }
-		bool squareAttackedBy(Square target, bool attackerIsWhite) const;
-		bool isSlidingAttacker(Square from, int dir, bool attackerIsWhite, PieceType pieceTypeA, PieceType pieceTypeB) const;
+		bool squareAttackedBy(Square target, Color attackerColor) const;
+		bool isSlidingAttacker(Square from, int dir, Color attackerColor, PieceType pieceTypeA, PieceType pieceTypeB) const;
 
 		std::vector<Move> whereKingCouldMove(const Square origin) const;
 		std::vector<Move> wherePawnCouldMove(const Square origin) const;
