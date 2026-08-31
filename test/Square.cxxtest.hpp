@@ -8,6 +8,11 @@ class TestSquare : public CxxTest::TestSuite {
 			TS_ASSERT_EQUALS(basicSquare.rank(), 0);
 			TS_ASSERT_EQUALS(basicSquare.file(), 0);
 		}
+		void testIndexConstructor() {
+			Square s = Square(18);
+			TS_ASSERT_EQUALS(s.rank(), 1);
+			TS_ASSERT_EQUALS(s.file(), 2);
+		}
 		void testConstructor() {
 			Square sq3 = Square(3, 8);
 			TS_ASSERT_EQUALS(sq3.file(), 3);
