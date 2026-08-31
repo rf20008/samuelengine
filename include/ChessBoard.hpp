@@ -127,7 +127,7 @@ class ChessBoard {
 		std::vector<Move> whereKingCouldMove(const Square origin) const;
 		std::vector<Move> wherePawnCouldMove(const Square origin) const;
 		std::vector<Move> whereKnightCouldMove(const Square origin) const;
-		std::vector<Move> isSlidingAttacker(const Square from, const int dir, bool attackerIsWhite) const;
+		std::vector<Move> getSlidingMoverPositions(const Square from, const int dir, Color fromColor) const;
 		std::vector<Move> whereBishopCouldMove(const Square origin) const;
 		std::vector<Move> whereRookCouldMove(const Square origin) const;
 		std::vector<Move> whereQueenCouldMove(const Square origin) const;

@@ -29,7 +29,9 @@ constexpr Color oppositeColor(Color c) {
     assert(c != Color::NONE);
     return (c==Color::WHITE) ? Color::BLACK : Color::WHITE;
 }
-
+constexpr bool isWhite(Color c) {
+    return c==Color::WHITE;
+}
 struct Piece {
     public:
         PieceType type;

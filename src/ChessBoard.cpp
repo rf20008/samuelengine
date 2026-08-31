@@ -302,7 +302,7 @@ std::vector<Move> ChessBoard::whereKingCouldMove(const Square origin) const {
 			places.emplace_back(origin, target);
 	}
 	// check for castling
-	if (get_whiteToMove() && !squareAttackedBy("e1", false)) {
+	if (get_whiteToMove() && !squareAttackedBy("e1", Color::BLACK)) {
 		// if white can kingside castle, and f1 and g1 are open
 		if (whitePlayerState.canKingsideCastle && !hasPiece("f1") && !hasPiece("g1")) {
 			if (!squareAttackedBy("f1", Color::BLACK))
@@ -316,7 +316,7 @@ std::vector<Move> ChessBoard::whereKingCouldMove(const Square origin) const {
 		}
 	}
 
-	if (!whiteToMove && !squareAttackedBy("e8", true)) { // can black castle
+	if (playerToMove == Color::BLACK && !squareAttackedBy("e8", Color::WHITE)) { // can black castle
 		// check kingside castling
 		if (blackPlayerState.canKingsideCastle && !hasPiece("f8") && !hasPiece("g8")) {
 			if (!squareAttackedBy("f8", Color::WHITE))
@@ -333,11 +333,11 @@ std::vector<Move> ChessBoard::whereKingCouldMove(const Square origin) const {
 }
 
 std::vector<Move> ChessBoard::wherePawnCouldMove(const Square origin) const {
-	PiecePtr pawn = getAndAssertPiece(origin, 'P');
-	bool attackerIsWhite = pawn->getBelongsToWhite();
-	int dir = attackerIsWhite ? 1 : -1; // rank direction
+	Piece pawn = getAndAssertPiece(origin, PieceType::PAWN);
+    assert(pawnColor == playerToMove);
+	int dir = (pawn.color==Color::WHITE) ? 1 : -1; // rank direction
 
-	bool canMoveTwoSpaces = attackerIsWhite ? (origin.rank() == 1) : (origin.rank() == 6);
+	bool canMoveTwoSpaces = (pawn.color==Color::WHITE) ? (origin.rank() == 1) : (origin.rank() == 6);
 	std::vector<Move> places;
 
 	// captures: dr=dir, df= +/-1
@@ -348,8 +348,8 @@ std::vector<Move> ChessBoard::wherePawnCouldMove(const Square origin) const {
 		Square target = origin + cap;
 		if (!target.isValid())
 			continue;
-		PiecePtr p = getPiece(target);
-		if ((p && p->getBelongsToWhite() != attackerIsWhite)) {
+		Piece targetPiece = getPiece(target);
+		if (targetPiece.color != pawn.color && target.isValid()) {
             places.emplace_back(origin, target);
         }
         if (enPassant_targetSquare && target == *enPassant_targetSquare) {
@@ -363,7 +363,7 @@ std::vector<Move> ChessBoard::wherePawnCouldMove(const Square origin) const {
 		Square target = origin + off;
 		if (!target.isValid())
 			break;
-		if (getPiece(target))
+		if (hasPiece(target))
 			break; // blocked
 
 		if (i==1) {
@@ -380,24 +380,22 @@ std::vector<Move> ChessBoard::wherePawnCouldMove(const Square origin) const {
 
     for (int i = places.size() - 1; i >= 0; --i) {
         Move &place = places[i];
-        bool isPromoRank = attackerIsWhite? place.endingSquare.rank() == 7
-                                        : place.endingSquare.rank() == 0;
+        bool isPromoRank = (pawn.color==Color::WHITE) ? (place.endingSquare.rank() == 7) : (place.endingSquare.rank() == 0);
         if (!isPromoRank) continue;
 
-        // save original, we'll overwrite places[i] with first promo
-        Move base = std::move(place);
-
         // replace current slot with Q promo (most common, keep in place)
-        place = Move{base.startingSquare, base.endingSquare,
-                    attackerIsWhite? 'Q' : 'q', base.type};
+        places[i] = Move{place.startingSquare, place.endingSquare,
+            (pawn.color==Color::WHITE)? 'Q' : 'q', place.type};
+
+        
 
         // append other 3 promos to end
-        places.emplace_back(base.startingSquare, base.endingSquare,
-                            attackerIsWhite? 'N' : 'n', base.type);
-        places.emplace_back(base.startingSquare, base.endingSquare,
-                            attackerIsWhite? 'R' : 'r', base.type);
-        places.emplace_back(base.startingSquare, base.endingSquare,
-                            attackerIsWhite? 'B' : 'b', base.type);
+        places.emplace_back(place.startingSquare, place.endingSquare,
+            (pawn.color==Color::WHITE)? 'N' : 'n', place.type);
+        places.emplace_back(place.startingSquare, place.endingSquare,
+            (pawn.color==Color::WHITE)? 'R' : 'r', place.type);
+        places.emplace_back(place.startingSquare, place.endingSquare,
+            (pawn.color==Color::WHITE)? 'B' : 'b', place.type);
     }
 	return places;
 }
@@ -420,7 +418,7 @@ std::vector<Move> ChessBoard::whereKnightCouldMove(const Square origin) const {
 	return places;
 }
 // get all pieces an attacker with the ray (dir) starting at from, whose color is belongsToWhite, could reach legally (without considering check)
-std::vector<Move> ChessBoard::isSlidingAttacker(const Square from, const int dir, bool attackerIsWhite) const {
+std::vector<Move> ChessBoard::getSlidingMoverPositions(const Square from, const int dir, Color fromColor) const {
 	Square cur = from + dir;
 	std::vector<Move> places;
 	while (cur.isValid()) {
@@ -443,7 +441,7 @@ std::vector<Move> ChessBoard::whereBishopCouldMove(const Square origin) const {
 	bool attackerIsWhite = bishop->getBelongsToWhite();
 	std::vector<Move> places;
 	for (int dir : bishopOffsets) {
-		mergeSets(places, isSlidingAttacker(origin, dir, attackerIsWhite));
+		mergeSets(places, getSlidingMoverPositions(origin, dir, attackerIsWhite));
 	}
 	return places;
 }
@@ -452,7 +450,7 @@ std::vector<Move> ChessBoard::whereRookCouldMove(const Square origin) const {
 	bool attackerIsWhite = rook->getBelongsToWhite();
 	std::vector<Move> places;
 	for (int dir : rookOffsets) {
-		mergeSets(places, isSlidingAttacker(origin, dir, attackerIsWhite));
+		mergeSets(places, getSlidingMoverPositions(origin, dir, attackerIsWhite));
 	}
 	return places;
 }
@@ -461,7 +459,7 @@ std::vector<Move> ChessBoard::whereQueenCouldMove(const Square origin) const {
 	bool attackerIsWhite = queen->getBelongsToWhite();
 	std::vector<Move> places;
 	for (int dir : queenOffsets) {
-		mergeSets(places, isSlidingAttacker(origin, dir, attackerIsWhite));
+		mergeSets(places, getSlidingMoverPositions(origin, dir, attackerIsWhite));
 	}
 	return places;
 }
@@ -494,7 +492,7 @@ std::vector<Move> ChessBoard::allPseudoLegalDestinations(const Square origin) co
 // This is a raw-attack check (used to detect check): it only asks
 // "could this piece capture on `target` right now", not whether doing
 // so would be a legal move for the attacker.
-bool ChessBoard::squareAttackedBy(Square target, bool attackerIsWhite) const {
+bool ChessBoard::squareAttackedBy(Square target, Color attackerColor) const {
 	// get all the psuedo-legal moves
 	// and check if they would end on the target
 
