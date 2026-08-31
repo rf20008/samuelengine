@@ -98,4 +98,8 @@ class TestSquare : public CxxTest::TestSuite {
 			const Square s = Square(2, 5);
 			TS_ASSERT_EQUALS(s.to64(), 2 + 5 * 8);
 		}
+		void testFrom64() {
+			const Square s = Square::from64(2 + 5 * 8);
+			TS_ASSERT_EQUALS(s, Square(2, 5));
+		}
 };
