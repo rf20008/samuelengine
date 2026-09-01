@@ -95,11 +95,11 @@ class TestBoard : public CxxTest::TestSuite {
 		}
 		void testKiwinetesA2A4ThenB4A3Legal() {
 			ChessBoard myBoard = ChessBoard("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
-			myBoard.processMove(Move(Square("a2"), Square("a4")));
+			myBoard.processMove(Move(Square("a2"), Square("a4"), '\0', MoveType::DOUBLE_PAWN_PUSH));
 			TS_ASSERT_EQUALS(myBoard.fen(), "r3k2r/p1ppqpb1/bn2pnp1/3PN3/Pp2P3/2N2Q1p/1PPBBPPP/R3K2R b KQkq a3 0 1");
 
 			// will only work when castling is implemented
-			TS_ASSERT(myBoard.isMoveLegal(Move("b4", "a3")));
+			TS_ASSERT(myBoard.isMoveLegal(Move("b4", "a3", '\0', MoveType::EN_PASSANT)));
 			myBoard.processMove(Move("b4", "a3"));
 			TS_ASSERT_EQUALS(myBoard.fen(), "r3k2r/p1ppqpb1/bn2pnp1/3PN3/4P3/p1N2Q1p/1PPBBPPP/R3K2R w KQkq - 0 2");
 		}

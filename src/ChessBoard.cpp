@@ -31,7 +31,7 @@ constexpr int kingOffsets[] = {NORTH, SOUTH, EAST, WEST, NE, NW, SE, SW};
 constexpr int rookOffsets[] = {NORTH, SOUTH, EAST, WEST};
 constexpr int bishopOffsets[] = {NE, NW, SE, SW};
 constexpr int queenOffsets[] = {NORTH, SOUTH, EAST, WEST, NE, NW, SE, SW};
-
+constexpr std::string knownPieceTypeChars = "KQRBN";
 constexpr int knightOffsets[] = {33, 31, 18, 14, -14, -18, -31, -33}; // 2N+E etc
 
 ChessBoard::ChessBoard() : ChessBoard::ChessBoard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1") {}
@@ -91,19 +91,94 @@ ChessBoard::ChessBoard(const std::string &fen) {
 
 
 
+Move ChessBoard::getSANRegular(PieceType expectedType, Square expectedEndingSquare, const std::string ambiguators) {
+    std::vector<Move> candidateMoves;
+    for (int sqnum = 0; sqnum<64; ++sqnum) {
+        // does the piece belong to the current player
+        // and is it the rightt ype
+        Square beginningSquare = Square::from64(sqnum);
+        Piece p = getPiece(Square::from64(sqnum));
+        if (p.color != playerToMove) continue; // wrong color
+        if (p.type != expectedType) continue;
+
+        std::vector<Move> candidateMovesFromSquare = allLegalMoves(beginningSquare);
+        for (const Move & candidateMove : candidateMovesFromSquare) {
+            if (candidateMove.endingSquare == expectedEndingSquare) candidateMoves.push_back(m);
+        }
+        // and filter out al moves to see if it ends at the desired spot
+    }
+    // then see if there is a rank, or file ambiguator
+    if (moveNotation.size() > 3) {
+        // has ambiguators!
+        // to filter out
+        for (size_t ambiguatorIdx = 1; ambiguatorIdx < moveNotation.size()-2; ++ambiguatorIdx) {
+            char ambiguatorChar = moveNotation[ambiguatorChar];
+            // is it a file or a rank ambiguator
+            bool isFileAmbiguator = (ambiguatorChar >= '1') && (ambiguatorChar <= '8');
+            bool isRankAmbiguator = (ambiguatorChar >= 'a') && (ambiguatorChar <= 'h');
+            // exception: x = capture on the square
+            if (!isFileAmbiguator && !isRankAmbiguator) {
+                throw InvalidSAN("Invalid ambiguator: " + std::string(1, ambiguatorChar));
+            }
+        }
+    }
+}
+
+Move ChessBoard::getMove(const std::string& moveNotation) const {
+    ChessBoard boardCopy = *this;
+    // get all moves made by the specified type
+    // is there at least one character
+
+    // special case: O-O or O-O-O
+    // or promotion
+
+    if (moveNotation == "O-O" ) {
+        // king side Castling
+        Move attemptedMove = Move(get_whiteToMove() ? "e1" : "e8", get_whiteToMove() ? "g1" : "g8", '\0', MoveType::CASTLING)
+
+        if (boardCopy.isMoveLegal(attemptedMove)) {
+            return attemptedMove;
+        } else {
+            throw InvalidSAN("Invalid attempt to castle kingside");
+        }
+    }
+    else if (moveNotation == "O-O-O") {
+        Move attemptedMove = Move(get_whiteToMove() ? "e1" : "c8", get_whiteToMove() ? "g1" : "c8", '\0', MoveType::CASTLING)
+
+        if (boardCopy.isMoveLegal(attemptedMove)) {
+            return attemptedMove;
+        } else {
+            throw InvalidSAN("Invalid attempt to castle queenside");
+        }
+    }
+    if (moveNotation.size() < 2) {
+        throw InvalidSAN("All move notations must be at least 2 characters");
+    }
+    if (moveNotation.size() > 5) {
+        throw InvalidSAN("All move notations must be most 5 characters");
+    }
+
+    // check first character
+    auto it = std::find(begin(knownPieceTypeChars), end(knownPieceTypeChars), moveNotation[0])
+    if (it != end(knownPieceTypeChars)) {
+        PieceType expectedType = getPieceFromSymbol(moveNotation[0]);
+    
+        return boardCopy.getSANRegular(expectedType, expectedEndingSquare, string())
+        // might be pawn?
+    }
+    // is this a pawn move?
+    // if it's only 2 squares, we expect a move to ending Square
+    throw InvalidSAN("Unknown piece type: " + std::string(1, moveNotation[0]));
+    
+
+    // get all pieces that are from that type, and owned by the player
+    
 
 
+    return Move(Square(-1), Square(-1));
+}
 bool ChessBoard::isMoveLegal(Move m) {
-    std::vector<Move> pseudoLegalMoves =
-        allPseudoLegalDestinations(m.startingSquare);
-
-    bool moveIsPseudoLegal =
-        std::find(pseudoLegalMoves.begin(),
-                  pseudoLegalMoves.end(),
-                  m) != pseudoLegalMoves.end();
-
-    if (!moveIsPseudoLegal)
-        return false;
+    if (!isMovePsuedoLegal(m)) return false;
 
     Color movingColor = playerToMove;
 
@@ -257,11 +332,26 @@ void ChessBoard::processPsuedoLegalMove(Move m) {
     this->verifyZobrist();
     #endif
 }
+
+bool ChessBoard::isMovePsuedoLegal(Move m) const {
+    std::vector<Move> pseudoLegalMoves =
+        allPseudoLegalDestinations(m.startingSquare);
+
+    bool moveIsPseudoLegal =
+        std::find(pseudoLegalMoves.begin(),
+                  pseudoLegalMoves.end(),
+                  m) != pseudoLegalMoves.end();
+
+    return moveIsPseudoLegal;
+
+}
 void ChessBoard::processMove(Move m) {
 	if (this->isMoveLegal(m)) {
 		this->processPsuedoLegalMove(m);
 	} else {
-		throw IllegalMoveError("You have attempted an illegal move: " + m.debugString() + ". FEN: " + fen());
+        std::string message = "You have attempted an illegal move: " + m.debugString() + ". FEN: " + fen();
+        if (!this->isMovePsuedoLegal(m)) message += " (hint: move is not pseudo-legal)";
+		throw IllegalMoveError(message);
 	}
 }
 

@@ -121,7 +121,7 @@ constexpr Piece getPieceFromSymbol(char c) {
         case '\0': case '.': case ' ': return EMPTY_SQUARE;
         default: 
             assert(false && (("unknown piece type: " + std::to_string(c)).c_str()));
-            return {PieceType::KING, Color::NONE}; // an invalid piece
+            return {PieceType::NONE, Color::NONE}; // an invalid piece
     }
 }
 

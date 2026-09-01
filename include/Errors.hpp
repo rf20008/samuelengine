@@ -37,4 +37,10 @@ class IllegalMoveError : public std::runtime_error {
 	public:
 		IllegalMoveError(const std::string &message = "You have attempted an illegal move.") : std::runtime_error(message) {}
 };
+
+class InvalidSAN : public std::invalid_argument {
+    public:
+        InvalidSAN(const std::string& message="Your move is invalid") : std::invalid_argument(message) {}
+};
+
 #endif
