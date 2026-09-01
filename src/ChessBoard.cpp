@@ -111,17 +111,47 @@ Move ChessBoard::getSANRegular(PieceType expectedType, Square expectedEndingSqua
     if (moveNotation.size() > 3) {
         // has ambiguators!
         // to filter out
+        
         for (size_t ambiguatorIdx = 1; ambiguatorIdx < moveNotation.size()-2; ++ambiguatorIdx) {
+            vector<Move> newCandidates;
             char ambiguatorChar = moveNotation[ambiguatorChar];
             // is it a file or a rank ambiguator
             bool isFileAmbiguator = (ambiguatorChar >= '1') && (ambiguatorChar <= '8');
+
             bool isRankAmbiguator = (ambiguatorChar >= 'a') && (ambiguatorChar <= 'h');
             // exception: x = capture on the square
+            bool isCaptureAmbiguator = (ambiguatorChar == 'x');
+            if (isCaptureAmbiguator) {
+                if (getPiece(expectedEndingSquare).isEmpty()) {
+                    throw InvalidSAN("Expected capture, but empty square found");
+                } else {
+                    continue;
+                }
+            } 
             if (!isFileAmbiguator && !isRankAmbiguator) {
                 throw InvalidSAN("Invalid ambiguator: " + std::string(1, ambiguatorChar));
             }
+            assert(!(isFileAmbiguator && isRankAmbiguator));
+            int ambiguator = (isFileAmbiguator ? ambiguatorChar - '1' : ambiguatorChar - 'a');
+            for (Move candidateMove : candidateMoves) {
+                // if it's file, must match file
+                if (isFileAmbiguator && candidateMove.startingSquare.file() == ambiguator) {
+                    newCandidates.push_back(candidateMove);
+                } else if (isRankAmbiguator && candidateMove.startingSquare.rank() == ambiguator) {
+                    newCandidates.push_back(candidateMove);
+                }
+            }
+            candidateMoves = newCandidates;
         }
     }
+    // make sure is unambiguous
+    if (candidateMoves.empty()) {
+        throw InvalidSAN("No SAN move found");
+    } else if (candidateMoves.size() > 1) {
+        throw InvalidSAN("Error: Ambiguous SAN move. Perhaps put an ambiguator");
+    }
+    assert(candidateMoves.size() == 1);
+    return candidateMoves[0];
 }
 
 Move ChessBoard::getMove(const std::string& moveNotation) const {
@@ -159,6 +189,7 @@ Move ChessBoard::getMove(const std::string& moveNotation) const {
     }
 
     // check first character
+    string expectedEndingSquare;
     auto it = std::find(begin(knownPieceTypeChars), end(knownPieceTypeChars), moveNotation[0])
     if (it != end(knownPieceTypeChars)) {
         PieceType expectedType = getPieceFromSymbol(moveNotation[0]);
@@ -168,6 +199,7 @@ Move ChessBoard::getMove(const std::string& moveNotation) const {
     }
     // is this a pawn move?
     // if it's only 2 squares, we expect a move to ending Square
+    // or it may be promotion, or captures
     throw InvalidSAN("Unknown piece type: " + std::string(1, moveNotation[0]));
     
 
