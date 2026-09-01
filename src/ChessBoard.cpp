@@ -261,7 +261,7 @@ void ChessBoard::processMove(Move m) {
 	if (this->isMoveLegal(m)) {
 		this->processPsuedoLegalMove(m);
 	} else {
-		throw IllegalMoveError("You have attempted an illegal move from " + m.startingSquare.toString() + " to " + m.endingSquare.toString() + ". FEN: " + fen());
+		throw IllegalMoveError("You have attempted an illegal move: " + m.debugString() + ". FEN: " + fen());
 	}
 }
 
