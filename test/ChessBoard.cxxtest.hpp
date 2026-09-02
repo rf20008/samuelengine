@@ -91,6 +91,7 @@ class TestBoard : public CxxTest::TestSuite {
 			// will only work when castling is implemented
 			TS_ASSERT_EQUALS(myBoard.perft(1), 48);
 			TS_ASSERT_EQUALS(myBoard.perft(2), 2039);
+            TS_ASSERT_EQUALS(myBoard.perft(3), 97862);
 		}
 		void testKiwinetesA2A4ThenB4A3Legal() {
 			ChessBoard myBoard = ChessBoard("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1");
