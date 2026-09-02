@@ -20,7 +20,7 @@ namespace ChessUI {
 
 inline std::string squareGlyph(const ChessBoard &board, Square sq) {
 	Piece piece = board.getPiece(sq);
-	if (!piece.isEmpty()) {
+	if (piece.isEmpty()) {
 		return ".";
 	}
 	return display_piece_symbol(piece.symbol());
