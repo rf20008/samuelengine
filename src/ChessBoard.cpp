@@ -114,7 +114,7 @@ Move ChessBoard::getSANRegular(PieceType expectedType, Square expectedEndingSqua
     return ambiguateMove(getAllMovesFromPieceEndingAt(expectedEndingSquareString, expectedEndingSquare, ambiguators));
 
 }
-Move ambiguateMove(std::vector<Move> candidateMoves, const std::string ambiguators)
+std::vector<Move> ambiguateMove(std::vector<Move> candidateMoves, const std::string ambiguators)
     for (char ambiguatorChar : ambiguators) {
         // is it a file or a rank ambiguator
         bool isFileAmbiguator = (ambiguatorChar >= '1') && (ambiguatorChar <= '8');
@@ -146,13 +146,13 @@ Move ambiguateMove(std::vector<Move> candidateMoves, const std::string ambiguato
     }
 
     // make sure is unambiguous
-    if (candidateMoves.empty()) {
+    /*if (candidateMoves.empty()) {
         throw InvalidSAN("No SAN move found");
     } else if (candidateMoves.size() > 1) {
         throw InvalidSAN("Error: Ambiguous SAN move. Perhaps put an ambiguator");
-    }
-    assert(candidateMoves.size() == 1);
-    return candidateMoves[0];
+    }*/
+    //assert(candidateMoves.size() == 1);
+    return candidateMoves;
 }
 
 Move ChessBoard::getMove(const std::string& moveNotation) const {
@@ -191,35 +191,45 @@ Move ChessBoard::getMove(const std::string& moveNotation) const {
 
     // check first character
     bool isPromotionAttempt = moveNotation[moveNotation.size()-2] == '=';
-    string expectedEndingSquareString;
-    if (isPromotionAttempt) {
-        expectedEndingSquareString += moveNotation[moveNotation.size()-4];
-        expectedEndingSquareString += moveNotation[moveNotation.size()-3];
-    } else {
-        expectedEndingSquareString += moveNotation[moveNotation.size()-2];
-        expectedEndingSquareString += moveNotation[moveNotation.size()-1];
+    size_t expectedStringBegin = moveNotation.size() - (isPromotionAttempt ? 4 : 2);
+    string expectedEndingSquareString = moveNotation.substr(expectedStringBegin, 2);
+    Square expectedEndingSquare = Square(expectedEndingSquareString);
+    if (!expectedEndingSquare.isValid()) {
+        throw InvalidSAN("Invalid expected ending square!");
     }
-    Square expectedEndingSquare = 
-    
 
     auto it = std::find(begin(knownPieceTypeChars), end(knownPieceTypeChars), moveNotation[0])
     if (it != end(knownPieceTypeChars)) {
         PieceType expectedType = getPieceFromSymbol(moveNotation[0]);
     
-        return boardCopy.getSANRegular(expectedType, expectedEndingSquare, string())
-        // might be pawn?
+        auto candidateMoves = boardCopy.getSANRegular(expectedType, expectedEndingSquare, moveNotation.substr(1, moveNotation.size()-3));
+        if (candidateMoves.empty()) {
+            throw InvalidSAN("No SAN move found");
+        } else if (candidateMoves.size() > 1) {
+            throw InvalidSAN("Error: Ambiguous SAN move. Perhaps put an ambiguator");
+        }
+        return candidateMoves[0];
     }
-    // is this a pawn move?
-    // if it's only 2 squares, we expect a move to ending Square
-    // or it may be promotion, or captures
-    throw InvalidSAN("Unknown piece type: " + std::string(1, moveNotation[0]));
-    
+    // assert is pawn
+    if (!('a' <= moveNotation[0] && moveNotation[0] <= 'h' )) throw InvalidSAN("Invalid piecetype");
 
-    // get all pieces that are from that type, and owned by the player
-    
-
-
-    return Move(Square(-1), Square(-1));
+    // find disambiguation
+    string disambig = moveNotation.substr(0, expectedStringBegin);
+    vector<Move> candidates = boardCopy.getSANRegular(PieceType::PAWN, expectedEndingSquare, disambig);
+    if (!isPromotionAttempt) {
+        assert(candidates.size()==1);
+        return candidates[0];
+    }
+    // get the move that corresponds to that promotion
+    char promotionPieceSymbol = moveNotation[moveNotation.size()-1];
+    if (promotionPieceSymbol != 'Q' && promotionPieceSymbol != 'R' && promotionPieceSymbol != 'B' && promotionPieceSymbol != 'N') {
+        throw InvalidSAN("Unknown promotion piece symbol: " + std::string(1, promotionPieceSymbol));
+    }
+    // return the move that corresponds to that symbol
+    for (const Move& candidate : candidates) {
+        if (candidate.promotion == promotionPieceSymbol) return candidate;
+    }
+    throw InvalidSAN("No move found: " + moveNotation);
 }
 bool ChessBoard::isMoveLegal(Move m) {
     if (!isMovePsuedoLegal(m)) return false;
