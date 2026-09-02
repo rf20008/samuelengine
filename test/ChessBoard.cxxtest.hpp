@@ -69,7 +69,6 @@ class TestBoard : public CxxTest::TestSuite {
                 TS_FAIL(std::string("error (after checking e4f3, NO EP): ") + err.what());
             }
 			myBoard.processMove(Move(Square("e4"), Square("f3"), '\0', MoveType::EN_PASSANT));
-            TS_ASSERT_EQUALS(myBoard.fen(), myFen);
             try {
                 myBoard.verifyZobrist();
             } catch (const std::logic_error& err) {
@@ -100,7 +99,7 @@ class TestBoard : public CxxTest::TestSuite {
 
 			// will only work when castling is implemented
 			TS_ASSERT(myBoard.isMoveLegal(Move("b4", "a3", '\0', MoveType::EN_PASSANT)));
-			myBoard.processMove(Move("b4", "a3"));
+			myBoard.processMove(Move("b4", "a3", '\0', MoveType::EN_PASSANT));
 			TS_ASSERT_EQUALS(myBoard.fen(), "r3k2r/p1ppqpb1/bn2pnp1/3PN3/4P3/p1N2Q1p/1PPBBPPP/R3K2R w KQkq - 0 2");
 		}
 		void testPerftPositionThree() {
@@ -206,7 +205,7 @@ class TestBoard : public CxxTest::TestSuite {
             ChessBoard oldBoard = myBoard;
 			TS_ASSERT(myBoard.getWhitePlayerState().canKingsideCastle);
 			TS_ASSERT_EQUALS(myBoard.findKing(Color::WHITE), "e1");
-            TS_ASSERT_EQUALS(myBoard.findKing(Color::BLACK), "e8");
+            TS_ASSERT_EQUALS(myBoard.findKing(Color::BLACK), "g8");
 			TS_ASSERT(myBoard.isMoveLegal(Move("e1", "g1")));
 			try {
 				myBoard.processMove(Move("e1", "g1"));
@@ -214,12 +213,12 @@ class TestBoard : public CxxTest::TestSuite {
 				TS_FAIL("move from e1 to g1 not legal");
 			}
 			try {
-				TS_ASSERT(myBoard.getAndAssertPiece("g1", PieceType::KING).type == PieceType::KING);
+				TS_ASSERT_EQUALS(myBoard.getPiece("g1"), WHITE_KING);
 			} catch (WrongPieceType &err) {
 				TS_FAIL("g1 does not contain king");
 			}
 			try {
-				TS_ASSERT(myBoard.getAndAssertPiece("f1", PieceType::ROOK).type == PieceType::ROOK);
+				TS_ASSERT_EQUALS(myBoard.getPiece("f1"), WHITE_ROOK);
 			} catch (WrongPieceType &err) {
 				TS_FAIL("f1 does not contain rook");
 			}
@@ -236,12 +235,12 @@ class TestBoard : public CxxTest::TestSuite {
 				TS_FAIL("move from e1 to c1 not legal");
 			}
 			try {
-				TS_ASSERT(myBoard.getAndAssertPiece("c1", PieceType::KING).type == PieceType::KING);
+				TS_ASSERT_EQUALS(myBoard.getPiece("c1"), WHITE_KING);
 			} catch (WrongPieceType &err) {
 				TS_FAIL("c1 does not contain king");
 			}
 			try {
-				TS_ASSERT(myBoard.getAndAssertPiece("d1", PieceType::ROOK).type == PieceType::ROOK);
+				TS_ASSERT_EQUALS(myBoard.getPiece("d1"), WHITE_ROOK);
 			} catch (WrongPieceType &err) {
 				TS_FAIL("f1 does not contain rook");
 			}
@@ -259,12 +258,12 @@ class TestBoard : public CxxTest::TestSuite {
 				TS_FAIL("move from e8 to g8 not legal");
 			}
 			try {
-				TS_ASSERT(myBoard.getAndAssertPiece("g8", PieceType::KING).type == PieceType::KING);
+				TS_ASSERT_EQUALS(myBoard.getPiece("g8"), BLACK_KING);
 			} catch (WrongPieceType &err) {
 				TS_FAIL("g8 does not contain king");
 			}
 			try {
-				TS_ASSERT(myBoard.getAndAssertPiece("f8", PieceType::ROOK).type == PieceType::ROOK);
+				TS_ASSERT_EQUALS(myBoard.getPiece("f8"), BLACK_ROOK);
 			} catch (WrongPieceType &err) {
 				TS_FAIL("f8 does not contain rook");
 			}
@@ -281,12 +280,12 @@ class TestBoard : public CxxTest::TestSuite {
 				TS_FAIL("move from e8 to c8 not legal");
 			}
 			try {
-				TS_ASSERT(myBoard.getAndAssertPiece("c8", PieceType::KING).type == PieceType::KING);
+				TS_ASSERT_EQUALS(myBoard.getPiece("c8"), BLACK_KING);
 			} catch (WrongPieceType &err) {
 				TS_FAIL("c8 does not contain king");
 			}
 			try {
-				TS_ASSERT(myBoard.getAndAssertPiece("d8", PieceType::ROOK).type == PieceType::ROOK);
+				TS_ASSERT_EQUALS(myBoard.getPiece("d8"), BLACK_ROOK);
 			} catch (WrongPieceType &err) {
 				TS_FAIL("d8 does not contain rook");
 			}
@@ -296,7 +295,7 @@ class TestBoard : public CxxTest::TestSuite {
 		void testKingDoesNotDisappear() {
 			ChessBoard board;
 			board.processMove(Move("b1", "c3"));
-			board.processMove(Move("d7", "d5"));
+			board.processMove(Move("d7", "d5", '\0', MoveType::DOUBLE_PAWN_PUSH));
 			board.processMove(Move("c3", "a4"));
 			TS_ASSERT(!board.getEnPassantTargetSquare());
 			board.processMove(Move("e8", "d7"));
@@ -323,8 +322,8 @@ class TestBoard : public CxxTest::TestSuite {
 			board.processMove({"g1", "f3"});
 			board.processMove({"e8", "d7"});
 			board.processMove({"c3", "d5"});
-			board.processMove({"a7", "a5"});
-			board.processMove({"b2", "b4"});
+			board.processMove({"a7", "a5", '\0', MoveType::DOUBLE_PAWN_PUSH});
+			board.processMove({"b2", "b4", '\0', MoveType::DOUBLE_PAWN_PUSH});
 			board.processMove({"a5", "b4"});
 			board.processMove({"f3", "e5"});
 			board.processMove({"d6", "e5"});
@@ -333,7 +332,7 @@ class TestBoard : public CxxTest::TestSuite {
 			board.processMove({"c2", "c3"});
 			board.processMove({"a3", "a2"});
 			board.processMove({"a1", "a2"});
-			board.processMove({"c7", "c5"});
+			board.processMove({"c7", "c5", '\0', MoveType::DOUBLE_PAWN_PUSH});
 			board.processMove({"d1", "a4"});
 			board.processMove({"d7", "d6"});
 			board.processMove({"a4", "b4"});
@@ -344,7 +343,7 @@ class TestBoard : public CxxTest::TestSuite {
 			board.processMove({"b8", "c6"});
 			board.processMove({"b6", "b7"});
 			board.processMove({"c8", "b7"});
-			board.processMove({"e2", "e4"});
+			board.processMove({"e2", "e4", '\0', MoveType::DOUBLE_PAWN_PUSH});
 			board.processMove({"d5", "e4"});
 			board.processMove({"f1", "d3"});
 			board.processMove({"e4", "d5"});

@@ -25,6 +25,7 @@ inline std::string piece_type_from_symbol(char symbol) {
 	case 'r': return "♜";
 	case 'q': return "♛"; 
 	case 'k': return "♚";
+    case ' ': return " ";
 	default:
 		throw std::invalid_argument("piece_type_from_symbol: unknown piece symbol '" + std::string(1, symbol) + "'");
 	}

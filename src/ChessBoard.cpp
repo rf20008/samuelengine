@@ -176,19 +176,19 @@ Move ChessBoard::getMove(const std::string& moveNotation) const {
         }
     }
     else if (moveNotation == "O-O-O") {
-        Move attemptedMove = Move(get_whiteToMove() ? "e1" : "c8", get_whiteToMove() ? "g1" : "c8", '\0', MoveType::CASTLING);
+        Move attemptedMove = Move(get_whiteToMove() ? "e1" : "e8", get_whiteToMove() ? "c1" : "c8", '\0', MoveType::CASTLING);
 
         if (boardCopy.isMoveLegal(attemptedMove)) {
             return attemptedMove;
         } else {
-            throw InvalidSAN("Invalid attempt to castle queenside");
+            throw InvalidSAN("Invalid attempt to castle queenside. FEN: " + fen());
         }
     }
     if (moveNotation.size() < 2) {
         throw InvalidSAN("All move notations must be at least 2 characters");
     }
-    if (moveNotation.size() > 5) {
-        throw InvalidSAN("All move notations must be most 5 characters");
+    if (moveNotation.size() > 6) {
+        throw InvalidSAN("All move notations must be most 6 characters");
     }
 
     // check first character
@@ -231,7 +231,16 @@ Move ChessBoard::getMove(const std::string& moveNotation) const {
     }
     vector<Move> candidates = boardCopy.getSANRegular(PieceType::PAWN, expectedEndingSquare, disambig);
     if (!isPromotionAttempt) {
-        assert(candidates.size()==1);
+        if (candidates.empty()) {
+            throw InvalidSAN("No pawn move found: " + moveNotation);
+        }
+        if (candidates.size() > 1) {
+            string message = "Ambiguous pawn move: " + moveNotation + " Possibilities:";
+            for (const Move& m : candidates) {
+                message += " [" + m.debugString() + "]";
+            }
+            throw InvalidSAN(message);
+        }
         return candidates[0];
     }
     // get the move that corresponds to that promotion
