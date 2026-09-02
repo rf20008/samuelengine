@@ -206,9 +206,9 @@ class TestBoard : public CxxTest::TestSuite {
 			TS_ASSERT(myBoard.getWhitePlayerState().canKingsideCastle);
 			TS_ASSERT_EQUALS(myBoard.findKing(Color::WHITE), "e1");
             TS_ASSERT_EQUALS(myBoard.findKing(Color::BLACK), "g8");
-			TS_ASSERT(myBoard.isMoveLegal(Move("e1", "g1")));
+			TS_ASSERT(myBoard.isMoveLegal(Move("e1", "g1", '\0', MoveType::CASTLING)));
 			try {
-				myBoard.processMove(Move("e1", "g1"));
+				myBoard.processMove(Move("e1", "g1", '\0', MoveType::CASTLING));
 			} catch (IllegalMoveError &err) {
 				TS_FAIL("move from e1 to g1 not legal");
 			}
@@ -228,9 +228,9 @@ class TestBoard : public CxxTest::TestSuite {
 		void testWhiteQueensideCastling() {
 			ChessBoard myBoard("6k1/8/8/8/8/8/8/R3K3 w Q - 0 1");
 			TS_ASSERT(myBoard.getWhitePlayerState().canQueensideCastle);
-			TS_ASSERT(myBoard.isMoveLegal(Move("e1", "c1")));
+			TS_ASSERT(myBoard.isMoveLegal(Move("e1", "c1", '\0', MoveType::CASTLING)));
 			try {
-				myBoard.processMove(Move("e1", "c1"));
+				myBoard.processMove(Move("e1", "c1", '\0', MoveType::CASTLING));
 			} catch (IllegalMoveError &err) {
 				TS_FAIL("move from e1 to c1 not legal");
 			}
@@ -251,9 +251,9 @@ class TestBoard : public CxxTest::TestSuite {
 			ChessBoard myBoard("4k2r/8/8/8/8/8/8/6K1 b k - 0 1");
 			TS_ASSERT(myBoard.getBlackPlayerState().canKingsideCastle);
 			TS_ASSERT_EQUALS(myBoard.findKing(Color::BLACK), "e8");
-			TS_ASSERT(myBoard.isMoveLegal(Move("e8", "g8")));
+			TS_ASSERT(myBoard.isMoveLegal(Move("e8", "g8", '\0', MoveType::CASTLING)));
 			try {
-				myBoard.processMove(Move("e8", "g8"));
+				myBoard.processMove(Move("e8", "g8", '\0', MoveType::CASTLING));
 			} catch (IllegalMoveError &err) {
 				TS_FAIL("move from e8 to g8 not legal");
 			}
@@ -273,9 +273,9 @@ class TestBoard : public CxxTest::TestSuite {
 		void testBlackQueensideCastling() {
 			ChessBoard myBoard("r3k3/8/8/8/8/8/8/6K1 b q - 0 1");
 			TS_ASSERT(myBoard.getBlackPlayerState().canQueensideCastle);
-			TS_ASSERT(myBoard.isMoveLegal(Move("e8", "c8")));
+			TS_ASSERT(myBoard.isMoveLegal(Move("e8", "c8", '\0', MoveType::CASTLING)));
 			try {
-				myBoard.processMove(Move("e8", "c8"));
+				myBoard.processMove(Move("e8", "c8", '\0', MoveType::CASTLING));
 			} catch (IllegalMoveError &err) {
 				TS_FAIL("move from e8 to c8 not legal");
 			}
