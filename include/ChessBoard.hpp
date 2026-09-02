@@ -85,8 +85,13 @@ class ChessBoard {
 		PlayerState getBlackPlayerState() const { return blackPlayerState; }
 		std::optional<Square> getEnPassantTargetSquare() const { return enPassant_targetSquare; }
         std::vector<UndoMove> getHistory() const {return history;}
-        
+
+        // SAN
+        std::vector<Move> getAllMovesFromPieceEndingAt(PieceType expectedType, Square expectedEndingSquare);
+        std::vector<Move> getSANRegular(PieceType expectedType, Square expectedEndingSquare, const std::string ambiguators);
+        std::vector<Move> ambiguateMove(std::vector<Move> candidateMoves, Square expectedEndingSquare, const std::string ambiguators) const        ;
         Move getMove(const std::string& algebraicNotation) const;
+
 		// chess engine methods
         bool isMovePsuedoLegal(Move m) const;
 		bool isMoveLegal(Move m); // return whether a move is legal

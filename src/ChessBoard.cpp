@@ -89,7 +89,7 @@ ChessBoard::ChessBoard(const std::string &fen) {
 }
 
 
-std::vector<Move> getAllMovesFromPieceEndingAt(PieceType expectedType, Square expectedEndingSquare) {
+std::vector<Move> ChessBoard::getAllMovesFromPieceEndingAt(PieceType expectedType, Square expectedEndingSquare) {
     std::vector<Move> candidateMoves;
     for (int sqnum = 0; sqnum<64; ++sqnum) {
         // does the piece belong to the current player
@@ -101,7 +101,8 @@ std::vector<Move> getAllMovesFromPieceEndingAt(PieceType expectedType, Square ex
 
         std::vector<Move> candidateMovesFromSquare = allLegalMoves(beginningSquare);
         for (const Move & candidateMove : candidateMovesFromSquare) {
-            if (candidateMove.endingSquare == expectedEndingSquare) candidateMoves.push_back(m);
+            if (candidateMove.endingSquare == expectedEndingSquare) 
+                candidateMoves.push_back(candidateMove);
         }
         // and filter out al moves to see if it ends at the desired spot
     }
@@ -109,17 +110,17 @@ std::vector<Move> getAllMovesFromPieceEndingAt(PieceType expectedType, Square ex
 }
 
 
-Move ChessBoard::getSANRegular(PieceType expectedType, Square expectedEndingSquare, const std::string ambiguators) {
+std::vector<Move> ChessBoard::getSANRegular(PieceType expectedType, Square expectedEndingSquare, const std::string ambiguators) {
 
-    return ambiguateMove(getAllMovesFromPieceEndingAt(expectedEndingSquareString, expectedEndingSquare, ambiguators));
+    return ambiguateMove(getAllMovesFromPieceEndingAt(expectedType, expectedEndingSquare), expectedEndingSquare, ambiguators);
 
 }
-std::vector<Move> ambiguateMove(std::vector<Move> candidateMoves, const std::string ambiguators)
+std::vector<Move> ChessBoard::ambiguateMove(std::vector<Move> candidateMoves, Square expectedEndingSquare, const std::string ambiguators) const {
     for (char ambiguatorChar : ambiguators) {
         // is it a file or a rank ambiguator
-        bool isFileAmbiguator = (ambiguatorChar >= '1') && (ambiguatorChar <= '8');
+        bool isFileAmbiguator = (ambiguatorChar >= 'a') && (ambiguatorChar <= 'h');
 
-        bool isRankAmbiguator = (ambiguatorChar >= 'a') && (ambiguatorChar <= 'h');
+        bool isRankAmbiguator = (ambiguatorChar >= '1') && (ambiguatorChar <= '8');
         // exception: x = capture on the square
         bool isCaptureAmbiguator = (ambiguatorChar == 'x');
         if (isCaptureAmbiguator) {
@@ -134,6 +135,7 @@ std::vector<Move> ambiguateMove(std::vector<Move> candidateMoves, const std::str
         }
         assert(!(isFileAmbiguator && isRankAmbiguator));
         int ambiguator = (isFileAmbiguator ? ambiguatorChar - '1' : ambiguatorChar - 'a');
+        std::vector<Move> newCandidates;
         for (Move candidateMove : candidateMoves) {
             // if it's file, must match file
             if (isFileAmbiguator && candidateMove.startingSquare.file() == ambiguator) {
@@ -165,7 +167,7 @@ Move ChessBoard::getMove(const std::string& moveNotation) const {
 
     if (moveNotation == "O-O" ) {
         // king side Castling
-        Move attemptedMove = Move(get_whiteToMove() ? "e1" : "e8", get_whiteToMove() ? "g1" : "g8", '\0', MoveType::CASTLING)
+        Move attemptedMove = Move(get_whiteToMove() ? "e1" : "e8", get_whiteToMove() ? "g1" : "g8", '\0', MoveType::CASTLING);
 
         if (boardCopy.isMoveLegal(attemptedMove)) {
             return attemptedMove;
@@ -174,7 +176,7 @@ Move ChessBoard::getMove(const std::string& moveNotation) const {
         }
     }
     else if (moveNotation == "O-O-O") {
-        Move attemptedMove = Move(get_whiteToMove() ? "e1" : "c8", get_whiteToMove() ? "g1" : "c8", '\0', MoveType::CASTLING)
+        Move attemptedMove = Move(get_whiteToMove() ? "e1" : "c8", get_whiteToMove() ? "g1" : "c8", '\0', MoveType::CASTLING);
 
         if (boardCopy.isMoveLegal(attemptedMove)) {
             return attemptedMove;
@@ -198,9 +200,9 @@ Move ChessBoard::getMove(const std::string& moveNotation) const {
         throw InvalidSAN("Invalid expected ending square!");
     }
 
-    auto it = std::find(begin(knownPieceTypeChars), end(knownPieceTypeChars), moveNotation[0])
+    auto it = std::find(begin(knownPieceTypeChars), end(knownPieceTypeChars), moveNotation[0]);
     if (it != end(knownPieceTypeChars)) {
-        PieceType expectedType = getPieceFromSymbol(moveNotation[0]);
+        PieceType expectedType = getPieceFromSymbol(moveNotation[0]).type;
     
         auto candidateMoves = boardCopy.getSANRegular(expectedType, expectedEndingSquare, moveNotation.substr(1, moveNotation.size()-3));
         if (candidateMoves.empty()) {
