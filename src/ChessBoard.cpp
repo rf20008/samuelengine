@@ -134,7 +134,7 @@ std::vector<Move> ChessBoard::ambiguateMove(std::vector<Move> candidateMoves, Sq
             throw InvalidSAN("Invalid ambiguator: " + std::string(1, ambiguatorChar));
         }
         assert(!(isFileAmbiguator && isRankAmbiguator));
-        int ambiguator = (isFileAmbiguator ? ambiguatorChar - '1' : ambiguatorChar - 'a');
+        int ambiguator = (isFileAmbiguator ? ambiguatorChar - 'a' : ambiguatorChar - '1');
         std::vector<Move> newCandidates;
         for (Move candidateMove : candidateMoves) {
             // if it's file, must match file
@@ -206,9 +206,14 @@ Move ChessBoard::getMove(const std::string& moveNotation) const {
     
         auto candidateMoves = boardCopy.getSANRegular(expectedType, expectedEndingSquare, moveNotation.substr(1, moveNotation.size()-3));
         if (candidateMoves.empty()) {
-            throw InvalidSAN("No SAN move found");
+            throw InvalidSAN("No SAN move found (notation: " + moveNotation + ")");
         } else if (candidateMoves.size() > 1) {
-            throw InvalidSAN("Error: Ambiguous SAN move. Perhaps put an ambiguator");
+            string message = "Error: Ambiguous SAN move. Perhaps put an ambiguator. Notation: ";
+            message += moveNotation;
+            message += " Possibilities:";
+            for (const Move& m : candidateMoves) {message += (" [" + m.debugString() + "]");}
+
+            throw InvalidSAN(message);
         }
         return candidateMoves[0];
     }
@@ -217,6 +222,13 @@ Move ChessBoard::getMove(const std::string& moveNotation) const {
 
     // find disambiguation
     string disambig = moveNotation.substr(0, expectedStringBegin);
+    // reject disambig if 2nd char is not x
+    if (disambig.size() != 2 && disambig.size() != 0) {
+        throw InvalidSAN("Invalid SAN: invalid disambiguation: disambiguation must be 2 characters or 0");
+    }
+    if (disambig.size() == 2 && disambig[1] != 'x') {
+        throw InvalidSAN("Invalid SAN: disambig must contain captures");
+    }
     vector<Move> candidates = boardCopy.getSANRegular(PieceType::PAWN, expectedEndingSquare, disambig);
     if (!isPromotionAttempt) {
         assert(candidates.size()==1);

@@ -80,13 +80,10 @@ public:
     void testKnightFileDisambiguation() {
         // Knights on b1 and f1 can both move to d2.
         // White king is on e2 so it doesn't occupy d1/e1/f1.
-        std::string fen =
-            "4k3/8/8/8/8/8/4K3/1N2N3 w - - 0 1";
-
+        std::string fen ="4k3/8/8/8/8/8/4K3/1N3N2 w - - 0 1";
         ChessBoard board(fen);
-
+        TS_ASSERT_THROWS_ANYTHING(board.getMove("Nd2"));
         Move move = board.getMove("Nbd2");
-
         TS_ASSERT_EQUALS(move.startingSquare, Square("b1"));
         TS_ASSERT_EQUALS(move.endingSquare, Square("d2"));
     }
