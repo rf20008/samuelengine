@@ -892,7 +892,7 @@ int ChessBoard::perftCopy(int depth, int divideThreshold) {
 	for (Move m : moves) {
 		ChessBoard child = this->board_with_move(m);
 
-		int perft_child = child.perft(depth - 1, divideThreshold);
+		int perft_child = child.perftCopy(depth - 1, divideThreshold);
 		if (depth == divideThreshold)
 			std::cout /*<< "DEPTH = " << depth << " PERFT DIVIDE: m="*/ << m.operator()() << " " << perft_child << std::endl;
 
@@ -907,9 +907,11 @@ int ChessBoard::perft(int depth, int divideThreshold) {
 		return 1;
 	int perft_res = 0;
 	std::vector<Move> moves = this->allLegalMoves();
-	//if (depth==1) return moves.size();
+	if (depth==1) return moves.size();
 	for (Move m : moves) {
-        this->processMove(m);
+        // all moves that the legalMoves returns are lgal
+        assert(this->isMoveLegal(m));
+        this->processPsuedoLegalMove(m);
 
 		int perft_child = this->perft(depth - 1, divideThreshold);
 		if (depth == divideThreshold)
