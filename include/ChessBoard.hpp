@@ -4,13 +4,6 @@
 // Pieces
 #include "Piece.hpp"
 
-#include "Bishop.hpp"
-#include "King.hpp"
-#include "Knight.hpp"
-#include "Pawn.hpp"
-#include "Queen.hpp"
-#include "Rook.hpp"
-
 // Moves
 #include "GameStatus.hpp"
 #include "Move.hpp"
@@ -43,8 +36,8 @@ template <typename T> inline std::vector<T> &mergeSets(std::vector<T> &A, const 
 class ChessBoard {
 	protected:
         uint64_t zobrist_hash;
-		PiecePtr pieces[128]{};
-		bool whiteToMove;
+		Piece pieces[128]{};
+		Color playerToMove;
 		PlayerState whitePlayerState;
 		PlayerState blackPlayerState;
 		int halfmove_clock;
@@ -66,11 +59,20 @@ class ChessBoard {
 		ChessBoard &operator=(const ChessBoard &other) = default;
 		ChessBoard &operator=(ChessBoard &&other) = default;
 
+        //zobrist setter
+        void setPiece(Square sq, Piece newPiece) {
+            assert(sq.idx>=0 && sq.idx < 128);
+            Piece old = pieces[sq.idx];
+            if (old.isValid()) zobrist_hash ^= ZOBRIST.pieces[old.colorNum()][old.pieceNum()][sq.to64()];
+            pieces[sq.idx] = newPiece;
+            if (newPiece.isValid()) zobrist_hash ^= ZOBRIST.pieces[newPiece.colorNum()][newPiece.pieceNum()][sq.to64()];
+        }
+
 		// getters
-		PiecePtr getPiece(Square sq) const {
+		Piece getPiece(Square sq) const {
             // bounds check: an out-of-board square simply has no piece on it
             if (!sq.isValid()) {
-                return PiecePtr();
+                return EMPTY_SQUARE;
                 //throw std::logic_error("Invalid square position (idx="+std::to_string(sq.idx)+")");
             }
             return pieces[sq.idx];
@@ -78,36 +80,49 @@ class ChessBoard {
         uint64_t getZobrist() const {return zobrist_hash;}
 		int get_halfmove_clock() const { return halfmove_clock; }
 		int get_fullmove_clock() const { return fullmove_clock; }
-		bool get_whiteToMove() const { return whiteToMove; }
+		bool get_whiteToMove() const { return playerToMove == Color::WHITE;}
 		PlayerState getWhitePlayerState() const { return whitePlayerState; }
 		PlayerState getBlackPlayerState() const { return blackPlayerState; }
 		std::optional<Square> getEnPassantTargetSquare() const { return enPassant_targetSquare; }
         std::vector<UndoMove> getHistory() const {return history;}
 
+        // SAN
+        std::vector<Move> getAllMovesFromPieceEndingAt(PieceType expectedType, Square expectedEndingSquare);
+        std::vector<Move> getSANRegular(PieceType expectedType, Square expectedEndingSquare, const std::string ambiguators);
+        std::vector<Move> ambiguateMove(std::vector<Move> candidateMoves, Square expectedEndingSquare, const std::string ambiguators) const        ;
+        Move getMove(const std::string& algebraicNotation) const;
+
 		// chess engine methods
+        bool isMovePsuedoLegal(Move m) const;
 		bool isMoveLegal(Move m); // return whether a move is legal
 		void processMove(Move m);
 		void processPsuedoLegalMove(Move m);
-		void processEnPassantCapture(Move m, const PiecePtr &start_ptr, const PiecePtr &end_ptr);
-		void processEnPassantUpdate(Move m, const PiecePtr &start_ptr, const PiecePtr &end_ptr);
-		void processCastling(Move m, const PiecePtr &start_ptr);
-		bool isInCheck(bool player) const;
-		bool isInCheckmate(); // interacts with move ordering!
-		bool isInStalemate(); // also interacts with move ordering
+		void processEnPassantCapture(Move m, const Piece &start_ptr, const Piece &end_ptr);
+		void processEnPassantUpdate(Move m, const Piece &start_ptr, const Piece &end_ptr);
+		void processCastling(Move m, const Piece &start_ptr);
+		bool isInCheck(Color player) const {
+            // can the player whose turn it is, capture the king who is owned by Player?
+            assert(player != Color::NONE);
+            return this->squareAttackedBy(this->findKing(player), oppositeColor(player));
+        }
+		bool isInCheckmate() {return isInCheck(playerToMove) && allLegalMoves().empty();}
+            
+        bool isInStalemate() { return !isInCheck(playerToMove) && allLegalMoves().empty();}// interacts with move ordering!
         bool is_threefold_repetition() const;
 		bool hasInsufficientMaterial() const;
-        Square findKingSlow(bool belongsToWhite) const {
+        Square findKingSlow(Color expectedColor) const {
             for (int sq_idx = 0; sq_idx < 128; ++sq_idx) {
-                PiecePtr p = pieces[sq_idx];
-                if (p && ((p->symbol()) == (belongsToWhite ? 'K' : 'k'))) {
+                Piece p = pieces[sq_idx];
+                if (p.type == PieceType::KING && p.color == expectedColor) {
                     return Square(sq_idx);
                 }
             }
-            throw std::logic_error(std::string("findKing: no king found for ") + (belongsToWhite ? "White" : "Black") + " in the board with FEN " + this->debug_board());
+            throw std::logic_error(std::string("findKing: no king found for ") + (colorName(expectedColor)) + " in the board with FEN " + this->debug_board());
         }
-		Square findKing(bool belongsToWhite) const {
-            Square kingPos = belongsToWhite ? whiteKingPos : blackKingPos;
-            assert((getPiece(kingPos) && getPiece(kingPos)->symbol() == (belongsToWhite ? 'K' : 'k'))&&"king cache desync");
+		Square findKing(Color expectedColor) const {
+            assert(expectedColor != Color::NONE);
+            Square kingPos = expectedColor == Color::WHITE ? whiteKingPos : blackKingPos;
+            assert((getPiece(kingPos) == ((expectedColor == Color::WHITE) ? WHITE_KING : BLACK_KING))&&"king cache desync");
             return kingPos;
         }
 		GameStatus getStatus(); // doesn't change board but interacts with move ordering
@@ -115,15 +130,20 @@ class ChessBoard {
 		// for engine use
 		std::string fen() const;
 
-		PiecePtr getAndAssertPiece(const Square origin, const char pieceType) const;
-		bool hasPiece(const Square origin) const { return getPiece(origin) != nullptr; }
-		bool squareAttackedBy(Square target, bool attackerIsWhite) const;
-		bool isSlidingAttacker(Square from, int dir, bool attackerIsWhite, char pieceLetterA, char pieceLetterB) const;
+		Piece getAndAssertPiece(const Square origin, const PieceType expectedType) const {
+            // get the piece at origin, and assert it is of tpe pieceTzype
+            Piece ptr = getPiece(origin);
+            assert(ptr.type == expectedType);
+            return ptr;
+        }
+		bool hasPiece(const Square origin) const { return getPiece(origin) != EMPTY_SQUARE; }
+		bool squareAttackedBy(Square target, Color attackerColor) const;
+		bool isSlidingAttacker(Square from, int dir, Color attackerColor, PieceType pieceTypeA, PieceType pieceTypeB) const;
 
 		std::vector<Move> whereKingCouldMove(const Square origin) const;
 		std::vector<Move> wherePawnCouldMove(const Square origin) const;
 		std::vector<Move> whereKnightCouldMove(const Square origin) const;
-		std::vector<Move> isSlidingAttacker(const Square from, const int dir, bool attackerIsWhite) const;
+		std::vector<Move> getSlidingMoverPositions(const Square from, const int dir, Color fromColor) const;
 		std::vector<Move> whereBishopCouldMove(const Square origin) const;
 		std::vector<Move> whereRookCouldMove(const Square origin) const;
 		std::vector<Move> whereQueenCouldMove(const Square origin) const;
@@ -181,7 +201,7 @@ class ChessBoard {
             return (
                 whitePlayerState == other.whitePlayerState &&
                 blackPlayerState == other.blackPlayerState &&
-                whiteToMove == other.whiteToMove &&
+                playerToMove == other.playerToMove &&
                 halfmove_clock == other.halfmove_clock &&
                 enPassant_targetSquare == other.enPassant_targetSquare
             );

@@ -27,11 +27,11 @@ class SamuelEngine : public AbstractPlayer {
 		double default_tl;
 		std::chrono::steady_clock::time_point deadline;
 
-		const double (*getPosVal(const PiecePtr ptr) const)[8];
-		double relative_value(const PiecePtr ptr) const;
+		const double (*getPosVal(const Piece piece) const)[8];
+		double relative_value(const Piece piece) const;
 		std::optional<double> returnStatusIfGameOver(ChessBoard &board) const;
-		double PieceValue(const PiecePtr ptr, const Square sq) const;
-		double relative_value(const ChessBoard &board, const bool isWhite) const;
+		double PieceValue(const Piece piece, const Square sq) const;
+		double relative_value(const ChessBoard &board, Color c) const;
 		std::vector<Move> orderMoves(ChessBoard &board) const;
 		double evaluate_chess_pos_without_depth(ChessBoard &board) const;
 		std::pair<double, Move> evaluate_chess_pos_with_depth(ChessBoard &board, int depth, double alpha, double beta);

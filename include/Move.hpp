@@ -22,7 +22,10 @@ struct Move {
 		Move &operator=(Move &&other) = default;
 		~Move() = default;
 		bool operator<(const Move &other) const;
-		bool operator==(const Move &other) const;
+		bool operator==(const Move &other) const {return startingSquare==other.startingSquare && endingSquare ==other.endingSquare && promotion == other.promotion && type == other.type;}
 		std::string operator()() const;
+        std::string debugString() const {
+            return "START=" + startingSquare.toString() + ", END=" + endingSquare.toString() + ", PROMO="+ (promotion ? std::string(1, promotion) : "0") + ", TYPE="+ std::to_string(static_cast<int>(type));
+        }
 };
 #endif

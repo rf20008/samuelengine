@@ -90,40 +90,40 @@ int SamuelEngine::MoveOrderer::priorityOfMove(const Move &mov) {
 }
 bool SamuelEngine::MoveOrderer::operator()(const Move &m1, const Move &m2) { return priorityOfMove(m1) < priorityOfMove(m2); }
 
-const double (*SamuelEngine::getPosVal(const PiecePtr ptr) const)[8] {
-	switch (toupper(ptr->symbol())) {
-	case 'K':
+const double (*SamuelEngine::getPosVal(const Piece piece) const)[8] {
+	switch (piece.type) {
+	case PieceType::KING:
 		return king_pieceval;
-	case 'Q':
+	case PieceType::QUEEN:
 		return queen_pieceval;
-	case 'R':
+	case PieceType::ROOK:
 		return rook_pieceval;
-	case 'B':
+	case PieceType::BISHOP:
 		return bishop_pieceval;
-	case 'N':
+	case PieceType::KNIGHT:
 		return knight_pieceval;
-	case 'P':
+	case PieceType::PAWN:
 		return pawn_pieceval;
 	default:
-		throw UnknownPiece("Unknown piece: " + std::string{ptr->symbol(), 1});
+		throw UnknownPiece("Unknown piece: " + std::string{piece.symbol(), 1});
 	}
 }
-double SamuelEngine::relative_value(const PiecePtr ptr) const {
-	switch (toupper(ptr->symbol())) {
-	case 'K':
-		return 1000000;
-	case 'Q':
+double SamuelEngine::relative_value(const Piece piece) const {
+	switch (piece.type) {
+    case PieceType::KING:
+        return 1'000'000;
+	case PieceType::QUEEN:
 		return 9;
-	case 'R':
+	case PieceType::ROOK:
 		return 5;
-	case 'B':
+	case PieceType::BISHOP:
 		return 3;
-	case 'N':
+	case PieceType::KNIGHT:
 		return 3;
-	case 'P':
+	case PieceType::PAWN:
 		return 1;
 	default:
-		throw UnknownPiece("Unknown piece: " + std::string{ptr->symbol(), 1});
+		throw UnknownPiece("Unknown piece: " + std::string{piece.symbol(), 1});
 	}
 }
 
@@ -142,22 +142,20 @@ std::optional<double> SamuelEngine::returnStatusIfGameOver(ChessBoard &board) co
 	return std::optional<double>();
 }
 
-double SamuelEngine::PieceValue(const PiecePtr ptr, const Square sq) const {
+double SamuelEngine::PieceValue(const Piece ptr, const Square sq) const {
 	double rel_intrinsic_val = relative_value(ptr);
 	auto posValTable = getPosVal(ptr);
 	double pos_val = posValTable[sq.rank()][sq.file()];
 	return rel_intrinsic_val + pos_val;
 }
 
-double SamuelEngine::relative_value(const ChessBoard &board, const bool isWhite) const {
+double SamuelEngine::relative_value(const ChessBoard &board, const Color expectedColor) const {
 	double tot_val = 0;
 	for (int rank = 0; rank < BOARD_SIZE; ++rank) {
 		for (int file = 0; file < BOARD_SIZE; ++file) {
 			Square sq{rank, file};
-			PiecePtr piece = board.getPiece(sq);
-			if (!piece)
-				continue;
-			if (piece->getBelongsToWhite() != isWhite)
+			Piece piece = board.getPiece(sq);
+			if (piece.color != expectedColor)
 				continue;
 			tot_val += PieceValue(piece, sq);
 		}
@@ -169,7 +167,7 @@ double SamuelEngine::evaluate_chess_pos_without_depth(ChessBoard &board) const {
 	if (gameOverMaybe)
 		return *gameOverMaybe;
 
-	return relative_value(board, true) - relative_value(board, false);
+	return relative_value(board, Color::WHITE) - relative_value(board, Color::BLACK);
 }
 
 std::vector<Move> SamuelEngine::orderMoves(ChessBoard &board) const {
