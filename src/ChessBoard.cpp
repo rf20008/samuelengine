@@ -423,13 +423,19 @@ bool ChessBoard::isMovePsuedoLegal(Move m) const {
 
 }
 void ChessBoard::processMove(Move m) {
-	if (this->isMoveLegal(m)) {
-		this->processPsuedoLegalMove(m);
-	} else {
-        std::string message = "You have attempted an illegal move: " + m.debugString() + ". FEN: " + fen();
-        if (!this->isMovePsuedoLegal(m)) message += " (hint: move is not pseudo-legal)";
+    if (!isMovePsuedoLegal(m)) {
+        std::string message = "You have attempted an illegal move: " + m.debugString() + ". FEN: " + fen() + "(hint: move is not pseudo-legal)";
 		throw IllegalMoveError(message);
-	}
+    }
+    // process the psuedo legal move
+    // and if it's illegal, undo it and throw the exception
+    Color movingColor = playerToMove;
+    this->processPsuedoLegalMove(m);
+    if (isInCheck(movingColor)) {
+        this->undoMove();
+        std::string message = "You have attempted an illegal move: " + m.debugString() + ". FEN: " + fen() + "(hint: move is psuedo-legal, but leaves own king in check)";
+        throw IllegalMoveError(message);
+    }
 }
 
 // Is there a piece belonging to `attackerIsWhite` on the far end of the
