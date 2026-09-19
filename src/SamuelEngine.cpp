@@ -133,25 +133,36 @@ std::pair<int, Move> SamuelEngine::evaluate_chess_pos_with_depth(ChessBoard &boa
 	if (depth == 0) {
 		return {evaluate_chess_pos_without_depth_negating_if_necessary(board), NULL_MOVE};
 	}
-	std::vector<Move> moves = orderMoves(board);
-	if (moves.empty()) {
+	std::vector<Move> allMoves = orderMoves(board);
+	if (allMoves.empty()) {
 		return {evaluate_chess_pos_without_depth_negating_if_necessary(board), NULL_MOVE};
 	}
-
-	Move bestMove = *moves.begin();
+    assert(allMoves.size() > 0);
+	Move bestMove = allMoves[0];
     // negamax!
     int value = -MATE_SCORE - 1000;
-    for (Move move : moves) {
-        assert(board.isMoveLegal(move));
-        board.processPsuedoLegalMove(move); // i know the move is legal!
-        int child_val = -(evaluate_chess_pos_with_depth(board, depth-1, -beta, -alpha).first);
-        if (child_val > value) {
-            value = child_val;
-            bestMove = move;
+    for (size_t moveNum = 0; moveNum < allMoves.size(); ++moveNum) {
+        Move curMove = allMoves[moveNum];
+        assert(board.isMoveLegal(curMove));
+        board.processPsuedoLegalMove(curMove);
+        int score = 0;
+        if (moveNum == 0) { // principal valuation!
+            score = -(evaluate_chess_pos_with_depth(board, depth-1, -beta, -alpha).first);
+        } else {
+            score = -(evaluate_chess_pos_with_depth(board, depth-1, -alpha-1, -alpha).first);
+            if (alpha < score && score < beta) { // it failed high!
+                score = -(evaluate_chess_pos_with_depth(board, depth-1, -beta, -alpha).first);
+            }
         }
-        alpha = max(alpha, value);
         board.undoMove();
-        if (alpha >= beta) break; // cut-off
+        if (score > value) {
+            value = score;
+            bestMove = curMove;
+        }
+    
+        alpha = std::max(alpha, score);
+        if (alpha>=beta) break;
+        
     }
     return {value, bestMove};
 }
