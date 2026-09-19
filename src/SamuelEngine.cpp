@@ -9,74 +9,8 @@
 #include <vector>
 
 using namespace std;
-const double INF = std::numeric_limits<double>::infinity();
 
-// todo: move ordering (is castling=4, check=3, capture=2, pawn move=1, other=0)
-constexpr double pawn_pieceval[8][8] = {
-    {-1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0}	// 1st rank
-    {-0.25, -0.2, -0.05, 0.0, 0.0, -0.05, -0.2, -0.25}, // 2nd rank
-    {0.15, 0.4, 0.5, 0.6, 0.6, 0.5, 0.4, 0.15},			// 3rd rank
-    {0.3, 0.7, 0.8, 0.9, 0.9, 0.8, 0.7, 0.3},			// 4th rank
-	{0.7, 1.0, 1.3, 1.5, 1.5, 1.3, 1.0, 0.7},			// 5th rank
-    {2.0, 2.5, 3.0, 3.5, 3.5, 3.0, 2.5, 2.0},			// 6th rank
-    {3.0, 4.0, 5.0, 6.0, 6.0, 5.0, 4.0, 3.0},			// 7th rank
-	{7.0, 8.0, 9.0, 10.0, 10.0, 9.0, 8.0, 7.0},			// 8th rank
-};
-
-constexpr double rook_pieceval[8][8] = {
-    {0.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 0.0}	// 1st rank
-    {0.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, 0.0}, // 2nd rank
-	{1.0, -0.0, -0.0, -0.0, -0.0, -0.0, -0.0, 1.0}, // 3rd rank
-    {1.0, -0.0, -0.0, -0.0, -0.0, -0.0, -0.0, 1.0}, // 4th rank
-	{2.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 2.0},		// 5th rank
-    {3.0, 2.0, 2.0, 2.0, 2.0, 2.0, 2.0, 3.0},		// 6th rank
-    {4.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 4.0},		// 7th rank
-	{5.0, 4.0, 4.0, 4.0, 4.0, 4.0, 4.0, 5.0},		// 8th rank
-
-	
-	
-};
-constexpr double king_pieceval[8][8] = {
-	
-	{-2.0, -1.5, -1.0, -1.0, -1.0, -1.0, -1.5, -2.0}  // 1st rank
-    {-1.5, -1.0, -0.5, 0.0, 0.0, -0.5, -1.0, -1.5},	  // 2nd rank
-    {-1.0, -0.5, 0.0, 0.5, 0.5, 0.0, -0.5, -1.0},	  // 3rd rank
-    {-0.5, 0.0, 0.5, 1.0, 1.0, 0.5, 0.0, -0.5},		  // 4th rank
-    {-0.5, 0.0, 0.5, 1.0, 1.0, 0.5, 0.0, -0.5},		  // 5th rank
-    {-1.0, -0.5, 0.0, 0.5, 0.5, 0.0, -0.5, -1.0},	  // 6th rank
-    {-1.5, -1.0, -0.5, 0.0, 0.0, -0.5, -1.0, -1.5},	  // 7th rank
-    {-2.0, -1.5, -1.0, -1.0, -1.0, -1.0, -1.5, -2.0}, // 8th rank
-};
-constexpr double bishop_pieceval[8][8] = {
-	{-4.0, -3.0, -3.0, -3.0, -3.0, -3.0, -3.0, -4.0}  // 1st rank
-	{-3.0, -1.5, -1.0, -1.0, -1.0, -1.0, -1.5, -3.0}, // 2nd rank
-	{-2.0, -0.5, 0.0, 0.5, 0.5, 0.0, -0.5, -2.0},	  // 3rd rank
-	{-1.0, 0.0, 0.5, 1.0, 1.0, 0.5, 0.0, -1.0},		  // 4th rank
-	{-1.0, 0.5, 0.5, 1.0, 1.0, 0.5, 0.5, -1.0},		  // 5th rank
-	{-2.0, -1.0, 0.0, 0.5, 0.5, 0.0, -1.0, -2.0},	  // 6th rank
-	{-3.0, -2.0, -1.5, -1.0, -1.0, -1.5, -2.0, -3.0}, // 7th rank
-    {-4.0, -3.0, -3.0, -3.0, -3.0, -3.0, -3.0, -4.0}, // 8th rank
-};
-constexpr double knight_pieceval[8][8] = {
-    {-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0}  // 1st rank
-	{-4.0, -3.0, -2.0, -1.0, -1.0, -2.0, -3.0, -4.0}, // 2nd rank
-	{-3.0, -2.0, -1.0, 0.0, 0.0, -1.0, -2.0, -3.0},	  // 3rd rank
-	{-3.0, -1.0, 0.0, 1.0, 1.0, 0.0, -1.0, -3.0},	  // 4th rank
-	{-3.0, -1.0, 0.0, 1.0, 1.0, 0.0, -1.0, -3.0},	  // 5th rank
-	{-3.0, -2.0, -1.0, 0.0, 0.0, -1.0, -2.0, -3.0},	  // 6th rank
-	{-4.0, -3.0, -2.0, -1.0, -1.0, -2.0, -3.0, -4.0}, // 7th rank
-    {-5.0, -4.0, -3.0, -3.0, -3.0, -3.0, -4.0, -5.0}, // 8th rank
-};
-constexpr double queen_pieceval[8][8] = {
-	{-2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0}  // 1st rank
-	{-1.0, 0.0, 0.5, 1.0, 1.0, 0.5, 0.0, -1.0},		  // 2nd rank
-	{-1.0, 0.5, 1.0, 1.5, 1.5, 1.0, 0.5, -1.0},		  // 3rd rank
-	{-0.5, 1.0, 1.5, 2.0, 2.0, 1.5, 1.0, -0.5},		  // 4th rank
-	{-0.5, 1.0, 1.5, 2.0, 2.0, 1.5, 1.0, -0.5},		  // 5th rank
-	{-1.0, 0.5, 1.0, 1.5, 1.5, 1.0, 0.5, -1.0},		  // 6th rank
-	{-1.0, 0.0, 0.5, 1.0, 1.0, 0.5, 0.0, -1.0},		  // 7th rank
-	{-2.0, -1.0, -1.0, -0.5, -0.5, -1.0, -1.0, -2.0}, // 8th rank
-};
+constexpr Move NULL_MOVE = Move(Square(0x88), Square(0x88));
 
 int SamuelEngine::MoveOrderer::priorityOfMove(const Move &mov) {
 	//if (m_board.move_ends_game(mov)) {return 1000;}
@@ -94,71 +28,29 @@ int SamuelEngine::MoveOrderer::priorityOfMove(const Move &mov) {
 }
 bool SamuelEngine::MoveOrderer::operator()(const Move &m1, const Move &m2) { return priorityOfMove(m1) < priorityOfMove(m2); }
 
-const double (*SamuelEngine::getPosVal(const Piece piece) const)[8] {
-	switch (piece.type) {
-	case PieceType::KING:
-		return king_pieceval;
-	case PieceType::QUEEN:
-		return queen_pieceval;
-	case PieceType::ROOK:
-		return rook_pieceval;
-	case PieceType::BISHOP:
-		return bishop_pieceval;
-	case PieceType::KNIGHT:
-		return knight_pieceval;
-	case PieceType::PAWN:
-		return pawn_pieceval;
-	default:
-		throw UnknownPiece("Unknown piece: " + std::string{piece.symbol(), 1});
-	}
-}
-double SamuelEngine::relative_value(const Piece piece) const {
-	switch (piece.type) {
-    case PieceType::KING:
-        return 1'000'000;
-	case PieceType::QUEEN:
-		return 9;
-	case PieceType::ROOK:
-		return 5;
-	case PieceType::BISHOP:
-		return 3;
-	case PieceType::KNIGHT:
-		return 3;
-	case PieceType::PAWN:
-		return 1;
-	default:
-		throw UnknownPiece("Unknown piece: " + std::string{piece.symbol(), 1});
-	}
-}
 
-std::optional<double> SamuelEngine::returnStatusIfGameOver(ChessBoard &board) const {
-	GameStatus status = board.getStatus();
-	if (isGameOver(status)) {
-		switch (status) {
-		case GameStatus::WHITE_WON:
-			return std::optional<double>(INF);
-		case GameStatus::BLACK_WON:
-			return std::optional<double>(-INF);
-		default:
-			return std::optional<double>(0);
-		}
-	}
-	return std::optional<double>();
-}
+std::optional<int> SamuelEngine::returnStatusIfGameOver(const ChessBoard& board) const {
+    GameStatus status = board.getStatus();
 
-double SamuelEngine::PieceValue(const Piece ptr, const Square sq) const {
-	double rel_intrinsic_val = relative_value(ptr);
-	auto posValTable = getPosVal(ptr);
-    int rank = sq.rank()
-    if (piece.color == Color::BLACK) {
-        rank = 7 - rank;
+    if (!isGameOver(status))
+        return std::nullopt;
+
+    switch (status) {
+    case GameStatus::WHITE_WON:
+        return MATE_SCORE - board.get_ply();
+
+    case GameStatus::BLACK_WON:
+        return -MATE_SCORE + board.get_ply();
+
+    default: // draw
+        return 0;
     }
-	double pos_val = posValTable[sq.rank()][sq.file()];
-	return rel_intrinsic_val + pos_val;
 }
 
-double SamuelEngine::relative_value(const ChessBoard &board, const Color expectedColor) const {
-	double tot_val = 0;
+
+
+int SamuelEngine::relative_value(const ChessBoard &board, const Color expectedColor) const {
+	int tot_val = 0;
 	for (int rank = 0; rank < BOARD_SIZE; ++rank) {
 		for (int file = 0; file < BOARD_SIZE; ++file) {
 			Square sq{rank, file};
@@ -170,12 +62,17 @@ double SamuelEngine::relative_value(const ChessBoard &board, const Color expecte
 	}
 	return tot_val;
 }
-double SamuelEngine::evaluate_chess_pos_without_depth(ChessBoard &board) const {
-	std::optional<double> gameOverMaybe = returnStatusIfGameOver(board);
+int SamuelEngine::evaluate_chess_pos_without_depth(ChessBoard &board) const {
+	std::optional<int> gameOverMaybe = returnStatusIfGameOver(board);
 	if (gameOverMaybe)
 		return *gameOverMaybe;
 
 	return relative_value(board, Color::WHITE) - relative_value(board, Color::BLACK);
+}
+
+int SamuelEngine::evaluate_chess_pos_without_depth_negating_if_necessary(ChessBoard& board) const {
+    int score = evaluate_chess_pos_without_depth(board);
+    return (board.get_whiteToMove() ? score : -score);
 }
 
 std::vector<Move> SamuelEngine::orderMoves(ChessBoard &board) const {
@@ -184,26 +81,26 @@ std::vector<Move> SamuelEngine::orderMoves(ChessBoard &board) const {
 	return movesVec;
 }
 
-std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_depth(ChessBoard &board, int depth, double alpha, double beta) {
+std::pair<int, Move> SamuelEngine::evaluate_chess_pos_with_depth(ChessBoard &board, int depth, int alpha, int beta) {
 	if ((numBoardsVisited & 127) == 0 && shouldStop()) {
 		throw OutOfTime();
 	}
 	numBoardsVisited++;
-	std::optional<double> gameOverMaybe = returnStatusIfGameOver(board);
+	std::optional<int> gameOverMaybe = returnStatusIfGameOver(board);
 	if (gameOverMaybe) {
-		return {*gameOverMaybe, Move(Square("a1"), Square("a2"))};
+		return {*gameOverMaybe, NULL_MOVE};
 	}
 	if (depth == 0) {
-		return {evaluate_chess_pos_without_depth(board), Move(Square("a1"), Square("a2"))};
+		return {evaluate_chess_pos_without_depth(board), NULL_MOVE};
 	}
 	std::vector<Move> moves = orderMoves(board);
 	if (moves.empty()) {
-		return {evaluate_chess_pos_without_depth(board), Move(Square("a1"), Square("a2"))};
+		return {evaluate_chess_pos_without_depth(board), NULL_MOVE};
 	}
 
 	Move bestMove = *moves.begin();
 	if (board.get_whiteToMove()) {
-		double value = -INF;
+		double value = -MATE_SCORE;
 
 		for (Move move : moves) {
 			ChessBoard newBoard = board;
@@ -220,7 +117,7 @@ std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_depth(ChessBoard &
 		}
 		return {value, bestMove};
 	} else {
-		double value = INF;
+		int value = MATE_SCORE;
 		for (Move move : moves) {
 			ChessBoard newBoard = board;
 			newBoard.processMove(move);
@@ -237,9 +134,9 @@ std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_depth(ChessBoard &
 		return {value, bestMove};
 	}
 }
-std::pair<double, Move> SamuelEngine::evaluate_chess_pos_with_tl(ChessBoard &board, double time_limit) {
+std::pair<int, Move> SamuelEngine::evaluate_chess_pos_with_tl(ChessBoard &board, double time_limit) {
 	this->deadline = std::chrono::steady_clock::now() + std::chrono::nanoseconds(static_cast<long int>(time_limit * 1'000'000'000));
-	double bestValue = 0;
+	int bestValue = 0;
 	Move bestMove = *(board.allLegalMoves().begin());
 	try {
 		for (int depth = 1; !shouldStop(); ++depth) {
