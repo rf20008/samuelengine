@@ -109,8 +109,8 @@ public:
         TTEntry result = tt.probe(hash);
 
         TS_ASSERT(result);
-        TS_ASSERT_EQUALS(result.depth, 8);
-        TS_ASSERT_EQUALS(result.value, 200);
+        TS_ASSERT_EQUALS(result.depth, 4);
+        TS_ASSERT_EQUALS(result.value, 100);
     }
 
     void testSameHashSameDepthIsReplaced() {

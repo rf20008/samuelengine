@@ -4,6 +4,7 @@
 #include "ChessBoard.hpp"
 #include "Move.hpp"
 #include "Piece.hpp"
+#include "TranspositionTable.hpp"
 #include <chrono>
 #include <optional>
 #include <vector>
@@ -110,11 +111,13 @@ class SamuelEngine : public AbstractPlayer {
 		struct MoveOrderer {
 			public:
 				ChessBoard& m_board;
+                const Move m_hashMove;
 
-				MoveOrderer(ChessBoard &board) : m_board(board) {}
+				MoveOrderer(ChessBoard &board, const Move& hashMove) : m_board(board), m_hashMove(hashMove) {}
 				int score_move(const Move &mov);
-				std::vector<Move> orderMoves(std::vector<Move> givenMoves);
+				std::vector<Move> orderMoves();
 		};
+        TranspositionTable transpositionTable;
 		ll numBoardsVisited;
 		double default_tl;
 		std::chrono::steady_clock::time_point deadline;
@@ -131,7 +134,6 @@ class SamuelEngine : public AbstractPlayer {
         }
 		int relative_value(const ChessBoard &board, Color c) const;
         
-		std::vector<Move> orderMoves(ChessBoard &board) const;
 		int evaluate_chess_pos_without_depth(ChessBoard &board) const;
         int evaluate_chess_pos_without_depth_negating_if_necessary(ChessBoard& board) const {
             int score = evaluate_chess_pos_without_depth(board);
@@ -142,7 +144,7 @@ class SamuelEngine : public AbstractPlayer {
 		inline bool shouldStop() const;
 
 	public:
-		SamuelEngine(double tl, bool debug = false);
+		SamuelEngine(double tl, bool debug = false, size_t transposition_table_size = (2ULL<<20));
 		virtual Move getMove(const ChessBoard &);
 		virtual ~SamuelEngine() {}
 };

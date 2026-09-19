@@ -55,7 +55,7 @@ struct TranspositionTable {
         
             if (
                 !oldEntry ||
-                    (oldEntry.zobrist_hash == entry.zobrist_hash &&
+                    (oldEntry.zobrist_hash == entry.zobrist_hash ||
                     entry.depth >= oldEntry.depth)
             ) {
         

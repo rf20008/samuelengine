@@ -13,7 +13,7 @@ const int INF = 1'000'000'000;
 constexpr Move NULL_MOVE = Move(Square(0x88), Square(0x88));
 
 int SamuelEngine::MoveOrderer::score_move(const Move &mov) {
-
+    if (mov == m_hashMove) return 2'000'000;
     if (mov.promotion != '\0') {
         return 50'000;
     }
@@ -47,10 +47,10 @@ int SamuelEngine::MoveOrderer::score_move(const Move &mov) {
 
     return 0;
 }
-std::vector<Move> SamuelEngine::MoveOrderer::orderMoves(std::vector<Move> givenMoves) {
+std::vector<Move> SamuelEngine::MoveOrderer::orderMoves() {
     std::vector<ScoredMove> scored;
 
-    for (const Move& move : givenMoves) {
+    for (const Move& move : m_board.allLegalMoves()) {
         scored.push_back({move, score_move(move)});
     }
 
@@ -115,11 +115,6 @@ int SamuelEngine::evaluate_chess_pos_without_depth(ChessBoard &board) const {
 
 
 
-std::vector<Move> SamuelEngine::orderMoves(ChessBoard &board) const {
-	std::vector<Move> movesVec = board.allLegalMoves();
-    SamuelEngine::MoveOrderer orderer(board);
-    return orderer.orderMoves(movesVec);
-}
 
 std::pair<int, Move> SamuelEngine::evaluate_chess_pos_with_depth(ChessBoard &board, int depth, int alpha, int beta) {
 	if ((numBoardsVisited & 255) == 0 && shouldStop()) {
@@ -133,16 +128,41 @@ std::pair<int, Move> SamuelEngine::evaluate_chess_pos_with_depth(ChessBoard &boa
 	if (depth == 0) {
 		return {evaluate_chess_pos_without_depth_negating_if_necessary(board), NULL_MOVE};
 	}
-	std::vector<Move> allMoves = orderMoves(board);
-	if (allMoves.empty()) {
+    std::vector<Move> movesVec = board.allLegalMoves();
+	if (movesVec.empty()) {
 		return {evaluate_chess_pos_without_depth_negating_if_necessary(board), NULL_MOVE};
 	}
-    assert(allMoves.size() > 0);
-	Move bestMove = allMoves[0];
+    TTEntry entry = transpositionTable.probe(board.getZobrist());
+    const int originalAlpha = alpha;
+    Move hashMove = entry.bestMove;
+    if (!board.isMoveLegal(hashMove)) hashMove = NULL_MOVE;
+    const int originalBeta = beta;
+    if (entry && entry.depth >= depth) {
+        if (entry.flag == TTFlag::EXACT) {
+            return {entry.value, entry.bestMove};
+        }
+
+        if (entry.flag == TTFlag::LOWER_BOUND) {
+            alpha = std::max(alpha, entry.value);
+        }
+        else if (entry.flag == TTFlag::UPPER_BOUND) {
+            beta = std::min(beta, entry.value);
+        }
+
+        if (alpha >= beta) {
+            return {entry.value, entry.bestMove};
+        }
+    }
+    MoveOrderer orderer(board, hashMove);
+    movesVec = orderer.orderMoves();
+
+    
+    assert(movesVec.size() > 0);
+	Move bestMove = movesVec[0];
     // negamax!
     int value = -MATE_SCORE - 1000;
-    for (size_t moveNum = 0; moveNum < allMoves.size(); ++moveNum) {
-        Move curMove = allMoves[moveNum];
+    for (size_t moveNum = 0; moveNum < movesVec.size(); ++moveNum) {
+        Move curMove = movesVec[moveNum];
         assert(board.isMoveLegal(curMove));
         board.processPsuedoLegalMove(curMove);
         int score = 0;
@@ -162,8 +182,27 @@ std::pair<int, Move> SamuelEngine::evaluate_chess_pos_with_depth(ChessBoard &boa
     
         alpha = std::max(alpha, score);
         if (alpha>=beta) break;
-        
     }
+    TTFlag flag;
+
+    if (value <= originalAlpha) {
+        flag = TTFlag::UPPER_BOUND;
+    }
+    else if (value >= originalBeta) {
+        flag = TTFlag::LOWER_BOUND;
+    }
+    else {
+        flag = TTFlag::EXACT;
+    }
+
+    // ---- TT STORE ----
+    transpositionTable.store(TTEntry{
+        board.getZobrist(),
+        depth,
+        value,
+        flag,
+        bestMove
+    });
     return {value, bestMove};
 }
 std::pair<int, Move> SamuelEngine::evaluate_chess_pos_with_tl(ChessBoard &board, double time_limit) {
@@ -188,7 +227,7 @@ std::pair<int, Move> SamuelEngine::evaluate_chess_pos_with_tl(ChessBoard &board,
 	return {bestValue, bestMove};
 }
 inline bool SamuelEngine::shouldStop() const { return std::chrono::steady_clock::now() >= deadline; }
-SamuelEngine::SamuelEngine(double tl, bool dbg) : debug(dbg), numBoardsVisited(0), default_tl(tl), deadline(std::chrono::steady_clock::now()) {}
+SamuelEngine::SamuelEngine(double tl, bool dbg, size_t transposition_table_size) : debug(dbg), transpositionTable(transposition_table_size), numBoardsVisited(0), default_tl(tl), deadline(std::chrono::steady_clock::now()) {}
 Move SamuelEngine::getMove(const ChessBoard &board) {
     ChessBoard scratchBoard = board;
     // return forced move if only one legal move
