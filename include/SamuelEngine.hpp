@@ -94,6 +94,13 @@ inline constexpr int const * const piece_PSTs[6] = {
     pawn_pieceval
 };
 
+struct ScoredMove {
+    Move move;
+    int score;
+    bool operator<(const ScoredMove& other) const {
+        return score > other.score;
+    }
+};
 // to be done by Samuel
 class SamuelEngine : public AbstractPlayer {
 	private:
@@ -106,7 +113,7 @@ class SamuelEngine : public AbstractPlayer {
 
 				MoveOrderer(ChessBoard &board) : m_board(board) {}
 				int score_move(const Move &mov);
-				bool operator()(const Move &m1, const Move &m2);
+				std::vector<Move> orderMoves(std::vector<Move> givenMoves);
 		};
 		ll numBoardsVisited;
 		double default_tl;

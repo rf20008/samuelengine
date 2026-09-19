@@ -47,8 +47,24 @@ int SamuelEngine::MoveOrderer::score_move(const Move &mov) {
 
     return 0;
 }
-bool SamuelEngine::MoveOrderer::operator()(const Move &m1, const Move &m2) { return score_move(m1) > score_move(m2); }
+std::vector<Move> SamuelEngine::MoveOrderer::orderMoves(std::vector<Move> givenMoves) {
+    std::vector<ScoredMove> scored;
 
+    for (const Move& move : givenMoves) {
+        scored.push_back({move, score_move(move)});
+    }
+
+    sort(scored.begin(), scored.end());
+
+    std::vector<Move> result;
+    result.reserve(scored.size());
+
+    for (const ScoredMove& sm : scored) {
+        result.push_back(sm.move);
+    }
+
+    return result;
+}
 
 std::optional<int> SamuelEngine::returnStatusIfGameOver(ChessBoard& board) const {
     GameStatus status = board.getStatus();
@@ -101,8 +117,8 @@ int SamuelEngine::evaluate_chess_pos_without_depth(ChessBoard &board) const {
 
 std::vector<Move> SamuelEngine::orderMoves(ChessBoard &board) const {
 	std::vector<Move> movesVec = board.allLegalMoves();
-	std::sort(begin(movesVec), end(movesVec), SamuelEngine::MoveOrderer(board));
-	return movesVec;
+    SamuelEngine::MoveOrderer orderer(board);
+    return orderer.orderMoves(movesVec);
 }
 
 std::pair<int, Move> SamuelEngine::evaluate_chess_pos_with_depth(ChessBoard &board, int depth, int alpha, int beta) {
