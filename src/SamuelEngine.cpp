@@ -9,7 +9,7 @@
 #include <vector>
 
 using namespace std;
-
+const int INF = 1'000'000'000;
 constexpr Move NULL_MOVE = Move(Square(0x88), Square(0x88));
 
 int SamuelEngine::MoveOrderer::priorityOfMove(const Move &mov) {
@@ -29,22 +29,28 @@ int SamuelEngine::MoveOrderer::priorityOfMove(const Move &mov) {
 bool SamuelEngine::MoveOrderer::operator()(const Move &m1, const Move &m2) { return priorityOfMove(m1) < priorityOfMove(m2); }
 
 
-std::optional<int> SamuelEngine::returnStatusIfGameOver(const ChessBoard& board) const {
+std::optional<int> SamuelEngine::returnStatusIfGameOver(ChessBoard& board) const {
     GameStatus status = board.getStatus();
 
     if (!isGameOver(status))
         return std::nullopt;
 
+    int score = 0;
     switch (status) {
     case GameStatus::WHITE_WON:
-        return MATE_SCORE - board.get_ply();
+        score = MATE_SCORE - board.get_ply();
 
     case GameStatus::BLACK_WON:
-        return -MATE_SCORE + board.get_ply();
+        score = -MATE_SCORE + board.get_ply();
 
     default: // draw
-        return 0;
+        score = 0;
     }
+    return score;
+}
+
+int negateScoreIfBlack(int score, Color color) {
+    return isWhite(color) ? score : -score;
 }
 
 
@@ -70,10 +76,7 @@ int SamuelEngine::evaluate_chess_pos_without_depth(ChessBoard &board) const {
 	return relative_value(board, Color::WHITE) - relative_value(board, Color::BLACK);
 }
 
-int SamuelEngine::evaluate_chess_pos_without_depth_negating_if_necessary(ChessBoard& board) const {
-    int score = evaluate_chess_pos_without_depth(board);
-    return (board.get_whiteToMove() ? score : -score);
-}
+
 
 std::vector<Move> SamuelEngine::orderMoves(ChessBoard &board) const {
 	std::vector<Move> movesVec = board.allLegalMoves();
@@ -82,57 +85,38 @@ std::vector<Move> SamuelEngine::orderMoves(ChessBoard &board) const {
 }
 
 std::pair<int, Move> SamuelEngine::evaluate_chess_pos_with_depth(ChessBoard &board, int depth, int alpha, int beta) {
-	if ((numBoardsVisited & 127) == 0 && shouldStop()) {
+	if ((numBoardsVisited & 255) == 0 && shouldStop()) {
 		throw OutOfTime();
 	}
 	numBoardsVisited++;
 	std::optional<int> gameOverMaybe = returnStatusIfGameOver(board);
 	if (gameOverMaybe) {
-		return {*gameOverMaybe, NULL_MOVE};
+		return {negateScoreIfBlack(*gameOverMaybe, board.getPlayerToMove()), NULL_MOVE};
 	}
 	if (depth == 0) {
-		return {evaluate_chess_pos_without_depth(board), NULL_MOVE};
+		return {evaluate_chess_pos_without_depth_negating_if_necessary(board), NULL_MOVE};
 	}
 	std::vector<Move> moves = orderMoves(board);
 	if (moves.empty()) {
-		return {evaluate_chess_pos_without_depth(board), NULL_MOVE};
+		return {evaluate_chess_pos_without_depth_negating_if_necessary(board), NULL_MOVE};
 	}
 
 	Move bestMove = *moves.begin();
-	if (board.get_whiteToMove()) {
-		double value = -MATE_SCORE;
-
-		for (Move move : moves) {
-			ChessBoard newBoard = board;
-			newBoard.processMove(move);
-			auto [new_val, new_move] = evaluate_chess_pos_with_depth(newBoard, depth - 1, alpha, beta);
-			if (new_val > value) {
-				bestMove = move;
-				value = new_val;
-			}
-			alpha = max(alpha, new_val);
-			if (new_val >= beta) {
-				break; // beta cutoff
-			}
-		}
-		return {value, bestMove};
-	} else {
-		int value = MATE_SCORE;
-		for (Move move : moves) {
-			ChessBoard newBoard = board;
-			newBoard.processMove(move);
-			auto [new_val, new_move] = evaluate_chess_pos_with_depth(newBoard, depth - 1, alpha, beta);
-			beta = min(beta, new_val);
-			if (new_val < value) {
-				value = new_val;
-				bestMove = move;
-			}
-			if (new_val <= alpha) {
-				break; //alpha cutoff
-			}
-		}
-		return {value, bestMove};
-	}
+    // negamax!
+    int value = -MATE_SCORE - 1000;
+    for (Move move : moves) {
+        assert(board.isMoveLegal(move));
+        board.processPsuedoLegalMove(move); // i know the move is legal!
+        int child_val = -(evaluate_chess_pos_with_depth(board, depth-1, -beta, -alpha).first);
+        if (child_val > value) {
+            value = child_val;
+            bestMove = move;
+        }
+        alpha = max(alpha, value);
+        board.undoMove();
+        if (alpha >= beta) break; // cut-off
+    }
+    return {value, bestMove};
 }
 std::pair<int, Move> SamuelEngine::evaluate_chess_pos_with_tl(ChessBoard &board, double time_limit) {
 	this->deadline = std::chrono::steady_clock::now() + std::chrono::nanoseconds(static_cast<long int>(time_limit * 1'000'000'000));

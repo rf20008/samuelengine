@@ -77,6 +77,8 @@ class ChessBoard {
             }
             return pieces[sq.idx];
         }
+
+        Color getPlayerToMove() const {return playerToMove;}
         uint64_t getZobrist() const {return zobrist_hash;}
 		int get_halfmove_clock() const { return halfmove_clock; }
 		int get_fullmove_clock() const { return fullmove_clock; }
