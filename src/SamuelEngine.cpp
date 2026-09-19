@@ -149,6 +149,10 @@ std::optional<double> SamuelEngine::returnStatusIfGameOver(ChessBoard &board) co
 double SamuelEngine::PieceValue(const Piece ptr, const Square sq) const {
 	double rel_intrinsic_val = relative_value(ptr);
 	auto posValTable = getPosVal(ptr);
+    int rank = sq.rank()
+    if (piece.color == Color::BLACK) {
+        rank = 7 - rank;
+    }
 	double pos_val = posValTable[sq.rank()][sq.file()];
 	return rel_intrinsic_val + pos_val;
 }
