@@ -105,7 +105,7 @@ class SamuelEngine : public AbstractPlayer {
 				ChessBoard& m_board;
 
 				MoveOrderer(ChessBoard &board) : m_board(board) {}
-				int priorityOfMove(const Move &mov);
+				int score_move(const Move &mov);
 				bool operator()(const Move &m1, const Move &m2);
 		};
 		ll numBoardsVisited;

@@ -12,21 +12,42 @@ using namespace std;
 const int INF = 1'000'000'000;
 constexpr Move NULL_MOVE = Move(Square(0x88), Square(0x88));
 
-int SamuelEngine::MoveOrderer::priorityOfMove(const Move &mov) {
-	//if (m_board.move_ends_game(mov)) {return 1000;}
-	if (m_board.move_is_castling(mov)) {
-		return 4;
-	} else if (m_board.move_is_check(mov)) {
-		return 3;
-	} else if (m_board.move_is_capture(mov)) {
-		return 2;
-	} else if (m_board.move_is_zeroing(mov)) {
-		return 1;
-	} else {
-		return 0;
-	}
+int SamuelEngine::MoveOrderer::score_move(const Move &mov) {
+
+    if (mov.promotion != '\0') {
+        return 50'000;
+    }
+
+    if (m_board.move_is_capture(mov)) {
+        Piece victim =
+            m_board.getPiece(m_board.get_capturing_square(mov));
+
+        Piece attacker =
+            m_board.getPiece(mov.startingSquare);
+
+        return 20'000
+             + 100 * PIECE_VALUES[victim.pieceNum()]
+             - PIECE_VALUES[attacker.pieceNum()];
+    }
+
+    if (m_board.move_is_check(mov)) {
+        if (m_board.move_gives_checkmate(mov)) {
+            return 100'000;
+        }
+        return 3;
+    }
+
+    if (m_board.move_draws_game(mov)) {
+        return 2;
+    }
+
+    if (m_board.move_is_castling(mov)) {
+        return 1;
+    }
+
+    return 0;
 }
-bool SamuelEngine::MoveOrderer::operator()(const Move &m1, const Move &m2) { return priorityOfMove(m1) < priorityOfMove(m2); }
+bool SamuelEngine::MoveOrderer::operator()(const Move &m1, const Move &m2) { return score_move(m1) > score_move(m2); }
 
 
 std::optional<int> SamuelEngine::returnStatusIfGameOver(ChessBoard& board) const {
@@ -122,20 +143,32 @@ std::pair<int, Move> SamuelEngine::evaluate_chess_pos_with_tl(ChessBoard &board,
 	this->deadline = std::chrono::steady_clock::now() + std::chrono::nanoseconds(static_cast<long int>(time_limit * 1'000'000'000));
 	int bestValue = 0;
 	Move bestMove = *(board.allLegalMoves().begin());
+    int depthReached = 0;
 	try {
 		for (int depth = 1; !shouldStop(); ++depth) {
+
 			auto [newValue, newMove] = evaluate_chess_pos_with_depth(board, depth, -INF, +INF);
+            depthReached = depth;
 			bestValue = newValue;
 			bestMove = newMove;
 		}
 	} catch (OutOfTime &err) {
 	}
+    if (debug) {
+        cerr<<"Reached a depth of "<<depthReached<<"\n";
+    }
+    
 	return {bestValue, bestMove};
 }
 inline bool SamuelEngine::shouldStop() const { return std::chrono::steady_clock::now() >= deadline; }
 SamuelEngine::SamuelEngine(double tl, bool dbg) : debug(dbg), numBoardsVisited(0), default_tl(tl), deadline(std::chrono::steady_clock::now()) {}
 Move SamuelEngine::getMove(const ChessBoard &board) {
     ChessBoard scratchBoard = board;
+    // return forced move if only one legal move
+    std::vector<Move> allMoves = scratchBoard.allLegalMoves();
+    if (allMoves.size()==1) {
+        return allMoves[0];
+    }
 	this->numBoardsVisited = 0;
 	if (debug) {
 		cerr << "Beginning search" << endl;
@@ -143,6 +176,7 @@ Move SamuelEngine::getMove(const ChessBoard &board) {
 	auto [val, move] = evaluate_chess_pos_with_tl(scratchBoard, default_tl);
 	if (debug) {
 		cerr << "Finished search\n. Searched " << numBoardsVisited << " positions to find a value of " << val << endl;
+        cerr << "FEN: "<<board.fen()<<"\n";
 	}
 	return move;
 }

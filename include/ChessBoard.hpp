@@ -128,6 +128,17 @@ class ChessBoard {
             assert((getPiece(kingPos) == ((expectedColor == Color::WHITE) ? WHITE_KING : BLACK_KING))&&"king cache desync");
             return kingPos;
         }
+        bool isADraw() const {
+            if (halfmove_clock >= 100) {
+                return true;
+            } else if (this->hasInsufficientMaterial()) {
+                return true;
+            }else if (this->is_threefold_repetition()) {
+                return true;
+            } else {
+                return false;
+            }
+        }
 		GameStatus getStatus(); // doesn't change board but interacts with move ordering
 
 		// for engine use
@@ -159,6 +170,18 @@ class ChessBoard {
 
 		// move evaluation
 		ChessBoard board_with_move(const Move &move) const; // return a copy of the board, with move move applied
+        bool move_gives_checkmate(const Move move) {
+            this->processMove(move);
+            bool isCheckmate = this->isInCheckmate();
+            this->undoMove();
+            return isCheckmate;
+        }
+        bool move_draws_game(const Move move) {
+            this->processMove(move);
+            bool isDraw = this->isADraw();
+            this->undoMove();
+            return isDraw;
+        }
 		bool move_ends_game(const Move move);
 		bool move_is_castling(const Move move) const;
 		bool move_is_check(const Move move);
@@ -191,7 +214,13 @@ class ChessBoard {
                 ); 
             } 
         }
-
+        Square get_capturing_square(const Move& m) const  {
+            if (m.type == MoveType::EN_PASSANT) {
+                return Square(m.endingSquare.file(), m.startingSquare.rank());
+            } else {
+                return m.endingSquare;
+            }
+        }
         // undo move
         UndoMove buildUndo(const Move& m) const;
         void undoMove(const UndoMove& u);

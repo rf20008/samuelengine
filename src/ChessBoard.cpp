@@ -753,15 +753,11 @@ bool ChessBoard::hasInsufficientMaterial() const {
 	}
 	return (numBishops <= 1) && (numKnights <= 1);
 }
+
+
 GameStatus ChessBoard::getStatus() {
 	// return the status of the game (whether white won, black won, it's a draw, or game is still going on)
-    if (halfmove_clock >= 100) {
-		return GameStatus::DRAW;
-	} else if (this->hasInsufficientMaterial()) {
-		return GameStatus::DRAW;
-	}else if (this->is_threefold_repetition()) {
-        return GameStatus::DRAW;
-    }
+    if (this->isADraw()) return GameStatus::DRAW;
     auto legalMoves = this->allLegalMoves();
     bool inCheck = this->isInCheck(playerToMove);
 	if (legalMoves.empty()) { // the game is over, checkmate
@@ -970,6 +966,8 @@ Square getRookTo(Square kingTo) {
             return Square("d8");
     return Square(-1);
 }
+
+
 // undo move
 UndoMove ChessBoard::buildUndo(const Move &m) const {
     UndoMove u;
@@ -984,14 +982,8 @@ UndoMove ChessBoard::buildUndo(const Move &m) const {
     u.originalPiece = getPiece(m.startingSquare);
 
     // what is captured?
-    if (m.type == MoveType::EN_PASSANT) {
-            
-            u.capturedSquare = Square(m.endingSquare.file(), m.startingSquare.rank());
-            u.capturedPiece = getPiece(u.capturedSquare);
-    } else {
-            u.capturedSquare = m.endingSquare;
-            u.capturedPiece = getPiece(m.endingSquare);
-    }
+    u.capturedSquare = this->get_capturing_square(m);
+    u.capturedPiece = getPiece(u.capturedSquare);
 
     if (m.type == MoveType::CASTLING) {
             u.rookFrom = getRookFrom(m.endingSquare);
