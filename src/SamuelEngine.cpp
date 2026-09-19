@@ -38,13 +38,13 @@ std::optional<int> SamuelEngine::returnStatusIfGameOver(ChessBoard& board) const
     int score = 0;
     switch (status) {
     case GameStatus::WHITE_WON:
-        score = MATE_SCORE - board.get_ply();
+        score = MATE_SCORE - board.get_ply(); break;
 
     case GameStatus::BLACK_WON:
-        score = -MATE_SCORE + board.get_ply();
+        score = -MATE_SCORE + board.get_ply(); break;
 
     default: // draw
-        score = 0;
+        score = 0; break;
     }
     return score;
 }
