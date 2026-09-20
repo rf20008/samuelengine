@@ -92,7 +92,7 @@ class ChessBoard {
         // SAN
         std::vector<Move> getAllMovesFromPieceEndingAt(PieceType expectedType, Square expectedEndingSquare);
         std::vector<Move> getSANRegular(PieceType expectedType, Square expectedEndingSquare, const std::string ambiguators);
-        std::vector<Move> ambiguateMove(std::vector<Move> candidateMoves, Square expectedEndingSquare, const std::string ambiguators) const        ;
+        std::vector<Move> ambiguateMove(std::vector<Move> candidateMoves, Square expectedEndingSquare, const std::string ambiguators) const;
         Move getMove(const std::string& algebraicNotation) const;
 
 		// chess engine methods

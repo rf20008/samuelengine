@@ -1,4 +1,3 @@
-// This is a copy of the engine I made to play chess in Python. I am translating it into C++
 #include "SamuelEngine.hpp"
 #include "Errors.hpp"
 
@@ -13,9 +12,10 @@ const int INF = 1'000'000'000;
 constexpr Move NULL_MOVE = Move(Square(0x88), Square(0x88));
 
 int SamuelEngine::MoveOrderer::score_move(const Move &mov) {
-    if (mov == m_hashMove) return 2'000'000;
+    int score = 0;
+    if (mov == m_hashMove) score += 2'000'000;
     if (mov.promotion != '\0') {
-        return 50'000;
+        score += 50'000;
     }
 
     if (m_board.move_is_capture(mov)) {
@@ -25,27 +25,28 @@ int SamuelEngine::MoveOrderer::score_move(const Move &mov) {
         Piece attacker =
             m_board.getPiece(mov.startingSquare);
 
-        return 20'000
+        score += 20'000
              + 100 * PIECE_VALUES[victim.pieceNum()]
              - PIECE_VALUES[attacker.pieceNum()];
     }
 
     if (m_board.move_is_check(mov)) {
         if (m_board.move_gives_checkmate(mov)) {
-            return 100'000;
+            score += 5'000'000;
+        } else {
+            score+= 3;
         }
-        return 3;
     }
 
     if (m_board.move_draws_game(mov)) {
-        return 2;
+        score += 2;
     }
 
     if (m_board.move_is_castling(mov)) {
-        return 1;
+        score += 1;
     }
 
-    return 0;
+    return score;
 }
 std::vector<Move> SamuelEngine::MoveOrderer::orderMoves() {
     std::vector<ScoredMove> scored;
