@@ -21,7 +21,6 @@ constexpr int NE = 17;
 constexpr int NW = 15;
 constexpr int SE = -15;
 constexpr int SW = -17;
-constexpr int rPr = pieceNum('R');
 inline constexpr int PAWN_CAPTURE_DIRS[2][2] = {
 	{NW, NE}, // White: rank+1, file+-1
 	{SW, SE}  // Black: rank-1, file+-1
