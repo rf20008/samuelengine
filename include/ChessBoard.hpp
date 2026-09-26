@@ -99,6 +99,7 @@ class ChessBoard {
         std::vector<Move> getSANRegular(PieceType expectedType, Square expectedEndingSquare, const std::string ambiguators);
         std::vector<Move> ambiguateMove(std::vector<Move> candidateMoves, Square expectedEndingSquare, const std::string ambiguators) const;
         Move getMove(const std::string& algebraicNotation) const;
+        std::string getSAN(const Move &move);
 
 		// chess engine methods
         bool isMovePsuedoLegal(Move m) const;
@@ -172,7 +173,10 @@ class ChessBoard {
 		std::vector<Move> allLegalMoves();
 
 		friend std::ostream &operator<<(std::ostream &os, const ChessBoard &board);
-
+        void switch_side_to_move() {
+            playerToMove = oppositeColor(playerToMove);
+            zobrist_hash ^= ZOBRIST.sideToMove;
+        }
 		// move evaluation
 		ChessBoard board_with_move(const Move &move) const; // return a copy of the board, with move move applied
         bool move_gives_checkmate(const Move move) {

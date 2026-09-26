@@ -249,10 +249,153 @@ Move ChessBoard::getMove(const std::string &moveNotation) const {
 	}
 	// return the move that corresponds to that symbol
 	for (const Move &candidate : candidates) {
-		if (candidate.promotion == promotionPieceSymbol)
+		if (toupper(candidate.promotion) == toupper(promotionPieceSymbol))
 			return candidate;
 	}
 	throw InvalidSAN("No move found: " + moveNotation);
+}
+
+std::string ChessBoard::getSAN(const Move &move) {
+    Piece movingPiece = getPiece(move.startingSquare);
+
+    if (!movingPiece.isValid()) {
+        throw std::invalid_argument("Cannot generate SAN for move from empty square");
+    }
+
+    if (movingPiece.color != playerToMove) {
+        throw std::invalid_argument("Cannot generate SAN for opponent's move");
+    }
+
+    // Castling
+    if (move.type == MoveType::CASTLING) {
+        std::string san;
+
+        if (move.endingSquare.file() > move.startingSquare.file()) {
+            san = "O-O";
+        } else {
+            san = "O-O-O";
+        }
+
+        ChessBoard after = *this;
+        after.processMove(move);
+
+        if (after.isInCheckmate()) {
+            san += "#";
+        } else if (after.isInCheck(after.getPlayerToMove())) {
+            san += "+";
+        }
+
+        return san;
+    }
+
+    std::string san;
+
+    const bool isPawn = movingPiece.type == PieceType::PAWN;
+    const bool isCapture = move_is_capture(move);
+
+    // Piece symbol
+    if (!isPawn) {
+        san += toupper(movingPiece.symbol());
+
+        // Find other legal pieces of the same type that
+        // can also move to the same destination.
+        std::vector<Move> ambiguousMoves;
+
+        for (const Move &candidate : allLegalMoves()) {
+            if (candidate.endingSquare != move.endingSquare)
+                continue;
+
+            if (candidate.startingSquare == move.startingSquare)
+                continue;
+
+            Piece candidatePiece = getPiece(candidate.startingSquare);
+
+            if (candidatePiece.type == movingPiece.type) {
+                ambiguousMoves.push_back(candidate);
+            }
+        }
+
+        if (!ambiguousMoves.empty()) {
+            bool sameFile = false;
+            bool sameRank = false;
+
+            for (const Move &candidate : ambiguousMoves) {
+                if (candidate.startingSquare.file() ==
+                    move.startingSquare.file()) {
+                    sameFile = true;
+                }
+
+                if (candidate.startingSquare.rank() ==
+                    move.startingSquare.rank()) {
+                    sameRank = true;
+                }
+            }
+
+            if (!sameFile) {
+                // File is sufficient.
+                san += static_cast<char>(
+                    'a' + move.startingSquare.file()
+                );
+            } else if (!sameRank) {
+                // Rank is sufficient.
+                san += static_cast<char>(
+                    '1' + move.startingSquare.rank()
+                );
+            } else {
+                // Need both.
+                san += static_cast<char>(
+                    'a' + move.startingSquare.file()
+                );
+                san += static_cast<char>(
+                    '1' + move.startingSquare.rank()
+                );
+            }
+        }
+    } else {
+        // Pawn captures begin with the pawn's file.
+        if (isCapture) {
+            san += static_cast<char>(
+                'a' + move.startingSquare.file()
+            );
+        }
+    }
+
+    // Capture
+    if (isCapture) {
+        san += "x";
+    }
+
+    // Destination square
+    san += static_cast<char>(
+        'a' + move.endingSquare.file()
+    );
+
+    san += static_cast<char>(
+        '1' + move.endingSquare.rank()
+    );
+
+    // Promotion
+    if (move.promotion != '\0') {
+        san += "=";
+
+        san += static_cast<char>(
+            std::toupper(
+                static_cast<unsigned char>(move.promotion)
+            )
+        );
+    }
+
+    // Check / checkmate
+    ChessBoard after = *this;
+    after.processMove(move);
+
+    if (after.isInCheckmate()) {
+        san += "#";
+    } else if (after.isInCheck(after.getPlayerToMove())) {
+        san += "+";
+    }
+
+    return san;
 }
 bool ChessBoard::isMoveLegal(Move m) {
 	if (!isMovePsuedoLegal(m))
