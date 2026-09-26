@@ -133,7 +133,9 @@ class SamuelEngine : public AbstractPlayer {
             return intrinsic_val + pos_val;
         }
 		int relative_value(const ChessBoard &board, Color c) const;
-        
+        int mobility(ChessBoard& board) const;
+        int kingSafety(const ChessBoard& board, Color color) const;
+
 		int evaluate_chess_pos_without_depth(ChessBoard &board) const;
         int evaluate_chess_pos_without_depth_negating_if_necessary(ChessBoard& board) const {
             int score = evaluate_chess_pos_without_depth(board);
@@ -142,6 +144,7 @@ class SamuelEngine : public AbstractPlayer {
 		std::pair<int, Move> evaluate_chess_pos_with_depth(ChessBoard &board, int depth, int alpha, int beta);
 		std::pair<int, Move> evaluate_chess_pos_with_tl(ChessBoard &board, double time_limit = 3.0);
 		inline bool shouldStop() const;
+        
 
 	public:
 		SamuelEngine(double tl, bool debug = false, size_t transposition_table_size = (2ULL<<20));

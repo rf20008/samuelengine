@@ -88,7 +88,67 @@ std::optional<int> SamuelEngine::returnStatusIfGameOver(ChessBoard &board) const
 }
 
 int negateScoreIfBlack(int score, Color color) { return isWhite(color) ? score : -score; }
+int SamuelEngine::kingSafety(const ChessBoard& board, Color color) const {
+    Square kingSquare = board.findKing(color);
 
+    if (!kingSquare.isValid())
+		return 0;
+
+	Color enemy = oppositeColor(color);
+
+	int score = 0;
+
+	// Being in check is extremely dangerous.
+	if (board.isInCheck(color)) {
+		score -= 80;
+	}
+
+	// Examine the 8 squares surrounding the king.
+	const int kingRing[] = {
+		1, -1, 16, -16,
+		15, 17, -15, -17
+	};
+
+	for (int offset : kingRing) {
+		Square sq = kingSquare + offset;
+
+		if (!sq.isValid())
+			continue;
+
+
+		if (board.squareAttackedBy(sq, enemy)) {
+			score -= 12;
+		}
+	}
+
+	// ----------------
+	// Pawn shield
+	// ----------------
+	//
+	// Reward friendly pawns immediately in front
+	// of the king.
+	//
+	// White pawns move toward increasing ranks.
+	// Black pawns move toward decreasing ranks.
+	//
+
+	const int forward = isWhite(color) ? 16 : -16;
+
+	for (int fileOffset : {-1, 0, 1}) {
+		Square sq = kingSquare + (forward + fileOffset);
+
+		if (!sq.isValid())
+			continue;
+
+		Piece p = board.getPiece(sq);
+
+		if (p.color == color && p.type == PieceType::PAWN) {
+			score += 8;
+		}
+	}
+
+	return score;
+}
 int SamuelEngine::relative_value(const ChessBoard &board, const Color expectedColor) const {
 	int tot_val = 0;
 	for (int rank = 0; rank < BOARD_SIZE; ++rank) {
@@ -102,12 +162,45 @@ int SamuelEngine::relative_value(const ChessBoard &board, const Color expectedCo
 	}
 	return tot_val;
 }
+int SamuelEngine::mobility(ChessBoard& board) const {
+    int currentMobility = 0;
+    int otherMobility = 0;
+
+    Color currentPlayer = board.getPlayerToMove();
+
+    for (int sq = 0; sq < 64; ++sq) {
+        currentMobility += static_cast<int>(
+            board.allPseudoLegalDestinations(
+                Square::from64(sq)
+            ).size()
+        );
+    }
+
+    board.switch_side_to_move();
+
+    for (int sq = 0; sq < 64; ++sq) {
+        otherMobility += static_cast<int>(
+            board.allPseudoLegalDestinations(
+                Square::from64(sq)
+            ).size()
+        );
+    }
+
+    board.switch_side_to_move();
+
+    if (currentPlayer == Color::WHITE)
+        return currentMobility - otherMobility;
+    else
+        return otherMobility - currentMobility;
+}
 int SamuelEngine::evaluate_chess_pos_without_depth(ChessBoard &board) const {
 	std::optional<int> gameOverMaybe = returnStatusIfGameOver(board);
 	if (gameOverMaybe)
 		return *gameOverMaybe;
 
-	return relative_value(board, Color::WHITE) - relative_value(board, Color::BLACK);
+    int material = relative_value(board, Color::WHITE) - relative_value(board, Color::BLACK);
+    int kingSafetyScore = kingSafety(board, Color::WHITE) - kingSafety(board, Color::BLACK);
+    return material + kingSafetyScore + mobility(board);
 }
 
 std::pair<int, Move> SamuelEngine::evaluate_chess_pos_with_depth(ChessBoard &board, int depth, int alpha, int beta) {
