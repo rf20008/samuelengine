@@ -364,7 +364,7 @@ public:
     
         assert(m.startingSquare == Square("f2"));
         assert(m.endingSquare == Square("f1"));
-        assert(m.promotion == 'Q');
+        assert(m.promotion == 'q');
     
         assert(board.getSAN(m) == "f1=Q");
     }

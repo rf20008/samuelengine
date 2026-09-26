@@ -87,7 +87,7 @@ public:
     }
 
     void testSANCaptureRook() {
-        ChessBoard board("7k/8/8/3p4/R7/8/8/4K3 w - - 0 1");
+        ChessBoard board("7k/8/8/8/R2p4/8/8/4K3 w - - 0 1");
 
         Move m("a4", "d4");
 
@@ -95,11 +95,11 @@ public:
     }
 
     void testSANCaptureQueen() {
-        ChessBoard board("7k/3p4/8/8/8/8/8/3QK3 w - - 0 1");
+        ChessBoard board("6k1/8/8/8/Q2p4/8/8/4K3 w - - 0 1");
 
-        Move m("d1", "d5");
+        Move m("a4", "d4");
 
-        TS_ASSERT_EQUALS(board.getSAN(m), "Qxd5");
+        TS_ASSERT_EQUALS(board.getSAN(m), "Qxd4");
     }
 
     void testSANCaptureKing() {
@@ -115,7 +115,7 @@ public:
     // King is impossible: a legal king move can never give check.
 
     void testSANCheckPawn() {
-        ChessBoard board("3k4/8/8/4P3/8/8/8/K7 w - - 0 1");
+        ChessBoard board("8/3k4/8/4P3/8/8/8/K7 w - - 0 1");
 
         Move m("e5", "e6");
 
@@ -131,7 +131,7 @@ public:
     }
 
     void testSANCheckBishop() {
-        ChessBoard board("6k1/8/8/8/8/4B3/8/K7 w - - 0 1");
+        ChessBoard board("5k2/8/8/8/7P/4B3/8/K7 w - - 0 1");
 
         Move m("e3", "h6");
 
@@ -374,12 +374,12 @@ public:
     void testKingCaptureCheckmate() {
         ChessBoard board("8/3k4/8/8/2R1R3/3Kr3/3R4/8 w - - 0 1");
         Move m("d3", "e3");
-        TS_ASSERT_EQUALS(board.getSAN(m), "Kxd3#");
+        TS_ASSERT_EQUALS(board.getSAN(m), "Kxe3#");
     }
     void testKingCaptureCheck() {
         ChessBoard board("8/3k4/8/8/8/3Kr3/3R4/8 w - - 0 1");
         Move m("d3", "e3");
-        TS_ASSERT_EQUALS(board.getSAN(m), "Kxd3+");
+        TS_ASSERT_EQUALS(board.getSAN(m), "Kxe3+");
     }
 
     // 7. Castling, and castling with check
@@ -404,16 +404,7 @@ public:
     // 8. Castling to give checkmate
 
     void testSANCastlingCheckmate() {
-        ChessBoard board(
-            "5k2/"
-            "8/"
-            "8/"
-            "1B6/"
-            "2B2N2/"
-            "8/"
-            "8/"
-            "4K2R w K - 0 1"
-        );
+        ChessBoard board("8/8/8/8/8/8/6R1/1k2K2R w K - 0 1");
 
         Move m("e1", "g1", '\0', MoveType::CASTLING);
 
