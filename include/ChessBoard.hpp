@@ -87,6 +87,11 @@ class ChessBoard {
 		PlayerState getBlackPlayerState() const { return blackPlayerState; }
 		std::optional<Square> getEnPassantTargetSquare() const { return enPassant_targetSquare; }
         std::vector<UndoMove> getHistory() const {return history;}
+        int numPieces() const {
+            int ans = 0;
+            for (int idx = 0; idx<128; ++idx) {if (pieces[idx].isValid()) {++ans;}}
+            return ans;
+        }
         int get_ply() const {return 2*fullmove_clock + (get_whiteToMove() ? -2 : -1);}
 
         // SAN
