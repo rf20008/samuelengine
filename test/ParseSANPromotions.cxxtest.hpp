@@ -23,7 +23,7 @@ public:
         TS_ASSERT_EQUALS(board.getSAN(m), "e8=Q+");
     }
     void testPromoWhitePushQueenCheckmate() {
-        ChessBoard board("7k/4P1Q1/8/8/8/8/8/4K3 w - - 0 1");
+        ChessBoard board("7k/R3P3/8/8/8/8/8/4K3 w - - 0 1");
         Move m("e7", "e8", 'Q', MoveType::NORMAL);
         TS_ASSERT_EQUALS(board.getSAN(m), "e8=Q#");
     }
@@ -39,7 +39,7 @@ public:
         TS_ASSERT_EQUALS(board.getSAN(m), "e8=R+");
     }
     void testPromoWhitePushRookCheckmate() {
-        ChessBoard board("7k/4P2R/8/8/8/8/8/4K3 w - - 0 1");
+        ChessBoard board("7k/R3P3/8/8/8/8/8/4K3 w - - 0 1");
         Move m("e7", "e8", 'R', MoveType::NORMAL);
         TS_ASSERT_EQUALS(board.getSAN(m), "e8=R#");
     }
@@ -50,17 +50,14 @@ public:
         TS_ASSERT_EQUALS(board.getSAN(m), "e8=B");
     }
     void testPromoWhitePushBishopCheck() {
-        ChessBoard board("4k3/4P3/8/8/8/8/4B3/4K3 w - - 0 1"); // Wait, e8-bishop checks e8->h5 diagonal? Let's use diagonal check
-        ChessBoard board2("6k1/4P3/8/8/8/8/8/4K1B1 w - - 0 1"); // bishop on g1 doesn't check f8. Let's use:
-        // Actually for Bishop check on e8: Black king on g8, bishop on e8 attacks g8.
-        ChessBoard boardCheck("6k1/4P3/8/8/8/8/8/4K3 w - - 0 1"); // e7->e8=B attacks g8? No, e8 to g8 is diagonal (e8-f7-g8). Yes!
+        ChessBoard board("8/4P3/6k1/8/8/8/8/4K3 w - - 0 1"); 
         Move m("e7", "e8", 'B', MoveType::NORMAL);
-        TS_ASSERT_EQUALS(boardCheck.getSAN(m), "e8=B+");
+        TS_ASSERT_EQUALS(board.getSAN(m), "e8=B+");
     }
     void testPromoWhitePushBishopCheckmate() {
-        ChessBoard board("7k/4P1B1/8/8/8/8/8/4K3 w - - 0 1");
-        Move m("e7", "e8", 'B', MoveType::NORMAL);
-        TS_ASSERT_EQUALS(board.getSAN(m), "e8=B#");
+        ChessBoard board("8/5P2/7k/1K3Q2/8/8/8/8 w - - 0 1");
+        Move m("f7", "f8", 'B', MoveType::NORMAL);
+        TS_ASSERT_EQUALS(board.getSAN(m), "f8=B#");
     }
 
     void testPromoWhitePushKnightNormal() {
@@ -69,21 +66,20 @@ public:
         TS_ASSERT_EQUALS(board.getSAN(m), "e8=N");
     }
     void testPromoWhitePushKnightCheck() {
-        ChessBoard board("6k1/4P3/8/8/8/8/8/4K3 w - - 0 1"); // knight on e8 checks g7 or f6. f6!
-        ChessBoard boardCheck("5k2/4P3/8/8/8/8/8/4K3 w - - 0 1"); // knight on e8 checks f6 or d7? e8 to f6 is an L-shape.
+        ChessBoard boardCheck("8/4P1k1/8/8/8/8/8/4K3 w - - 0 1"); // knight on e8 checks f6 or d7? e8 to f6 is an L-shape.
         Move m("e7", "e8", 'N', MoveType::NORMAL);
         TS_ASSERT_EQUALS(boardCheck.getSAN(m), "e8=N+");
     }
     void testPromoWhitePushKnightCheckmate() {
-        ChessBoard board("7k/4P1N1/8/8/8/8/8/4K3 w - - 0 1");
-        Move m("e7", "e8", 'N', MoveType::NORMAL);
-        TS_ASSERT_EQUALS(board.getSAN(m), "e8=N#");
+        ChessBoard board("8/5P1k/4B3/4B1K1/8/8/8/8 w - - 0 1");
+        Move m("f7", "f8", 'N', MoveType::NORMAL);
+        TS_ASSERT_EQUALS(board.getSAN(m), "f8=N#");
     }
 
 
     // --- WHITE CAPTURE ---
     void testPromoWhiteCaptureQueenNormal() {
-        ChessBoard board("3rk3/4P3/8/8/8/8/8/4K3 w - - 0 1");
+        ChessBoard board("3r4/4P1k1/8/8/8/8/8/4K3 w - - 0 1");
         Move m("e7", "d8", 'Q', MoveType::NORMAL);
         TS_ASSERT_EQUALS(board.getSAN(m), "exd8=Q");
     }
@@ -99,7 +95,7 @@ public:
     }
 
     void testPromoWhiteCaptureRookNormal() {
-        ChessBoard board("3rk3/4P3/8/8/8/8/8/4K3 w - - 0 1");
+        ChessBoard board("3r4/4P3/5k2/8/8/8/8/4K3 w - - 0 1");
         Move m("e7", "d8", 'R', MoveType::NORMAL);
         TS_ASSERT_EQUALS(board.getSAN(m), "exd8=R");
     }
@@ -120,14 +116,14 @@ public:
         TS_ASSERT_EQUALS(board.getSAN(m), "exd8=B");
     }
     void testPromoWhiteCaptureBishopCheck() {
-        ChessBoard board("5q2/4P3/7k/5Q2/7K/8/8/8 w - - 0 1");
+        ChessBoard board("5q2/4P3/7k/8/7K/7Q/8/8 w - - 0 1");
         Move m("e7", "f8", 'B', MoveType::NORMAL);
         TS_ASSERT_EQUALS(board.getSAN(m), "exf8=B+");
     }
     void testPromoWhiteCaptureBishopCheckmate() {
-        ChessBoard board("5q2/4P3/7k/8/7K/8/8/7Q w - - 0 1");
-        Move m("e7", "f8", 'B', MoveType::NORMAL);
-        TS_ASSERT_EQUALS(board.getSAN(m), "exf8=B#");
+        ChessBoard board("6n1/7P/8/8/8/2Q5/k7/1RR3K1 w - - 0 1");
+        Move m("h7", "g8", 'B', MoveType::NORMAL);
+        TS_ASSERT_EQUALS(board.getSAN(m), "hxg8=B#");
     }
 
     void testPromoWhiteCaptureKnightNormal() {
@@ -136,7 +132,7 @@ public:
         TS_ASSERT_EQUALS(board.getSAN(m), "exd8=N");
     }
     void testPromoWhiteCaptureKnightCheck() {
-        ChessBoard board("3r1k2/4P3/8/8/8/8/8/4K3 w - - 0 1");
+        ChessBoard board("3r4/1r2Pk2/8/8/8/8/8/4K3 w - - 0 1");
         Move m("e7", "d8", 'N', MoveType::NORMAL);
         TS_ASSERT_EQUALS(board.getSAN(m), "exd8=N+");
     }
@@ -159,7 +155,7 @@ public:
         TS_ASSERT_EQUALS(board.getSAN(m), "e1=Q+");
     }
     void testPromoBlackPushQueenCheckmate() {
-        ChessBoard board("4k3/8/8/8/8/8/4p1q1/7K b - - 0 1");
+        ChessBoard board("4k3/8/8/8/8/8/q3p3/7K b - - 0 1");
         Move m("e2", "e1", 'q', MoveType::NORMAL);
         TS_ASSERT_EQUALS(board.getSAN(m), "e1=Q#");
     }
@@ -175,7 +171,7 @@ public:
         TS_ASSERT_EQUALS(board.getSAN(m), "e1=R+");
     }
     void testPromoBlackPushRookCheckmate() {
-        ChessBoard board("4k3/8/8/8/8/8/4p2r/7K b - - 0 1");
+        ChessBoard board("4k3/8/8/8/8/8/r3p3/7K b - - 0 1");
         Move m("e2", "e1", 'r', MoveType::NORMAL);
         TS_ASSERT_EQUALS(board.getSAN(m), "e1=R#");
     }
@@ -186,14 +182,14 @@ public:
         TS_ASSERT_EQUALS(board.getSAN(m), "e1=B");
     }
     void testPromoBlackPushBishopCheck() {
-        ChessBoard board("4k3/8/8/8/8/8/4p3/6K1 b - - 0 1");
+        ChessBoard board("4k3/6p1/8/8/8/6K1/4p3/8 b - - 0 1");
         Move m("e2", "e1", 'b', MoveType::NORMAL);
         TS_ASSERT_EQUALS(board.getSAN(m), "e1=B+");
     }
     void testPromoBlackPushBishopCheckmate() {
-        ChessBoard board("4k3/8/8/8/8/8/4p1b1/7K b - - 0 1");
-        Move m("e2", "e1", 'b', MoveType::NORMAL);
-        TS_ASSERT_EQUALS(board.getSAN(m), "e1=B#");
+        ChessBoard board("1b6/8/8/6k1/8/5b1K/5p2/6b1 b - - 0 1");
+        Move m("f2", "f1", 'b', MoveType::NORMAL);
+        TS_ASSERT_EQUALS(board.getSAN(m), "f1=B#");
     }
 
     void testPromoBlackPushKnightNormal() {
@@ -202,14 +198,14 @@ public:
         TS_ASSERT_EQUALS(board.getSAN(m), "e1=N");
     }
     void testPromoBlackPushKnightCheck() {
-        ChessBoard board("4k3/8/8/8/8/8/4p3/5K2 b - - 0 1");
+        ChessBoard board("4k3/8/8/8/7p/8/4p1K1/8 b - - 0 1");
         Move m("e2", "e1", 'n', MoveType::NORMAL);
         TS_ASSERT_EQUALS(board.getSAN(m), "e1=N+");
     }
     void testPromoBlackPushKnightCheckmate() {
-        ChessBoard board("4k3/8/8/8/8/8/4p1n1/7K b - - 0 1");
-        Move m("e2", "e1", 'n', MoveType::NORMAL);
-        TS_ASSERT_EQUALS(board.getSAN(m), "e1=N#");
+        ChessBoard board("8/8/8/8/1k6/2bb4/K1pp4/8 b - - 0 1");
+        Move m("c2", "c1", 'n', MoveType::NORMAL);
+        TS_ASSERT_EQUALS(board.getSAN(m), "c1=N#");
     }
 
 
