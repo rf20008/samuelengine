@@ -4,28 +4,39 @@
 #include <stdexcept>
 #include <string>
 
-
-
 // Maps a chess-engine piece symbol (Piece::symbol(), e.g. 'P'/'p', 'N'/'n',
 // ... -- see include/Piece.hpp and its subclasses) to the PieceType this
 // library knows how to display. Uppercase is white, lowercase is black,
 // matching the engine's own convention.
 inline std::string piece_type_from_symbol(char symbol) {
-    // according to Wikipedia, the outlined pieces are White, and the filled in pieces are Black
+	// according to Wikipedia, the outlined pieces are White, and the filled in pieces are Black
 	switch (symbol) {
-	case 'P': return "♙";
-	case 'N': return "♘";
-	case 'B': return "♗";
-	case 'R': return "♖";
-	case 'Q': return "♕";
-	case 'K': return "♔";
-	case 'p': return "♟";
-	case 'n': return "♞";
-	case 'b': return "♝";
-	case 'r': return "♜";
-	case 'q': return "♛"; 
-	case 'k': return "♚";
-    case ' ': return " ";
+	case 'P':
+		return "♙";
+	case 'N':
+		return "♘";
+	case 'B':
+		return "♗";
+	case 'R':
+		return "♖";
+	case 'Q':
+		return "♕";
+	case 'K':
+		return "♔";
+	case 'p':
+		return "♟";
+	case 'n':
+		return "♞";
+	case 'b':
+		return "♝";
+	case 'r':
+		return "♜";
+	case 'q':
+		return "♛";
+	case 'k':
+		return "♚";
+	case ' ':
+		return " ";
 	default:
 		throw std::invalid_argument("piece_type_from_symbol: unknown piece symbol '" + std::string(1, symbol) + "'");
 	}
