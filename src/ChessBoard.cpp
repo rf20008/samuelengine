@@ -259,11 +259,11 @@ std::string ChessBoard::getSAN(const Move &move) {
     Piece movingPiece = getPiece(move.startingSquare);
 
     if (!movingPiece.isValid()) {
-        throw std::invalid_argument("Cannot generate SAN for move from empty square");
+        throw std::invalid_argument("Cannot generate SAN for move from empty square. Position: " + fen());
     }
 
     if (movingPiece.color != playerToMove) {
-        throw std::invalid_argument("Cannot generate SAN for opponent's move");
+        throw std::invalid_argument("Cannot generate SAN for opponent's move. Position: " + fen());
     }
 
     // Castling

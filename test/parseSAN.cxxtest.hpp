@@ -5,7 +5,7 @@
 #include "Move.hpp"
 
 
-class SANTestSuite : public CxxTest::TestSuite {
+class ParseSANTestSuite : public CxxTest::TestSuite {
 public:
 
     // ============================================================
@@ -356,5 +356,27 @@ public:
 
         // "i" isn't a valid file/rank disambiguator.
         TS_ASSERT_THROWS_ANYTHING(board.getMove("Nib4"));
+    }
+    void testSANRegressionTest() {
+        ChessBoard board("8/8/4b3/7K/8/4k3/5p2/8 b - - 1 63");
+        TS_ASSERT_THROWS_ANYTHING(board.getMove("f1=q"));
+        Move m = board.getMove("f1=Q");
+    
+        assert(m.startingSquare == Square("f2"));
+        assert(m.endingSquare == Square("f1"));
+        assert(m.promotion == 'Q');
+    
+        assert(board.getSAN(m) == "f1=Q");
+    }
+    void testSANWhitePromotionRegressionTest() {
+        ChessBoard board("8/5P2/4K3/8/7k/4B3/8/8 w - - 1 63");
+        TS_ASSERT_THROWS_ANYTHING(board.getMove("f1=q"));
+        Move m = board.getMove("f8=Q");
+    
+        assert(m.startingSquare == Square("f7"));
+        assert(m.endingSquare == Square("f8"));
+        assert(m.promotion == 'Q');
+    
+        assert(board.getSAN(m) == "f8=Q");
     }
 };
