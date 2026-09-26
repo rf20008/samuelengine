@@ -379,4 +379,5 @@ public:
     
         assert(board.getSAN(m) == "f8=Q");
     }
+    
 };
